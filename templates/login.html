@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+</head>
+<div><h1>Login</h1></div>
+<form action="login_form">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username"><br><br>
+    <label for="password">Password</label>
+    <input type="text" id="password" name="password"><br><br>
+    <button type="button" onclick="sendData()">Send Data</button>
+
+    <script>
+        function sendData(){
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            fetch('/login_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            body: JSON.stringify({ "username": username, "password":password }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+    </script>
+</html>
