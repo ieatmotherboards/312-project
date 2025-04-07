@@ -1,1 +1,1 @@
-this will get populated eventually
+To use this: just run main.py in the 312_project server and control click the link that it prints to the console
