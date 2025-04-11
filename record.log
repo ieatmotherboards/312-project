@@ -1,0 +1,6 @@
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 104-623-659
+INFO:werkzeug:127.0.0.1 - - [11/Apr/2025 10:33:47] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [11/Apr/2025 10:33:51] "GET /casino HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [11/Apr/2025 10:33:54] "GET /mines HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [11/Apr/2025 10:34:00] "GET / HTTP/1.1" 200 -
