@@ -1,4 +1,11 @@
 WARNING:werkzeug: * Debugger is active!
-INFO:werkzeug: * Debugger PIN: 104-623-659
-INFO:werkzeug:127.0.0.1 - - [11/Apr/2025 10:57:53] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [11/Apr/2025 10:57:54] "GET /casino HTTP/1.1" 200 -
+INFO:werkzeug: * Debugger PIN: 119-333-403
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:41:44] "GET /login HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:41:45] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:41:46] "GET /login HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:41:49] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:41:51] "GET /login HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:41:54] "GET /register HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:42:28] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:42:29] "GET /login HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 14:42:31] "GET /register HTTP/1.1" 200 -
