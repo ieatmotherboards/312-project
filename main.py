@@ -2,7 +2,7 @@
 To use this: just run main.py in the 312_project server and control click the link that it prints to the console
 '''
 from flask import Flask, render_template, request
-from auth import parse_data
+from auth import parse_data, register_new_account
 
 import logging
 
@@ -11,9 +11,11 @@ logging.basicConfig(filename='record.log', level=logging.INFO, filemode="w") # i
 app = Flask(__name__)
 
 @app.route('/') # this routes to the main page
+@app.route('/') # this routes to the main page
 def home():
     return render_template("index.html")
 
+@app.route('/login') # routes to the login page
 @app.route('/login') # routes to the login page
 def login():
     return render_template("login.html")
@@ -26,6 +28,7 @@ def parse_login():
 def render_casino():
     return render_template("casino.html")
 
+@app.route('/mines') # routes to the mines page
 @app.route('/mines') # routes to the mines page
 def render_mines():
     return render_template("mines.html")
