@@ -2,7 +2,7 @@
 To use this: just run main.py in the 312_project server and control click the link that it prints to the console
 '''
 from flask import *
-from auth import parse_data
+from auth import parse_data, register_new_account
 
 import logging
 
@@ -21,6 +21,14 @@ def login():
 @app.route("/login_data", methods=["POST"]) # route for receiving data from login page. calls function in auth.py
 def parse_login():
     return parse_data()
+
+@app.route('/register')
+def register():
+    return render_template("register.html")
+
+@app.route('/register_data', methods = ['POST'])
+def register_new():
+    return register_new_account()
 
 @app.route('/casino') # routes to the phaser game's page
 def render_casino():

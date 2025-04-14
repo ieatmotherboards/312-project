@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Jesse's 312 Casino</title>
+  <title>Register - Jesse's 312 Casino</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -85,19 +85,19 @@
       align-items: center;
     }
 
-    .register-link {
+    .login-link {
       margin-top: 15px;
       font-size: 1rem;
       text-shadow: 1px 1px 4px #000;
     }
 
-    .register-link a {
+    .login-link a {
       color: #ffd700;
       text-decoration: underline;
       transition: color 0.3s ease;
     }
 
-    .register-link a:hover {
+    .login-link a:hover {
       color: #fff8dc;
     }
   </style>
@@ -109,19 +109,22 @@
   </div>
 
   <div class="container">
-    <h1>Login</h1>
-    <form action="login_form">
+    <h1>Register</h1>
+    <form action="register_form">
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required>
 
       <label for="password">Password</label>
       <input type="password" id="password" name="password" required>
 
-      <button class="button" type="button" onclick="sendData()">Login</button>
+      <label for="confirm">Confirm Password</label>
+      <input type="password" id="confirm" name="confirm" required>
+
+      <button class="button" type="button" onclick="registerUser()">Register</button>
     </form>
 
-    <div class="register-link">
-      Don't have an account yet? <a href="/register">Register here</a>
+    <div class="login-link">
+      Already have an account? <a href="/login">Login here</a>
     </div>
   </div>
 
@@ -130,11 +133,17 @@
       window.location.href = "/";
     }
 
-    function sendData() {
+    function registerUser() {
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm").value;
 
-      fetch('/login_data', {
+      if (password !== confirm) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      fetch('/register_data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,11 +152,11 @@
       })
       .then(response => response.json())
       .then(data => {
-        console.log('Success:', data);
-        // You can redirect or handle login feedback here
+        console.log('Registration success:', data);
+        // Redirect or notify user
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error('Registration error:', error);
       });
     }
   </script>
