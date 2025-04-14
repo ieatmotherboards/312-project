@@ -1,7 +1,7 @@
 '''
 To use this: just run main.py in the 312_project server and control click the link that it prints to the console
 '''
-from flask import Flask, render_template, request
+from flask import *
 from auth import parse_data
 
 import logging
@@ -22,13 +22,35 @@ def login():
 def parse_login():
     return parse_data()
 
-@app.route('/casino') # routes to the casino page
+@app.route('/casino') # routes to the phaser game's page
 def render_casino():
-    return render_template("casino.html")
+    return get_file('phaser-game/game.html')
 
 @app.route('/mines') # routes to the mines page
 def render_mines():
     return render_template("mines.html")
+
+@app.route('/phaser-game/<path:subpath>') # sends phaser game files to client
+def send_phaser_stuff(subpath):
+    data = get_file("phaser-game/" + subpath)
+    return Response(data, mimetype=get_mime_type(subpath))
+
+
+    # returns a mime type based on a file's extension
+def get_mime_type(path: str):
+    split_path = path.split('.')
+    filetype = split_path[len(split_path)-1]
+    return mime_type[filetype]
+# incomplete dict for mime types
+mime_type = {
+    'js': 'text/javascript',
+    'png': 'image/png'
+}
+
+    # returns a file's contents as bytes
+def get_file(filename):
+    with open(filename, 'rb') as file:
+        return file.read()
 
 if __name__ == '__main__':
     app.run(debug = True)

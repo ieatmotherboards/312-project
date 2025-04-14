@@ -1,7 +1,0 @@
-WARNING:werkzeug: * Debugger is active!
-INFO:werkzeug: * Debugger PIN: 104-623-659
-INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 09:04:40] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Apr/2025 09:04:41] "[33mGET /login HTTP/1.1[0m" 404 -
-INFO:werkzeug: * Detected change in 'C:\\Users\\hendr\\Documents\\312_project\\main.py', reloading
-INFO:werkzeug: * Detected change in 'C:\\Users\\hendr\\Documents\\312_project\\main.py', reloading
-INFO:werkzeug: * Detected change in 'C:\\Users\\hendr\\Documents\\312_project\\main.py', reloading
