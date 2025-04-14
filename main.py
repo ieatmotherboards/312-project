@@ -26,7 +26,7 @@ def parse_login():
 def register():
     return render_template("register.html")
 
-@app.route('register_data', methods = ['POST'])
+@app.route('/register_data', methods = ['POST'])
 def register_new():
     return register_new_account()
 
