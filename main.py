@@ -38,6 +38,11 @@ def render_casino():
 def render_mines():
     return render_template("mines.html")
 
+@app.route('/public/<path:subpath>') # sends files in public directory to client
+def send_public_file(subpath):
+    data = get_file("public/" + subpath)
+    return Response(data, mimetype=get_mime_type(subpath))
+
 @app.route('/phaser-game/<path:subpath>') # sends phaser game files to client
 def send_phaser_stuff(subpath):
     data = get_file("phaser-game/" + subpath)
@@ -52,7 +57,8 @@ def get_mime_type(path: str):
 # incomplete dict for mime types
 mime_type = {
     'js': 'text/javascript',
-    'png': 'image/png'
+    'png': 'image/png',
+    'css': 'text/css'
 }
 
     # returns a file's contents as bytes
