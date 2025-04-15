@@ -1,2 +1,7 @@
+/.idea
+project.config
+thumbnail.png
+/__pycache__
+record.log
+*.aseprite
 pycache/
-.idea/
