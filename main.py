@@ -3,6 +3,7 @@ To use this: just run main.py in the 312_project server and control click the li
 '''
 from flask import *
 from src.auth import register_new_account, parse_data
+from src.database import users
 import logging
 
 logging.basicConfig(filename='record.log', level=logging.INFO, filemode="w") # initializes logger 
@@ -11,6 +12,8 @@ app = Flask(__name__)
 
 @app.route('/') # this routes to the main page
 def home():
+    # test database
+    users.insert_one({"IP":request.remote_addr}) # tests database by inserting IP addr of user when loading main page
     return render_template("index.html")
 
 @app.route('/login') # routes to the login page
