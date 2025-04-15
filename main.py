@@ -6,14 +6,17 @@ from src.auth import register_new_account, parse_data
 from src.database import users
 import logging
 
-logging.basicConfig(filename='record.log', level=logging.INFO, filemode="w") # initializes logger 
+
+logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
+logging.getLogger('werkzeug').disabled = True # use this to supress automatical werkzeug logs, functional but ugly
 
 app = Flask(__name__)
 
+import datetime
+
 @app.route('/') # this routes to the main page
 def home():
-    # test database
-    users.insert_one({"IP":request.remote_addr}) # tests database by inserting IP addr of user when loading main page
+    app.logger.info("\tMETHOD:%s, IP:%s, PATH:%s, TIME:%s", request.method, request.remote_addr, request.path, datetime.datetime.now()) # tests logger -- works
     return render_template("index.html")
 
 @app.route('/login') # routes to the login page
@@ -69,4 +72,4 @@ def get_file(filename):
         return file.read()
 
 if __name__ == '__main__':
-    app.run(debug = True, host='0.0.0.0', port=8000)
+    app.run(debug = False, host='0.0.0.0', port=8000)
