@@ -2,8 +2,8 @@
 To use this: just run main.py in the 312_project server and control click the link that it prints to the console
 '''
 from flask import *
-from auth import parse_data, register_new_account
-
+from src.auth import register_new_account, parse_data
+from src.database import users
 import logging
 
 logging.basicConfig(filename='record.log', level=logging.INFO, filemode="w") # initializes logger 
@@ -12,6 +12,8 @@ app = Flask(__name__)
 
 @app.route('/') # this routes to the main page
 def home():
+    # test database
+    users.insert_one({"IP":request.remote_addr}) # tests database by inserting IP addr of user when loading main page
     return render_template("index.html")
 
 @app.route('/login') # routes to the login page
@@ -67,4 +69,4 @@ def get_file(filename):
         return file.read()
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = True, host='0.0.0.0', port=8000)
