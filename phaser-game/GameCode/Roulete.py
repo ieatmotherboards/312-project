@@ -23,6 +23,17 @@ def spinWheel():
     return spin
 
 def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/num/etc ...), betAmmount: ammountOfBet,numbers: [allNumbers]}
+
+    '''
+    In: List of Dictonarys with keys 
+    name -> username
+    betType -> type of bet (Straight up, Split, Street, Corner bet, 5Number, Line, First12, Second12, Third12, First18, Second18, Red, Black, Odd, Even)
+    betAmmount -> Int of how much they bet
+    numbers -> List of nubers their bet applies too if needed 
+
+    Out: Dictonary with keys being usernames and values being how much they won/lost
+    '''
+
     outcome=spinWheel()
     out={}
     out['House']=0
