@@ -25,7 +25,8 @@ const config = {
         Preloader,
         Game,
         GameOver
-    ]
+    ],
+    pixelArt: true
 };
 
 new Phaser.Game(config);

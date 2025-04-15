@@ -30,6 +30,11 @@ export class Preloader extends Phaser.Scene {
         this.load.image('phaser', 'phaser.png');
         this.load.image('platform', 'platform.png');
         this.load.image('star', 'star.png');
+
+        this.load.image('slotmachine', 'slotmachine.png');
+        this.load.image('slotmachine_side', 'slotmachine_side.png');
+        this.load.image('coin', 'coin.png');
+
         this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48})
     }
 
