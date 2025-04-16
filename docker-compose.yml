@@ -10,3 +10,5 @@ services:
       DOCKER_DB: true
     ports:
       - '8080:8000'
+    volumes:
+      - ./logs:/app/logs
