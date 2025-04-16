@@ -66,9 +66,6 @@ def Slotmactine(playerDict):
     topRow=[slots[0][0],slots[1][0],slots[2][0]]
     midRow=[slots[0][1],slots[1][1],slots[2][1]]
     botRow=[slots[0][2],slots[1][2],slots[2][2]]
-    leftCol=[slots[0][0],slots[0][1],slots[0][2]]
-    midCol=[slots[1][0],slots[1][1],slots[1][2]]
-    rightCol=[slots[2][0],slots[2][1],slots[2][2]]
     moneyLines = [leftDiag,rightDiag,topRow,midRow,botRow]
     for row in moneyLines:
         if len(set(row))==1:
@@ -91,10 +88,13 @@ if __name__ == '__main__':
     HouseProfit=0
     PlayerProfit=0
     houseWins=0
-    input={'name':'Superice', 'symbols':'normal', 'bet':50}
+    bet=50
+    input={'name':'Superice', 'symbols':'cse', 'bet':bet}
     simsToRun=1000000
     for x in range(simsToRun):
         temp=Slotmactine(input)
+        #print(temp['board'])
+        #print('----------------')
         if temp['house']>0:
             houseWins+=1
         #print(houseWins)
@@ -103,8 +103,11 @@ if __name__ == '__main__':
         PlayerProfit+=temp['player']
         #print(HouseProfit)
         #print(PlayerProfit)
+    print("Sims ran: "+ str(simsToRun))
+    print("Bet Per Sim: "+str(bet))
     print('HouseProfit: '+str(HouseProfit))
     print('PlayerProfit: '+str(PlayerProfit))
-    print(houseWins/simsToRun)
+    print("House Win Rate: "+ str(houseWins/simsToRun))
+
         
 
