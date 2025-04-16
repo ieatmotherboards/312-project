@@ -53,6 +53,7 @@ def render_mines():
 
 @app.route('/settings')
 def render_settings():
+    app.logger.info("\tMETHOD:%s, IP:%s, PATH:%s, TIME:%s", request.method, request.remote_addr, request.path, datetime.datetime.now()) # tests logger -- works
     return render_template("settings.html")
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
