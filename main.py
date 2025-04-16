@@ -4,11 +4,11 @@ To use this: just run main.py in the 312_project server and control click the li
 from flask import *
 from src.auth import register_new_account, parse_data
 from src.database import users
+from src.logging import main_log
 import logging
 import datetime
 from werkzeug.utils import secure_filename
 import os
-
 
 logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
 logging.getLogger('werkzeug').disabled = True # use this to supress automatical werkzeug logs, functional but ugly
@@ -22,23 +22,27 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/') # this routes to the main page
 def home():
-    app.logger.info("\tMETHOD:%s, IP:%s, PATH:%s, TIME:%s", request.method, request.remote_addr, request.path, datetime.datetime.now()) # tests logger -- works
+    main_log(req=request, app=app, code=200)
     return render_template("index.html")
 
 @app.route('/login') # routes to the login page
 def login():
+    main_log(req=request, app=app, code=200)
     return render_template("login.html")
 
 @app.route("/login_data", methods=["POST"]) # route for receiving data from login page. calls function in auth.py
 def parse_login():
+    main_log(req=request, app=app, code=200)
     return parse_data()
 
 @app.route('/register')
 def register():
+    main_log(req=request, app=app, code=200)
     return render_template("register.html")
 
 @app.route('/register_data', methods = ['POST'])
 def register_new():
+    main_log(req=request, app=app, code=200)
     return register_new_account()
 
 @app.route('/casino') # routes to the phaser game's page
@@ -53,7 +57,7 @@ def render_mines():
 
 @app.route('/settings')
 def render_settings():
-    app.logger.info("\tMETHOD:%s, IP:%s, PATH:%s, TIME:%s", request.method, request.remote_addr, request.path, datetime.datetime.now()) # tests logger -- works
+    main_log(req=request, app=app, code=200)
     return render_template("settings.html")
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
@@ -71,13 +75,16 @@ def allowed_file(filename):
 
 @app.route('/upload_pfp', methods = ["POST"])
 def upload_pfp():
+
     # print('request cookies:', request.cookies)
-    app.logger.info("request cookies:%s", str(request.cookies))
-    app.logger.info("request files:%s", str(request.files))
+    # app.logger.info("request cookies:%s", str(request.cookies))
+    # app.logger.info("request files:%s", str(request.files))
 
     if 'auth_token' not in request.cookies:
+        main_log(req=request, app=app, code=302)
         return redirect('/login', code=302)
     if 'file' not in request.files or request.files['file'] == '':
+        main_log(req=request, app=app, code=403)
         return Response(status="403")
     file = request.files['file']
     if file and allowed_file(file.filename):
