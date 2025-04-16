@@ -1,4 +1,12 @@
-from flask import Flask, request, jsonify
+import requests.cookies
+from flask import *
+from database import users
+import bcrypt
+import uuid
+import secrets
+import hashlib
+import pyotp
+
 
 def parse_data():
     '''
@@ -41,6 +49,76 @@ def validate_password(password):
 
 def register_new_account():
     data = request.get_json()
-    js = jsonify({'username': data["username"], "password": data["password"]})
 
-    return
+    found = users.find_one({'username': data['username']}, {'_id': 0})
+
+    if found is None:
+        if validate_password(data['password']):
+
+            salt = bcrypt.gensalt()
+            password = bcrypt.hashpw(data['password'].encode(), salt)
+            users.insert_one({'username': data['username'], 'password': password.decode(), 'salt': salt.decode()})
+
+            return make_response('OK', 200)
+
+        else:
+            return make_response('Invalid Password', 400)
+    else:
+        return make_response('An Account With That Username Already Exists', 400)
+
+
+def login():
+    data = request.get_json()
+
+
+    found = users.find_one({'username': data['username']}, {'_id': 0})
+
+    if found is not None:
+        salt = found['salt']
+        password = bcrypt.hashpw(data['password'].encode(), salt)
+
+        if password.decode() == found['password']:
+
+            token = secrets.token_hex()
+            cookie = str(token)
+            #cookie += '; HTTPOnly; max-age=86400'
+
+            token = token.encode()
+            token = hashlib.sha256(token).hexdigest()
+            users.find_one_and_update({'username': data['username']}, {'$set': {'auth_token': str(token)}})
+
+            res = make_response()
+            res.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
+
+            return res
+
+
+        else:
+            return make_response('Incorrect Password', 400)
+    else:
+        return make_response('No Account With That Name Found', 400)
+
+
+def logout():
+    token = request.cookies.get('auth_token')
+
+    token = token.encode()
+    token = hashlib.sha256(token).hexdigest()
+
+    found = users.find_one({'auth_token': token}, {'_id': 0})
+
+    if found is not None:
+        if token == found['auth_token']:
+            users.find_one_and_update({'auth_token': str(token)}, {'$set': {'auth_token': ''}})
+
+            token = secrets.token_hex()
+            cookie = str(token)
+
+            res = make_response()
+            res.set_cookie('auth_token', cookie, max_age=1, httponly=True)
+
+            return res
+        else:
+            return make_response(400, 'Bad Request')
+    else:
+        return make_response(400, 'Not Logged In')
