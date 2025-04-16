@@ -1,4 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import *
+from database import users
+import bcrypt
+import uuid
+import secrets
+import hashlib
+import pyotp
+
 
 def parse_data():
     '''
@@ -41,6 +48,27 @@ def validate_password(password):
 
 def register_new_account():
     data = request.get_json()
-    js = jsonify({'username': data["username"], "password": data["password"]})
+
+    found = users.find_one({'username': data['username']}, {'_id': 0})
+
+    if found is None:
+        if validate_password(data['password']):
+
+            salt = bcrypt.gensalt()
+            password = bcrypt.hashpw(data['password'].encode(), salt)
+            users.insert_one({'username': data['username'], 'password': password.decode(), 'salt': salt.decode()})
+
+            return make_response('OK', 200)
+
+        else:
+            return make_response('Invalid Password', 400)
+    else:
+        return make_response('An Account With That Username Already Exists', 400)
+
+
+def login():
+    data = request.get_json()
+
+
 
     return
