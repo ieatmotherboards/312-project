@@ -10,7 +10,7 @@ to check out the site.\
 **!!!**
 ## How it Works
 ### Logging
-While we had the option to use Flask's built in logging, we used its logger to add completley custom logs at the `INFO` level.
+While we had the option to use Flask's built in logging, we used its logger to add completely custom logs at the `INFO` level.
 ### Auth
 ...
 ### Phaser

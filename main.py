@@ -13,7 +13,7 @@ logging.getLogger('werkzeug').disabled = True # use this to supress automatical 
 UPLOAD_FOLDER = '/public/pfps'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public', static_url_path='/')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
