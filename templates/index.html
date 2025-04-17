@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jesse's 312 Casino</title>
+    <title>Kris's Kasino</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
     <link href="/public/style.css" rel="stylesheet">
     <!-- ^^^^^  use this instead of the <style> tag. that has been moved to public/style.css !! -->
@@ -13,10 +13,13 @@
 <div class="top-right">
     <button class="button" onclick="routeLogin()">Register/Login</button>
     <button class="button" onclick="routeSettings()">Settings</button>
+    <p id="hello_user">Welcome, NOT_LOGGED_IN</p>
+    <button class="button" onclick="routeLogout()">Logout</a>
+
 </div>
 
 <div class="container">
-    <h1>Welcome to Jesse's 312 Casino!!</h1>
+    <h1>Welcome to Kris's Kasino!!</h1>
     <button class="button play-button" onclick="routeCasino()">PLAY</button>
 </div>
 
@@ -36,6 +39,12 @@
 <script>
     function routeSettings(){
         window.location.href = '/settings';
+    }
+</script>
+
+<script>
+    function routeLogout(){
+        // TODO: finish this
     }
 </script>
 </html>

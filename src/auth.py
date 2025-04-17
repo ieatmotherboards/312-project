@@ -1,11 +1,11 @@
-import requests.cookies
+# import requests.cookies
 from flask import *
-from database import users
+from src.database import users
 import bcrypt
-import uuid
 import secrets
 import hashlib
-import pyotp
+
+from src.logging import main_log, auth_log 
 
 
 def parse_data():
@@ -47,7 +47,7 @@ def validate_password(password):
 
     return False
 
-def register_new_account():
+def register_new_account(request, app):
     data = request.get_json()
 
     found = users.find_one({'username': data['username']}, {'_id': 0})
@@ -58,18 +58,20 @@ def register_new_account():
             salt = bcrypt.gensalt()
             password = bcrypt.hashpw(data['password'].encode(), salt)
             users.insert_one({'username': data['username'], 'password': password.decode(), 'salt': salt.decode()})
+            auth_log(username=data['username'], success=True, message='successfully registered', app=app)
 
-            return make_response('OK', 200)
+            return redirect('/')
 
         else:
+            auth_log(username=data['username'], success=False, message='tried to register but password was not strong enough', app=app)
             return make_response('Invalid Password', 400)
     else:
+        auth_log(username=data['username'], success=False, message='tried to register but username was already taken', app=app)
         return make_response('An Account With That Username Already Exists', 400)
 
 
-def login():
+def login(request, app):
     data = request.get_json()
-
 
     found = users.find_one({'username': data['username']}, {'_id': 0})
 
@@ -81,7 +83,6 @@ def login():
 
             token = secrets.token_hex()
             cookie = str(token)
-            #cookie += '; HTTPOnly; max-age=86400'
 
             token = token.encode()
             token = hashlib.sha256(token).hexdigest()
@@ -99,7 +100,7 @@ def login():
         return make_response('No Account With That Name Found', 400)
 
 
-def logout():
+def logout(request):
     token = request.cookies.get('auth_token')
 
     token = token.encode()

@@ -1,6 +1,3 @@
-'''
-To use this: just run main.py in the 312_project server and control click the link that it prints to the console
-'''
 from flask import *
 from src.auth import register_new_account, parse_data
 from src.database import users
@@ -43,12 +40,12 @@ def register():
 @app.route('/register_data', methods = ['POST'])
 def register_new():
     main_log(req=request, app=app, code=200)
-    return register_new_account()
+    return register_new_account(request, app)
 
 @app.route('/casino') # routes to the phaser game's page
 def render_casino():
     if 'auth_token' not in request.cookies:
-        redirect('/', code=302)
+        return redirect('/', code=302)
     return get_file('phaser-game/game.html')
 
 @app.route('/mines') # routes to the mines page
