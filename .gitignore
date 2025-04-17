@@ -6,3 +6,4 @@ thumbnail.png
 record.log
 *.aseprite
 pycache//
+/logs

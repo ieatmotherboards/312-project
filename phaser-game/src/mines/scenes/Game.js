@@ -1,3 +1,5 @@
+import { CoinCounter } from '../../gameObjects/CoinCounter.js'
+
 export class Game extends Phaser.Scene {
     constructor() {
         super('Game');
@@ -19,6 +21,8 @@ export class Game extends Phaser.Scene {
         this.bodyMap = new Map();
         this.coalCount = 0;
         this.coalBroken = 0;
+
+        this.coinCounter = new CoinCounter(this, 28, 28);
    }
 
     update(time, delta) {
@@ -55,6 +59,7 @@ export class Game extends Phaser.Scene {
                 coin.on('pointerdown', function() {
                     this.scene.collectCoin(this.body);
                 });
+                coin.collected = false;
                 this.destroy();
             }
         });
@@ -62,7 +67,14 @@ export class Game extends Phaser.Scene {
 
    collectCoin(body) {
         let coin = this.bodyMap.get(body);
-        if (coin != undefined) {
+        if (coin != undefined && !coin.collected) {
+            this.coinCounter.incrementCoins();
+            coin.collected = true;
+            let request = new Request ("/addCoin", {
+                method: "POST",
+                body: JSON.stringify({"coins": 1})
+                });
+            fetch(request);
             coin.destroy();
         }
    }

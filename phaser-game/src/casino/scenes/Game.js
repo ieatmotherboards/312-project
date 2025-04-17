@@ -1,4 +1,6 @@
 import { Player } from '../../gameObjects/Player.js';
+import { CoinCounter } from '../../gameObjects/CoinCounter.js'
+import  '../../../../public/socket.io.js'
 
 export class Game extends Phaser.Scene {
     constructor() {
@@ -6,6 +8,7 @@ export class Game extends Phaser.Scene {
 
     }
 
+    // this file has lots of commented out code from the tutorial i followed
     create() {
         this.add.image(400, 300, 'sky');
 
@@ -25,9 +28,11 @@ export class Game extends Phaser.Scene {
         });
 
         this.player = new Player(this, 100, 450);
-        // this.physics.add.collider(this.player, this.platforms);
         
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
         // this.stars = this.physics.add.group({
         //     key: 'coin',
@@ -37,38 +42,48 @@ export class Game extends Phaser.Scene {
         //     setScale: {x: 2, y:2}
         // });
 
-        // this.stars.children.iterate( child =>{
-        //     child.setBounceY(Phaser.Math.FloatBetween(.4, .8));
-        // });
-
-        // this.physics.add.collider(this.stars, this.platforms);
         // this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
-        this.physics.add.collider(this.player, this.slots);
+        this.physics.add.collider(this.player, this.slots); // adds collision between the player and all slot machines
         this.slots.children.iterate( child => {
-            child.refreshBody();
+            child.refreshBody();    // since the slots are static, they have to be refreshed for changes to take place
         });
 
-        this.scoreText = this.add.text(16, 16, 'Stars Collected: 0', { fontSize: '32px', fill: '#000' });
+        this.coinCounter = new CoinCounter(this, 28, 28);
+
+        this.websocket = io();  
+        this.websocket.on('connect', function() {
+            this.emit('connected');
+        });
+        this.websocket.on('connect_echo', function() {
+            console.log('connected to server')
+        });
+        this.websocket.on('movement', function(data) {
+            let recieved_data = data.data
+            console.log('id: ' + recieved_data.id + ', x: ' + recieved_data.x + ', y: ' + recieved_data.y);
+        });
+        this.timePassed = 0;
+        this.timeToNext = 500;
+        this.prevPosition = {x: this.player.x, y: this.player.y}
     }
 
-    update(time) {
+    update(time, delta) {
         let moved = false
-        if (this.cursors.left.isDown) {
+        if (this.keyA.isDown) {
             this.player.moveLeft();
             moved = true;
         }
-        else if (this.cursors.right.isDown) {
+        else if (this.keyD.isDown) {
             this.player.moveRight();
             moved = true;
         }
         else {
             this.player.idleX();
         }
-        if (this.cursors.up.isDown) {
+        if (this.keyW.isDown) {
             this.player.moveUp();
             moved = true;
         }
-        else if (this.cursors.down.isDown) {
+        else if (this.keyS.isDown) {
             this.player.moveDown();
             moved = true;
         }
@@ -77,6 +92,16 @@ export class Game extends Phaser.Scene {
         }
         if (!moved) {
             this.player.idle();
+        }
+        this.timePassed += delta;
+        if (this.timePassed >= this.timeToNext && (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y) ) {
+            this.prevPosition.x = this.player.x;
+            this.prevPosition.y = this.player.y;
+            this.websocket.emit('player_move', {'data': {
+                'id': 'admin', 
+                'x': this.player.x, 
+                'y': this.player.y
+                }});
         }
     }
 
