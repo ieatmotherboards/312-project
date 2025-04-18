@@ -77,7 +77,7 @@ def login(request, app):
 
     if found is not None:
         salt = found['salt']
-        password = bcrypt.hashpw(data['password'].encode(), salt)
+        password = bcrypt.hashpw(data['password'].encode(), salt.encode())
 
         if password.decode() == found['password']:
 
