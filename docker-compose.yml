@@ -1,8 +1,8 @@
 services:
   mongo:
     image: mongo:4.2.5
-    # ports:
-    #   - '27017:27017'
+    ports:
+      - '27017:27017'
   app:
     build: .
     environment:
@@ -10,3 +10,5 @@ services:
       DOCKER_DB: true
     ports:
       - '8080:8000'
+    volumes:
+      - ./logs:/app/logs

@@ -5,12 +5,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.setCollideWorldBounds(true);
-        this.initAninations();
+        this.setCollideWorldBounds(true);   // enables player collision with world bounds
+        this.initAninations();      
 
-        this.score = 0
+        this.score = 0; // score variable from tutorial
     }
 
+    // initializes player's animations (from tutorial) (maybe won't use later)
     initAninations() {
         this.anims.create({
             key: 'left',
@@ -33,6 +34,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite
         });
     }
 
+    // these methods handle movement and are called by the parent scene
     moveLeft() {
         this.setVelocityX(-200);
         this.anims.play('left', true)
