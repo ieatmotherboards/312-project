@@ -1,17 +1,16 @@
-export class SlotMachine extends Phaser.Physics.Arcade.Sprite {
+export class SlotMachine {
 
     constructor(scene, x, y, key) {
-        super(scene, x, y, key);
-        this.scene.add.existing(this);
-        // this.scene.physics.add.existing(this);
+        this.scene = scene;
+        this.sprite = this.scene.physics.add.staticSprite(x, y, key).setScale(2.5, 2.5).refreshBody();
 
-        this.scene.physics.add.collider(this, this.scene.player);
+        this.scene.physics.add.collider(this.sprite, this.scene.player);
 
-        this.DEBUG = true
+        this.DEBUG = true;
     }
 
     addOverlapBox(xOff, yOff, scale) {
-        this.overlap = this.scene.physics.add.staticSprite(this.x + xOff, this.y + yOff).setScale(scale);
+        this.overlap = this.scene.physics.add.staticSprite(this.sprite.x + xOff, this.sprite.y + yOff).setScale(scale);
         if (this.DEBUG) {
             this.overlap.setTexture('debug');
             this.overlap.setAlpha(0.5);

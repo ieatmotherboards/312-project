@@ -29,10 +29,20 @@ export class Game extends Phaser.Scene {
         let i = 0;
         let x = 150;
         while (i < 12) {
-            let newSlots = new SlotMachineDown(this, x, 50).setScale(2.5, 2.5);
+            let newSlots = new SlotMachineDown(this, x, 50);
             this.slots.push(newSlots);
             i += 1;
             x += 50;
+        }
+        i = 0;
+        let y = 200;
+        while (i < 6) {
+            let newSlots = new SlotMachineSide(this, 374, y, false);
+            this.slots.push(newSlots);
+            newSlots = new SlotMachineSide(this, 425, y, true);
+            this.slots.push(newSlots);
+            i += 1;
+            y += 50;
         }
 
         this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
@@ -48,12 +58,11 @@ export class Game extends Phaser.Scene {
         //     setScale: {x: 2, y:2}
         // });
 
-        // this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
-        this.physics.add.collider(this.player, this.slots); // adds collision between the player and all slot machines
-        for (let i in this.slots) {
-            let machine = this.slots[i];
-            // machine.refreshBody();
-        }
+        // this.physics.add.collider(this.player, this.slots); // adds collision between the player and all slot machines
+        // for (let i in this.slots) {
+        //     let machine = this.slots[i];
+        //     // machine.refreshBody();
+        // }
 
         this.coinCounter = new CoinCounter(this, 28, 28);
 
