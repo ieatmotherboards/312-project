@@ -1,4 +1,5 @@
 from flask import *
+from flask_socketio import SocketIO
 from src.auth import register_new_account, login, logout
 from src.database import users
 from src.logging import main_log
@@ -6,6 +7,9 @@ import logging
 import datetime
 from werkzeug.utils import secure_filename
 import os
+from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
+from src.websockets import connect_websocket  # for some reason this needs to be imported for websockets to work?
+
 
 logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
 logging.getLogger('werkzeug').disabled = True # use this to supress automatical werkzeug logs, functional but ugly
@@ -67,7 +71,7 @@ def register_new():
 def render_casino():
     if 'auth_token' not in request.cookies:
         return redirect('/', code=302)
-    return get_file('phaser-game/game.html')
+    return render_template("game.html", path='casino/mainCasino.js')
 
 @app.route('/mines') # routes to the mines page
 def render_mines():
@@ -128,4 +132,5 @@ def get_file(filename):
         return file.read()
 
 if __name__ == '__main__':
-    app.run(debug = False, host='0.0.0.0', port=8000)
+    # app.run(debug = False, host='0.0.0.0', port=8000)
+    socketio.run(app, debug=False, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)
