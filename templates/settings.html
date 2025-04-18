@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
+  <link href="/public/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>Account Settings</h1>
+
+    <img src="https://via.placeholder.com/150" alt="Profile Picture" style="border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 30px;">
+    
+    <button class="button" onclick="document.getElementById('pfpInput').click()">Change Profile Picture</button>
+    <input type="file" id="pfpInput" accept="image/*" style="display:none" />
+
+    <br>
+    <button class="button">Change Username</button>
+    <button class="button">Change Password</button>    
+  </div>
+</body>
+<script>
+    const pfpInput = document.getElementById('pfpInput');
+    const profileImg = document.querySelector('img');
+  
+    pfpInput.addEventListener('change', async () => {
+      const file = pfpInput.files[0];
+      if (!file) return;
+  
+      // Preview the selected image
+      const reader = new FileReader();
+      reader.onload = () => {
+        profileImg.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+  
+      // Upload image to backend
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+  
+      try {
+        const response = await fetch('/upload_pfp', {
+          method: 'POST',
+          body: formData 
+        });
+  
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+  
+        console.log('Profile picture updated!');
+      } catch (err) {
+        console.error(err);
+        alert('Error uploading profile picture.');
+      }
+    });
+</script>
+</html>
