@@ -1,5 +1,5 @@
 from flask import *
-from src.auth import register_new_account, login
+from src.auth import register_new_account, login, logout
 from src.database import users
 from src.logging import main_log
 import logging
@@ -30,7 +30,28 @@ def render_login():
 @app.route("/login_data", methods=["POST"]) # route for receiving data from login page. calls function in auth.py
 def parse_login():
     main_log(req=request, app=app, code=200)
-    return login(request, app)
+    login_result = login(request, app)
+    if 'auth_token' in login_result:
+        cookie = login_result['auth_token']
+        resp = make_response("Success", 200)
+        resp.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
+        return resp
+    else:
+        res = make_response("Forbidden", 403)
+        return res
+    
+@app.route('/logout_data', methods=['POST'])
+def parse_logout():
+    main_log(req=request, app=app, code=200)
+    
+    logout_result = logout(request=request, app=app)
+    if "auth_token" in logout_result:
+        cookie = logout_result['auth_token']
+        resp = make_response("Success", 200)
+        resp.set_cookie('auth_token', cookie, max_age=1, httponly=True)
+        return resp
+    else:
+        return make_response("Forbidden",403) # update this to take other text later 
 
 @app.route('/register')
 def register():

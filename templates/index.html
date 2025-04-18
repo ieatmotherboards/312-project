@@ -45,7 +45,24 @@
 
 <script>
     function routeLogout(){
-        // TODO: finish this
+
+        let cookie = document.cookie;
+
+        const fetchPromise = fetch('/logout_data', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+
+        console.log(fetchPromise);
+
+        fetchPromise.then((response) => {
+            console.log(response.status);
+            if (response.status == 200){
+                window.location.href = '/';
+            }else{
+                console.log("Logout: failure");
+            }
+        });
     }
 </script>
 </html>

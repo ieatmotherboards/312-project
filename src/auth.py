@@ -88,18 +88,21 @@ def login(request, app):
             token = hashlib.sha256(token).hexdigest()
             users.find_one_and_update({'username': data['username']}, {'$set': {'auth_token': str(token)}})
 
-            res = make_response(redirect('/'))
-            res.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
-
-            return res
+            auth_log(username=data['username'], success=True, message='successfully logged in', app=app)
+            return {"auth_token":cookie}
 
         else:
-            return make_response('Incorrect Password', 400)
+            auth_log(username=data['username'], success=False, message='tried to register but password was incorrect', app=app)
+            return {"error":'Incorrect Password'}
     else:
-        return make_response('No Account With That Name Found', 400)
+        auth_log(username=data['username'], success=False, message='tried to log in but username was not in db', app=app)
+        return {'error':'No Account With That Name Found'}
 
 
-def logout(request):
+def extract_cookie(cookie_val):
+    print(cookie_val)
+
+def logout(request, app):
     token = request.cookies.get('auth_token')
 
     token = token.encode()
@@ -114,11 +117,12 @@ def logout(request):
             token = secrets.token_hex()
             cookie = str(token)
 
-            res = make_response()
-            res.set_cookie('auth_token', cookie, max_age=1, httponly=True)
+            auth_log(username=found['username'], success=True, message='successfully logged out', app=app)
 
-            return res
+            return {"auth_token":cookie}
         else:
-            return make_response(400, 'Bad Request')
+            auth_log(username=found['username'], success=False, message='tried to log out but auth tokens didn\'t match', app=app)
+            return {"error":"Bad Request"}
     else:
-        return make_response(400, 'Not Logged In')
+        auth_log("nonexistent user", success=False, message='tried to log out but was not logged  in', app=app)
+        return {"error":"Not Logged In"}

@@ -40,22 +40,24 @@
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
-        fetch('/login_data', {
+        const fetchPromise = fetch('/login_data', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                // You can redirect or handle login feedback here
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password}),
+        });
+
+        console.log(fetchPromise);
+
+        fetchPromise.then((response) => {
+            console.log(response.status);
+            if (response.status == 200){
+                window.location.href = '/';
+            }else{
+                console.log("Login: failure");
+            }
+        });
     }
+
 </script>
 </body>
 </html>
