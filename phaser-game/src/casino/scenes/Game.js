@@ -1,5 +1,7 @@
 import { Player } from '../../gameObjects/Player.js';
 import { CoinCounter } from '../../gameObjects/CoinCounter.js'
+import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js'
+import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js'
 import  '../../../../public/socket.io.js'
 
 export class Game extends Phaser.Scene {
@@ -20,15 +22,19 @@ export class Game extends Phaser.Scene {
         // this.platforms.create(50, 250, 'platform');
         // this.platforms.create(720, 220, 'platform');
 
-        this.slots = this.physics.add.staticGroup({
-            key: 'slotmachine_side',
-            repeat: 5,
-            setXY: {x:750, y:50, stepY: 90},
-            setScale: {x: 2.5, y: 2.5}
-        });
-
         this.player = new Player(this, 100, 450);
-        
+
+        this.slots = [];
+
+        let i = 0;
+        let x = 150;
+        while (i < 12) {
+            let newSlots = new SlotMachineDown(this, x, 50).setScale(2.5, 2.5);
+            this.slots.push(newSlots);
+            i += 1;
+            x += 50;
+        }
+
         this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
         this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
@@ -44,9 +50,10 @@ export class Game extends Phaser.Scene {
 
         // this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
         this.physics.add.collider(this.player, this.slots); // adds collision between the player and all slot machines
-        this.slots.children.iterate( child => {
-            child.refreshBody();    // since the slots are static, they have to be refreshed for changes to take place
-        });
+        for (let i in this.slots) {
+            let machine = this.slots[i];
+            // machine.refreshBody();
+        }
 
         this.coinCounter = new CoinCounter(this, 28, 28);
 
@@ -59,7 +66,7 @@ export class Game extends Phaser.Scene {
         });
         this.websocket.on('movement', function(data) {
             let recieved_data = data.data
-            console.log('id: ' + recieved_data.id + ', x: ' + recieved_data.x + ', y: ' + recieved_data.y);
+            // console.log('id: ' + recieved_data.id + ', x: ' + recieved_data.x + ', y: ' + recieved_data.y);
         });
         this.timePassed = 0;
         this.timeToNext = 500;
@@ -105,11 +112,11 @@ export class Game extends Phaser.Scene {
         }
     }
 
-    collectStar(player, star) {
-        star.disableBody(true, true);
+    // collectStar(player, star) {
+    //     star.disableBody(true, true);
         
-        this.player.score += 1;
-        this.scoreText.setText('Stars Collected: ' + this.player.score);
-    }
+    //     this.player.score += 1;
+    //     this.scoreText.setText('Stars Collected: ' + this.player.score);
+    // }
 
 }

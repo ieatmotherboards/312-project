@@ -26,12 +26,9 @@ export class Preloader extends Phaser.Scene {
         //  Load the assets for the game - Replace with your own assets
         this.load.setPath('phaser-game/assets');
         this.load.image('cave', 'cave.png');
-
         this.load.image('coal', 'coal.png');
         this.load.image('coal_breaking', 'coal_breaking.png');
         this.load.image('coin', 'coin.png');
-
-        this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48})
     }
 
     create() {
