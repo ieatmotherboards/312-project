@@ -1,5 +1,5 @@
 from flask import *
-from src.auth import register_new_account, parse_data
+from src.auth import register_new_account, login
 from src.database import users
 from src.logging import main_log
 import logging
@@ -23,14 +23,14 @@ def home():
     return render_template("index.html")
 
 @app.route('/login') # routes to the login page
-def login():
+def render_login():
     main_log(req=request, app=app, code=200)
     return render_template("login.html")
 
 @app.route("/login_data", methods=["POST"]) # route for receiving data from login page. calls function in auth.py
 def parse_login():
     main_log(req=request, app=app, code=200)
-    return parse_data()
+    return login(request, app)
 
 @app.route('/register')
 def register():

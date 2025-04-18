@@ -88,11 +88,10 @@ def login(request, app):
             token = hashlib.sha256(token).hexdigest()
             users.find_one_and_update({'username': data['username']}, {'$set': {'auth_token': str(token)}})
 
-            res = make_response()
+            res = make_response(redirect('/'))
             res.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
 
             return res
-
 
         else:
             return make_response('Incorrect Password', 400)
