@@ -38,11 +38,11 @@ def register_new():
 
 @app.route('/casino') # routes to the phaser game's page
 def render_casino():
-    return render_template("game.html", path='casino')
+    return render_template("game.html", path='casino/mainCasino.js')
 
 @app.route('/mines') # routes to the mines page
 def render_mines():
-    return render_template("game.html", path='mines')
+    return render_template("game.html", path='mines/mainMines.js')
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):

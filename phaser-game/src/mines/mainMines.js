@@ -1,6 +1,6 @@
-import { Boot } from './scenes/Boot.js';
-import { Preloader } from './scenes/Preloader.js';
-import { Game } from './scenes/Game.js';
+import { Boot } from './scenes/BootMines.js';
+import { Preloader } from './scenes/PreloaderMines.js';
+import { Game } from './scenes/GameMines.js';
 
 const config = {
     type: Phaser.AUTO,
