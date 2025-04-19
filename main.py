@@ -91,7 +91,8 @@ def render_settings():
 @app.route('/@me')
 def at_me():
     if "auth_token" not in request.cookies:
-        return make_response("Unauthorized", 401)
+        return make_response("Unauthorized", 401) # TODO: make frontend hide logout button/"Welcome..." text if code is 401
+    # TODO: hash auth token, db lookup, and send 200 ok with json body of {'username':username}
     
 
 @app.route('/@me')

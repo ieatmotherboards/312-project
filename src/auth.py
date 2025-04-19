@@ -6,7 +6,7 @@ import bcrypt
 import secrets
 import hashlib
 
-from src.logging import main_log, auth_log 
+from src.logging import main_log, auth_log, logout_log, register_log
 
 
 def parse_data():
@@ -58,14 +58,14 @@ def register_new_account(request : Request):
             salt = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(password.encode(), salt).decode()
             db.users.insert_one({'username': username, 'password': hashed_password, 'salt': salt.decode()})
-            auth_log(username=username, success=True, message='successfully registered')
+            register_log(username=username, success=True, message='successfully registered')
 
             return make_response()
         else:
-            auth_log(username=username, success=False, message='password was not strong enough')
+            register_log(username=username, success=False, message='password was not strong enough')
             return make_response('Invalid Password', 400)
     else:
-        auth_log(username=username, success=False, message='username was already taken')
+        register_log(username=username, success=False, message='username was already taken')
         return make_response('An Account With That Username Already Exists', 400)
 
 
@@ -106,7 +106,7 @@ def logout(request : Request):
     cookies = request.cookies
 
     if 'auth_token' not in cookies:
-        auth_log("nonexistent user", success=False, message='not logged in')
+        logout_log("nonexistent user", success=False, message='not logged in')
         return (403, 'not logged in')
 
     token = cookies['auth_token']
@@ -117,8 +117,8 @@ def logout(request : Request):
     if user is not None:
         db.users.update_one({'auth_token': hashed_token}, {'$set': {'auth_token': 'LOGGED OUT'}})
 
-        auth_log(username=user['username'], success=True, message='successfully logged out')
+        logout_log(username=user['username'], success=True, message='successfully logged out')
         return (200, '')
     else:
-        auth_log("invalid user", success=False, message='invalid auth token')
+        logout_log("invalid user", success=False, message='invalid auth token')
         return (403, 'invalid auth token')

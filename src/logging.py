@@ -9,5 +9,8 @@ def main_log(req : flask.Request, res : flask.Response): # TODO: make sure we ca
 def auth_log(username : str, success : bool, message : str):
     app.logger.info("\t\tattempt from [%s] to log in, successful?:%s. %s",username, str(success), message)
 
-# TODO: write seperate log function for logging out
-# TODO: write seperate log function for registering
+def logout_log(username: str, success: bool, message: str):
+    app.logger.info("\t\tattempt from [%s] to log out, successful?:%s. %s",username, str(success), message)
+
+def register_log(username: str, success: bool, message: str):
+    app.logger.info("\t\tattempt from [%s] to log out, successful?:%s. %s",username, str(success), message)
