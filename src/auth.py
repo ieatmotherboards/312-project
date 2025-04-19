@@ -60,7 +60,7 @@ def register_new_account(request, app):
             users.insert_one({'username': data['username'], 'password': password.decode(), 'salt': salt.decode()})
             auth_log(username=data['username'], success=True, message='successfully registered', app=app)
 
-            return redirect('/')
+            return make_response()
 
         else:
             auth_log(username=data['username'], success=False, message='tried to register but password was not strong enough', app=app)

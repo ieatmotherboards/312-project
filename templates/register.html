@@ -49,21 +49,18 @@
             return;
         }
 
-        fetch('/register_data', {
+        let request = new Request ('register_data', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Registration success:', data);
-                // Redirect or notify user
-            })
-            .catch((error) => {
-                console.error('Registration error:', error);
-            });
+        fetch(request).then(function(response) {
+                if (response.status == 200) {
+                    window.location.href = "/";
+                } else {
+                    console.log("register failed, " + response.body);
+                }
+        });
     }
 </script>
 </body>
