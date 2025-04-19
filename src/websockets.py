@@ -7,7 +7,11 @@ from src.init import app, socketio
 
 @socketio.on('connect')
 def connect_websocket():
-    print("connected")
+    cookies = request.cookies
+    if 'auth_token' in cookies.keys():
+        print("connected with " + cookies['auth_token'])
+    else:
+        print("connected without login")
     emit('connect_echo')
 
 @socketio.on('player_move')

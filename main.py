@@ -12,75 +12,87 @@ from src.websockets import connect_websocket  # for some reason this needs to be
 
 
 logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
-logging.getLogger('werkzeug').disabled = True # use this to supress automatical werkzeug logs, functional but ugly
+logging.getLogger('werkzeug').disabled = True # use this to supress automagical werkzeug logs, functional but ugly
 
 UPLOAD_FOLDER = '/public/pfps'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-app = Flask(__name__, static_folder='public', static_url_path='/')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/') # this routes to the main page
 def home():
-    main_log(req=request, app=app, code=200)
-    return render_template("index.html")
+    response = make_response(render_template("index.html"))
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/login') # routes to the login page
 def render_login():
-    main_log(req=request, app=app, code=200)
-    return render_template("login.html")
+    response = make_response(render_template("login.html"))
+    main_log(req=request, res=response)
+    return response
 
 @app.route("/login_data", methods=["POST"]) # route for receiving data from login page. calls function in auth.py
 def parse_login():
-    main_log(req=request, app=app, code=200)
-    login_result = login(request, app)
+    login_result = login(request)
     if 'auth_token' in login_result:
         cookie = login_result['auth_token']
-        resp = make_response("Success", 200)
-        resp.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
-        return resp
+        response = make_response()
+        response.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
     else:
-        res = make_response("Forbidden", 403)
-        return res
+        response = make_response(login_result['error'], 403)
+    main_log(req=request, res=response)
+    return response
     
 @app.route('/logout_data', methods=['POST'])
 def parse_logout():
-    main_log(req=request, app=app, code=200)
-    
-    logout_result = logout(request=request, app=app)
-    if "auth_token" in logout_result:
-        cookie = logout_result['auth_token']
-        resp = make_response("Success", 200)
-        resp.set_cookie('auth_token', cookie, max_age=1, httponly=True)
-        return resp
+    logout_result = logout(request=request)
+    if logout_result[0] == 200:
+        response = make_response("Logout Success", 200)
+        response.set_cookie('auth_token', 'logged out', max_age=0, httponly=True)
     else:
-        return make_response("Forbidden",403) # update this to take other text later 
+        response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/register')
 def register():
-    main_log(req=request, app=app, code=200)
-    return render_template("register.html")
+    response = make_response(render_template("register.html"))
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/register_data', methods = ['POST'])
 def register_new():
-    main_log(req=request, app=app, code=200)
-    return register_new_account(request, app)
+    response = register_new_account(request)
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/casino') # routes to the phaser game's page
 def render_casino():
     if 'auth_token' not in request.cookies:
-        return redirect('/', code=302)
-    return render_template("game.html", path='casino/mainCasino.js')
+        response = redirect('/', code=302)  # TODO: should change to a 400-level response and display an alert on frontend
+    else:
+        response = make_response(render_template("game.html", path='casino/mainCasino.js'))
+    main_log(req=request, res=response)
+    return response
+
 
 @app.route('/mines') # routes to the mines page
 def render_mines():
-    return render_template("mines.html")
+    response = make_response(render_template("game.html", path='mines/mainMines.js'))
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/settings')
 def render_settings():
-    main_log(req=request, app=app, code=200)
-    return render_template("settings.html")
+    response = make_response(render_template("settings.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/@me')
+def at_me():
+    if "auth_token" not in request.cookies:
+        return make_response("Unauthorized", 401)
+    
 
 @app.route('/@me')
 def at_me():
@@ -90,15 +102,26 @@ def at_me():
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
-    data = get_file("public/" + subpath)
-    return Response(data, mimetype=get_mime_type(subpath))
+    try:
+        data = get_file("public/" + subpath)
+        response = Response(data, mimetype=get_mime_type(subpath))
+    except FileNotFoundError:
+        response = make_response("Not Found", 404)
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/phaser-game/<path:subpath>') # sends phaser game files to client
 def send_phaser_stuff(subpath):
-    data = get_file("phaser-game/" + subpath)
-    return Response(data, mimetype=get_mime_type(subpath))
+    try:
+        data = get_file("phaser-game/" + subpath)
+        response = Response(data, mimetype=get_mime_type(subpath))
+    except FileNotFoundError:
+        response = make_response("Not Found", 404)
+    main_log(req=request, res=response)
+    return response
 
-def allowed_file(filename):
+# TODO: should use a library that looks at the bytes of the file
+def is_allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/upload_pfp', methods = ["POST"])
@@ -109,15 +132,19 @@ def upload_pfp():
     # app.logger.info("request files:%s", str(request.files))
 
     if 'auth_token' not in request.cookies:
-        main_log(req=request, app=app, code=302)
-        return redirect('/login', code=302)
+        response = make_response("not logged in", 401)  # 401 = not authorized
     if 'file' not in request.files or request.files['file'] == '':
-        main_log(req=request, app=app, code=403)
-        return Response(status="403")
+        response = make_response('bad file', 400) # 400 = bad request
     file = request.files['file']
-    if file and allowed_file(file.filename):
+    if file and is_allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        response = make_response()
+    else:
+        response = make_response('', 403) # TODO: what is this error for
+    main_log(req=request, res=response)
+    return response
+
 
     # returns a mime type based on a file's extension
 def get_mime_type(path: str):

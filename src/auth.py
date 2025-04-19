@@ -1,6 +1,7 @@
 # import requests.cookies
 from flask import *
-from src.database import users
+from src.init import app
+import src.database as db
 import bcrypt
 import secrets
 import hashlib
@@ -19,7 +20,7 @@ def parse_data():
     print(f'got username:{data["username"]} and password:{data["password"]}')
     return js
 
-
+special_chars = ['!', '@', '#', '$', '%', '^', '&', '(', ')', '=', '-', '_']
 
 def validate_password(password):
     if len(password) < 8:
@@ -37,92 +38,87 @@ def validate_password(password):
             contains_lower = True
         elif char.isnumeric():
             contains_number = True
-        elif char == '!' or char == '@' or char == '#' or char == '$' or char == '%' or char == '^' or char == '&' or char == '(' or char == ')' or char == '=' or char == '-' or char == '_':
+        elif char in special_chars:
             contains_special = True
         else:
             return False
-
-    if contains_number and contains_special and contains_lower and contains_upper:
-        return True
-
+        if contains_number and contains_special and contains_lower and contains_upper:
+            return True
     return False
 
-def register_new_account(request, app):
+def register_new_account(request : Request):
     data = request.get_json()
 
-    found = users.find_one({'username': data['username']}, {'_id': 0})
+    username = data['username']
+    password = data['password']
 
-    if found is None:
-        if validate_password(data['password']):
+    if not db.does_username_exist(username):
+        if validate_password(password):
 
             salt = bcrypt.gensalt()
-            password = bcrypt.hashpw(data['password'].encode(), salt)
-            users.insert_one({'username': data['username'], 'password': password.decode(), 'salt': salt.decode()})
-            auth_log(username=data['username'], success=True, message='successfully registered', app=app)
+            hashed_password = bcrypt.hashpw(password.encode(), salt).decode()
+            db.users.insert_one({'username': username, 'password': hashed_password, 'salt': salt.decode()})
+            auth_log(username=username, success=True, message='successfully registered')
 
-            return redirect('/')
-
+            return make_response()
         else:
-            auth_log(username=data['username'], success=False, message='tried to register but password was not strong enough', app=app)
+            auth_log(username=username, success=False, message='password was not strong enough')
             return make_response('Invalid Password', 400)
     else:
-        auth_log(username=data['username'], success=False, message='tried to register but username was already taken', app=app)
+        auth_log(username=username, success=False, message='username was already taken')
         return make_response('An Account With That Username Already Exists', 400)
 
 
-def login(request, app):
+def login(request : Request):
     data = request.get_json()
 
-    found = users.find_one({'username': data['username']}, {'_id': 0})
+    username = data['username']
+    password = data['password']
 
-    if found is not None:
-        salt = found['salt']
-        password = bcrypt.hashpw(data['password'].encode(), salt.encode())
+    user = db.get_user_by_username(username)
 
-        if password.decode() == found['password']:
+    if user is not None:
+        salt = user['salt']
+        password = bcrypt.hashpw(password.encode(), salt.encode())
 
+        if password.decode() == user['password']:
             token = secrets.token_hex()
-            cookie = str(token)
+            hashed_token = db.hash_token(token)
 
-            token = token.encode()
-            token = hashlib.sha256(token).hexdigest()
-            users.find_one_and_update({'username': data['username']}, {'$set': {'auth_token': str(token)}})
+            db.users.update_one({'username': username}, {'$set': {'auth_token': hashed_token}})
 
-            auth_log(username=data['username'], success=True, message='successfully logged in', app=app)
-            return {"auth_token":cookie}
+            auth_log(username=username, success=True, message='successfully logged in')
+            return {"auth_token": token}
 
         else:
-            auth_log(username=data['username'], success=False, message='tried to register but password was incorrect', app=app)
-            return {"error":'Incorrect Password'}
+            auth_log(username=username, success=False, message='incorrect password')
+            return {"error": 'Incorrect Password'}
     else:
-        auth_log(username=data['username'], success=False, message='tried to log in but username was not in db', app=app)
-        return {'error':'No Account With That Name Found'}
+        auth_log(username=username, success=False, message='username does not exist')
+        return {'error': 'No Account With That Name Found'}
 
 
 def extract_cookie(cookie_val):
     print(cookie_val)
 
-def logout(request, app):
-    token = request.cookies.get('auth_token')
+# returns tuple: (status_code, message)
+def logout(request : Request):
+    cookies = request.cookies
 
-    token = token.encode()
-    token = hashlib.sha256(token).hexdigest()
+    if 'auth_token' not in cookies:
+        auth_log("nonexistent user", success=False, message='not logged in')
+        return (403, 'not logged in')
 
-    found = users.find_one({'auth_token': token}, {'_id': 0})
+    token = cookies['auth_token']
+    hashed_token = db.hash_token(token)
 
-    if found is not None:
-        if token == found['auth_token']:
-            users.find_one_and_update({'auth_token': str(token)}, {'$set': {'auth_token': ''}})
+    user = db.get_user_by_hashed_token(hashed_token)
 
-            token = secrets.token_hex()
-            cookie = str(token)
+    if user is not None:
+        db.users.update_one({'auth_token': hashed_token}, {'$set': {'auth_token': 'LOGGED OUT'}})
 
-            auth_log(username=found['username'], success=True, message='successfully logged out', app=app)
-
-            return {"auth_token":cookie}
-        else:
-            auth_log(username=found['username'], success=False, message='tried to log out but auth tokens didn\'t match', app=app)
-            return {"error":"Bad Request"}
+        auth_log(username=user['username'], success=True, message='successfully logged out')
+        return (200, '')
     else:
-        auth_log("nonexistent user", success=False, message='tried to log out but was not logged  in', app=app)
-        return {"error":"Not Logged In"}
+        auth_log("invalid user", success=False, message='invalid auth token')
+        return (403, 'invalid auth token')
