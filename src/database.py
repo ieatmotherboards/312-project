@@ -31,6 +31,13 @@ def does_username_exist(username : str):
     else:
         return True
 
+def does_hashed_token_exist(hashed_token : str):
+    search = get_user_by_hashed_token(hashed_token)
+    if search is None:
+        return False
+    else:
+        return True
+
 # testing to see if the database actually works
 if __name__ == '__main__':
     users.insert_one({"username": "test", "value": 3})
