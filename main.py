@@ -82,6 +82,12 @@ def render_settings():
     main_log(req=request, app=app, code=200)
     return render_template("settings.html")
 
+@app.route('/@me')
+def at_me():
+    if "auth_token" not in request.cookies:
+        return make_response("Unauthorized", 401)
+    
+
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
     data = get_file("public/" + subpath)
@@ -112,7 +118,6 @@ def upload_pfp():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    
 
     # returns a mime type based on a file's extension
 def get_mime_type(path: str):
