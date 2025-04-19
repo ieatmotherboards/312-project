@@ -17,8 +17,6 @@ logging.getLogger('werkzeug').disabled = True # use this to supress automatical 
 UPLOAD_FOLDER = '/public/pfps'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-app = Flask(__name__, static_folder='public', static_url_path='/')
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/') # this routes to the main page
@@ -75,7 +73,7 @@ def render_casino():
 
 @app.route('/mines') # routes to the mines page
 def render_mines():
-    return render_template("mines.html")
+    return render_template("game.html", path='mines/mainMines.js')
 
 @app.route('/settings')
 def render_settings():
@@ -112,7 +110,7 @@ def upload_pfp():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    
+
 
     # returns a mime type based on a file's extension
 def get_mime_type(path: str):
