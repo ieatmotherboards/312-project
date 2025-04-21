@@ -41,7 +41,7 @@ def calcScore(hand):
     return score
 
 def handleDealer(dealerHand,deck):
-    #In dealers starting hand and deck
+    #In dealers starting hand and deck :)
     #out dealers ending hand
     while calcScore(dealerHand) <=16:
         dealerHand.append(dealCard(deck))
