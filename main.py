@@ -78,7 +78,6 @@ def render_casino():
     main_log(req=request, res=response)
     return response
 
-
 @app.route('/mines') # routes to the mines page
 def render_mines():
     response = make_response(render_template("game.html", path='mines/mainMines.js'))

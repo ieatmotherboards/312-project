@@ -12,15 +12,15 @@
 <body>
 
 <div class="top-right">
-    <button class="button" onclick="routeLogin()">Register/Login</button>
-    <button class="button" onclick="routeSettings()">Settings</button>
     <p id="hello_user">Welcome, NOT_LOGGED_IN</p>
-    <button class="logout_button" onclick="routeLogout()">Logout</button>
+    <button class="button" onclick="routeSettings()">Settings</button>
+    <button id="logout_button" class="button" onclick="routeLogout()">Logout</button>
 </div>
 
 <div class="container">
     <h1>Welcome to Kris's Kasino!!</h1>
-    <button class="button play-button" onclick="routeCasino()">PLAY</button>
+    <button id="play_button" class="button play-button" onclick="routeCasino()">PLAY</button>
+    <button id="login_button" class="button" onclick="routeLogin()">Register/Login</button>
 </div>
 
 </body>
@@ -72,7 +72,8 @@
                 if (response.status === 401) {
                     // Not logged in — hide elements
                     document.getElementById('hello_user').style.display = 'none';
-                    document.querySelector('.top-right .logout_button').style.display = 'none';
+                    document.getElementById('logout_button').style.display = 'none';
+                    document.getElementById('play_button').style.display = 'none';
                 } else {
                     // Logged in — parse and update username
                     response.json().then(data => {
@@ -81,6 +82,7 @@
                         helloUserElement.textContent = `Welcome, ${username}`;
                         helloUserElement.style.display = 'block';
                         // document.querySelector('.top-right .logbutton').style.display = 'inline-block';
+                        document.getElementById('login_button').style.display = 'none';
                     });
                 }
             })
