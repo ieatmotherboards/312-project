@@ -1,7 +1,10 @@
 /.idea
+.idea/
 project.config
 thumbnail.png
 /__pycache__
+*/__pycache__
 record.log
 *.aseprite
-pycache/
+pycache//
+/logs
