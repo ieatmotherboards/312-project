@@ -103,11 +103,13 @@ if __name__ == '__main__':
         PlayerProfit+=temp['player']
         #print(HouseProfit)
         #print(PlayerProfit)
+    edge=HouseProfit/(bet*simsToRun)
     print("Sims ran: "+ str(simsToRun))
     print("Bet Per Sim: "+str(bet))
     print('HouseProfit: '+str(HouseProfit))
     print('PlayerProfit: '+str(PlayerProfit))
     print("House Win Rate: "+ str(houseWins/simsToRun))
+    print("House edge: "+str(edge))
 
         
 
