@@ -1,5 +1,4 @@
 from random import randint
-import requests
 
 def Coinflip():
     flip=randint(1,2)
