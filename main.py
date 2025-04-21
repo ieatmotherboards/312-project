@@ -1,7 +1,7 @@
 from flask import *
 from flask_socketio import SocketIO
 from src.auth import register_new_account, login, logout
-from src.database import users
+from src.database import users, hash_token, get_user_by_hashed_token
 from src.logging import main_log
 import logging
 import datetime
@@ -92,13 +92,11 @@ def render_settings():
 def at_me():
     if "auth_token" not in request.cookies:
         return make_response("Unauthorized", 401) # TODO: make frontend hide logout button/"Welcome..." text if code is 401
+    hashed_token = hash_token(request.cookies["auth_token"])
+    username = get_user_by_hashed_token(hashed_token=hashed_token)['username']
+    data = {"username":username}
+    return jsonify(data)
     # TODO: hash auth token, db lookup, and send 200 ok with json body of {'username':username}
-    
-
-@app.route('/@me')
-def at_me():
-    if "auth_token" not in request.cookies:
-        return make_response("Unauthorized", 401)
     
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client

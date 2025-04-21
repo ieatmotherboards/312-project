@@ -35,6 +35,20 @@ body {
       box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
     }
 
+    .logout_button {
+      background: linear-gradient(145deg, #ffd700, #ffb700);
+      color: #000;
+      border: 2px solid #fff8dc;
+      padding: 15px 40px;
+      margin: 10px;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+
     .button:hover {
       background: linear-gradient(145deg, #fff8dc, #ffd700);
       transform: scale(1.05);
