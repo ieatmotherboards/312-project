@@ -15,8 +15,7 @@
     <button class="button" onclick="routeLogin()">Register/Login</button>
     <button class="button" onclick="routeSettings()">Settings</button>
     <p id="hello_user">Welcome, NOT_LOGGED_IN</p>
-    <button class="button" onclick="routeLogout()">Logout</button>
-
+    <button class="logout_button" onclick="routeLogout()">Logout</button>
 </div>
 
 <div class="container">
@@ -65,4 +64,37 @@
         });
     }
 </script>
+
+<script>
+    function checkLoginStatus() {
+        fetch('/@me')
+            .then(response => {
+                if (response.status === 401) {
+                    // Not logged in — hide elements
+                    document.getElementById('hello_user').style.display = 'none';
+                    document.querySelector('.top-right .logout_button').style.display = 'none';
+                } else {
+                    // Logged in — parse and update username
+                    response.json().then(data => {
+                        const username = data.username;
+                        const helloUserElement = document.getElementById('hello_user');
+                        helloUserElement.textContent = `Welcome, ${username}`;
+                        helloUserElement.style.display = 'block';
+                        // document.querySelector('.top-right .logbutton').style.display = 'inline-block';
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error checking login status:', error);
+            });
+    }
+    
+    // Run every second
+    // setInterval(checkLoginStatus, 1000);
+    
+    // Optionally run immediately on page load
+    checkLoginStatus();
+    </script>
+    
+
 </html>

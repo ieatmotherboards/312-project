@@ -91,6 +91,17 @@ def render_settings():
     main_log(req=request, res=response)
     return response
 
+@app.route('/@me')
+def at_me():
+    if "auth_token" not in request.cookies:
+        return make_response("Unauthorized", 401) # TODO: make frontend hide logout button/"Welcome..." text if code is 401
+    hashed_token = db.hash_token(request.cookies["auth_token"])
+    username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
+    data = {"username":username}
+    return jsonify(data)
+    # TODO: hash auth token, db lookup, and send 200 ok with json body of {'username':username}
+
+
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
     response = util.send_file_response("public/" + subpath)
