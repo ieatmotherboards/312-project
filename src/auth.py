@@ -54,12 +54,10 @@ def register_new_account(request : Request):
 
     if not db.does_username_exist(username):
         if validate_password(password):
+            hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+            db.register_user(username, hashed_password)
 
-            salt = bcrypt.gensalt()
-            hashed_password = bcrypt.hashpw(password.encode(), salt).decode()
-            db.users.insert_one({'username': username, 'password': hashed_password, 'salt': salt.decode()})
             auth_log(username=username, success=True, message='successfully registered')
-
             return make_response()
         else:
             auth_log(username=username, success=False, message='password was not strong enough')
@@ -72,16 +70,14 @@ def register_new_account(request : Request):
 def login(request : Request):
     data = request.get_json()
 
-    username = data['username']
-    password = data['password']
+    username : str = data['username']
+    password : str = data['password']
 
     user = db.get_user_by_username(username)
 
     if user is not None:
-        salt = user['salt']
-        password = bcrypt.hashpw(password.encode(), salt.encode())
-
-        if password.decode() == user['password']:
+        stored_password : str = user['password']
+        if bcrypt.checkpw(password.encode(), stored_password.encode()):
             token = secrets.token_hex()
             hashed_token = db.hash_token(token)
 

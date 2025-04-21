@@ -1,9 +1,9 @@
 import { Player } from '../../gameObjects/Player.js';
-import { PlayerGhost } from '../../gameObjects/PlayerGhost.js'
-import { CoinCounter } from '../../gameObjects/CoinCounter.js'
-import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js'
-import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js'
-import  '../../../../public/socket.io.js'
+import { PlayerGhost } from '../../gameObjects/PlayerGhost.js';
+import { CoinCounter } from '../../gameObjects/CoinCounter.js';
+import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js';
+import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js';
+import  '../../../../public/socket.io.js';
 
 export class Game extends Phaser.Scene {
     constructor() {
@@ -21,7 +21,7 @@ export class Game extends Phaser.Scene {
 
         this.timePassed = 0;    // time passed for movment broadcasting
         this.timeToNext = 50;  // how much time needs to pass before broadcasting next movement
-        this.prevPosition = {x: this.player.x, y: this.player.y} // previously broadcasted position
+        this.prevPosition = {x: this.player.x, y: this.player.y}; // previously broadcasted position
 
         this.slots = []; // array for slot machine objects
         this.playerGhosts = {}; // dict for player ghost objects, maps their id to their object
@@ -48,6 +48,14 @@ export class Game extends Phaser.Scene {
             i += 1;
             y += 50;
         }
+
+        // getting user info
+        let request = new Request('/phaser/@me');
+        fetch(request).then(response => {
+            return response.json();
+        }).then(data => {
+            this.coinCounter.setCoins(data['coins']);
+        });
 
         // movement keys
         this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
