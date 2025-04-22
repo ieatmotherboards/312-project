@@ -51,6 +51,24 @@ def buyItem(username,item,cost):
         return True
     else:
         return False
+    
+def sellItem(user1,user1Item,user2,user2Cost):
+    user1Data=Inventory.find({'username':user1},{'_id':0})
+    user2Data=Inventory.find({'username':user2},{'_id':0})
+    user1Inv=user1Data['inventory']
+    user2Inv=user2Data['inventory']
+    user1Coins=user1Data['coins']
+    user2Coins=user2Data['coins']
+    if user2Coins >= user2Cost:
+        user1Inv.remove(user1Item)
+        user2Inv.append(user1Item)
+        user1Coins+=user2Cost
+        user2Coins-=user2Cost
+        Inventory.find_one_and_update({'username':user1},{'$set':{'inventory':user1Inv,'coins':user1Coins}})
+        Inventory.find_one_and_update({'username':user2},{'$set':{'inventory':user2Inv,'coins':user2Coins}})
+        return True
+    else:
+        return False
 
 
     
