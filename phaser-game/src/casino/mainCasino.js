@@ -2,6 +2,7 @@ import { Boot } from './scenes/BootCasino.js';
 import { Game } from './scenes/GameCasino.js';
 import { GameOver } from './scenes/GameOver.js';
 import { Preloader } from './scenes/PreloaderCasino.js';
+import { Slots } from './scenes/Slots.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -24,7 +25,8 @@ const config = {
         Boot,
         Preloader,
         Game,
-        GameOver
+        GameOver,
+        Slots
     ],
     pixelArt: true
 };

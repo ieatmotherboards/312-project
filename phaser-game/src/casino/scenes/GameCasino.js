@@ -11,7 +11,6 @@ export class Game extends Phaser.Scene {
 
     }
 
-    // this file has lots of commented out code from the tutorial i followed
     create() {
         this.add.image(400, 300, 'sky'); // background image
 
@@ -27,6 +26,11 @@ export class Game extends Phaser.Scene {
         this.playerGhosts = {}; // dict for player ghost objects, maps their id to their object
 
         this.coinCounter = new CoinCounter(this, 28, 28); // coin counter object
+
+        this.popup = this.add.image(400, 540, 'popup').setScale(2);
+        this.popup.text = this.add.text(210, 525, 'Press SPACE to play!', { fontSize: '32px', align: 'center', color: '#000', fontStyle: "bold"});
+        this.popupVisible(false);
+        this.colliding = new Set()  // set of objects player is colliding with
 
         // populates slots array with 12 slot machines facing down
         let i = 0;
@@ -62,6 +66,8 @@ export class Game extends Phaser.Scene {
         this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        // interaction keys
+        this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         // websocket initialization
         this.websocket = io();
@@ -136,13 +142,21 @@ export class Game extends Phaser.Scene {
         } else {
             this.timePassed += delta;
         }
+        // handles slot machine updates
+        for (let x in this.slots) {
+            this.slots[x].update()
+        }
     }
 
-    // collectStar(player, star) {
-    //     star.disableBody(true, true);
-        
-    //     this.player.score += 1;
-    //     this.scoreText.setText('Stars Collected: ' + this.player.score);
-    // }
+    stoppedColliding() {
+        if (this.colliding.size == 0) {
+            this.popupVisible(false);
+        }
+    }
+
+    popupVisible(x) {
+        this.popup.visible = x;
+        this.popup.text.visible = x;
+    }
 
 }
