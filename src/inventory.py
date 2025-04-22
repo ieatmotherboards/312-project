@@ -70,5 +70,8 @@ def sellItem(user1,user1Item,user2,user2Cost):
     else:
         return False
 
+def listInventory(username):
+    allItems=Inventory.find_one({'username':username})['inventory']
+    return allItems
 
     
