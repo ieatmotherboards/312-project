@@ -12,3 +12,45 @@ def updateCoins(username,coinChange):
     temp=Inventory.find({'username':username},{'_id':0})
     coins=temp['coins']+coinChange
     Inventory.find_one_and_update({'username':username},{'$set':{'coins':coins}})
+
+def addItem(username,item):
+    temp=Inventory.find({'username':username},{'_id':0})
+    curInv=temp['inventory']
+    curInv.append(item)
+    Inventory.find_one_and_update({'username':username},{'$set':{'inventory':curInv}})
+
+def checkForItem(username,item):
+    temp=Inventory.find({'username':username},{'_id':0})
+    inventory=temp['inventory']
+    if item in inventory:
+        return True
+    else:
+        return False
+    
+def trade(user1,user1Item,user2,user2Item):
+
+    user1Data=Inventory.find({'username':user1},{'_id':0})
+    user2Data=Inventory.find({'username':user2},{'_id':0})
+    user1Inv=user1Data['inventory']
+    user2Inv=user2Data['inventory']
+    user1Inv.remove(user1Item)
+    user1Inv.append(user2Item)
+    user2Inv.remove(user2Item)
+    user2Inv.append(user1Item)
+    Inventory.find_one_and_update({'username':user1},{'$set':{'inventory':user1Inv}})
+    Inventory.find_one_and_update({'username':user2},{'$set':{'inventory':user2Inv}})
+
+def buyItem(username,item,cost):
+    userData=Inventory.find({'username':username},{'_id':0})
+    userCoins=userData['coins']
+    userInv=userData['inventory']
+    if userCoins >= cost:
+        userCoins=userCoins-cost
+        userInv.append(item)
+        Inventory.find_one_and_update({'username':username},{'$set':{'inventory':userInv,'coins':userCoins}})
+        return True
+    else:
+        return False
+
+
+    
