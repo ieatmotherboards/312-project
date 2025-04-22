@@ -1,3 +1,4 @@
+#hello world
 from flask import *
 from flask_socketio import SocketIO
 from src.auth import register_new_account, login, logout
