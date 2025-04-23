@@ -15,7 +15,7 @@ from src.phaser_routes import phaser
 import src.util as util
 
 
-logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
+logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
 logging.getLogger('werkzeug').disabled = True # use this to supress automagical werkzeug logs, functional but ugly
 
 UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
@@ -183,27 +183,6 @@ def get_pfp():
         res = make_response("Bad Request", 400) # no pfp found
         main_log(req=request, res=res)
         return res
-
-
-def get_mime_type(path: str):
-    """
-    returns a mime type based on a file's extension
-    """
-    split_path = path.split('.')
-    filetype = split_path[len(split_path)-1]
-    return mime_type[filetype]
-
-# incomplete dict for mime types
-mime_type = {
-    'js': 'text/javascript',
-    'png': 'image/png',
-    'css': 'text/css',
-    'ico':'image/x-icon',
-    'jpg':'image/jpeg',
-    'jpeg':'image/jpeg',
-    'JPG':'image/jpeg',
-    'gif':'image/gif'
-}
 
 # returns a file's contents as bytes
 def get_file(filename):
