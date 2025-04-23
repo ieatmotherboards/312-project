@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 import os
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.websockets import connect_websocket  # for some reason this needs to be imported for websockets to work?
+import uuid
 from src.phaser_routes import phaser
 import src.util as util
 
@@ -17,7 +18,7 @@ import src.util as util
 logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
 logging.getLogger('werkzeug').disabled = True # use this to supress automagical werkzeug logs, functional but ugly
 
-UPLOAD_FOLDER = '/public/pfps'
+UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -92,16 +93,26 @@ def render_settings():
     main_log(req=request, res=response)
     return response
 
+
 @app.route('/@me')
 def at_me():
+    """
+    Args: 
+        None. Just make a frontend fetch call to this endpoint.
+    Returns: 
+        - 401 response if not logged in OR
+        - JSON response in format {"username":[USERNAME]}
+    """
     if "auth_token" not in request.cookies:
-        return make_response("Unauthorized", 401) # TODO: make frontend hide logout button/"Welcome..." text if code is 401
+        res = make_response("Unauthorized", 401) 
+        main_log(req=request, res=res)
+        return res
     hashed_token = db.hash_token(request.cookies["auth_token"])
     username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
     data = {"username":username}
+    main_log(req=request, res= make_response("OK", 200))
     return jsonify(data)
-    # TODO: hash auth token, db lookup, and send 200 ok with json body of {'username':username}
-
+    
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
@@ -115,25 +126,89 @@ def is_allowed_file(filename):
 
 @app.route('/upload_pfp', methods = ["POST"])
 def upload_pfp():
-
-    # print('request cookies:', request.cookies)
-    # app.logger.info("request cookies:%s", str(request.cookies))
-    # app.logger.info("request files:%s", str(request.files))
+    """
+    Args: 
+        None. Just make a fetch request of method "POST" to this endpoint.
+    Returns: 
+        - 401 if not logged in OR
+        - 400 if file isn't properly formatted OR
+        - 200 OK and saves file in public/pfps if valid and updates user db entry to have 'pfp' field mapping to file path
+    """
 
     if 'auth_token' not in request.cookies:
-        response = make_response("not logged in", 401)  # 401 = not authorized
-    if 'file' not in request.files or request.files['file'] == '':
-        response = make_response('bad file', 400) # 400 = bad request
+        res = make_response("not logged in", 401)  # 401 = not authorized
+        main_log(req=request,res=res)
+        return res
+    elif 'file' not in request.files or request.files['file'] == '':
+        res = make_response('bad file', 400) # 400 = bad request
+        main_log(req=request,res=res)
+        return res
+
+    token = db.hash_token(request.cookies['auth_token'])
+    username = db.get_user_by_hashed_token(token)["username"]
+    
     file = request.files['file']
     if file and is_allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        response = make_response()
-    else:
-        response = make_response('', 403) # TODO: what is this error for
-    main_log(req=request, res=response)
-    return response
 
+        new_filename = str(uuid.uuid4()) + "." + file.filename.split(".")[1]
+        filename = secure_filename(new_filename)
+
+        upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        app.logger.info("Saving to: " + upload_path)
+        file.save(upload_path)
+        db.users.update_one({"username":username},{"$set":{"pfp":new_filename}}) #TODO: pass in correct path
+        res = make_response("OK", 200)
+        main_log(req=request, res=res)
+        return res
+    
+    res = make_response("Bad Request",400)
+    main_log(req=request, res=res)
+    return res
+
+@app.route('/get_pfp')
+def get_pfp():
+    if 'auth_token' not in request.cookies:
+        res = make_response("not logged in", 401)  # 401 = not authorized
+        main_log(req=request,res=res)
+        return res
+    
+    # TODO: get file path and pass in as param to send_public_file
+    hashed_token = db.hash_token(request.cookies['auth_token'])
+    user = db.get_user_by_hashed_token(hashed_token=hashed_token)
+    if "pfp" in user:
+        filename = user["pfp"]
+        main_log(req=request, res=make_response("OK",200))
+        return jsonify({"path":'public/pfps/'+filename})
+    else:
+        res = make_response("Bad Request", 400) # no pfp found
+        main_log(req=request, res=res)
+        return res
+
+
+def get_mime_type(path: str):
+    """
+    returns a mime type based on a file's extension
+    """
+    split_path = path.split('.')
+    filetype = split_path[len(split_path)-1]
+    return mime_type[filetype]
+
+# incomplete dict for mime types
+mime_type = {
+    'js': 'text/javascript',
+    'png': 'image/png',
+    'css': 'text/css',
+    'ico':'image/x-icon',
+    'jpg':'image/jpeg',
+    'jpeg':'image/jpeg',
+    'JPG':'image/jpeg',
+    'gif':'image/gif'
+}
+
+# returns a file's contents as bytes
+def get_file(filename):
+    with open(filename, 'rb') as file:
+        return file.read()
 
 if __name__ == '__main__':
     socketio.run(app, debug=False, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)
