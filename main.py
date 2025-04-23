@@ -1,17 +1,21 @@
-#hello world
+# packages
 from flask import *
 from flask_socketio import SocketIO
-from src.auth import register_new_account, login, logout
-import src.database as db
-from src.logging import main_log
 import logging
 import datetime
 from werkzeug.utils import secure_filename
 import os
+
+# our code
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
-from src.websockets import connect_websocket  # for some reason this needs to be imported for websockets to work?
-from src.phaser_routes import phaser
+from src.auth import register_new_account, login, logout
+import src.database as db
+from src.logging import main_log
 import src.util as util
+
+# routes & websockets
+from src.websockets import connect_websocket  # for some reason this needs to be imported for websockets to work
+from src.phaser_routes import phaser
 
 
 logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
@@ -93,13 +97,17 @@ def render_settings():
 
 @app.route('/@me')
 def at_me():
-    if "auth_token" not in request.cookies:
-        return make_response("Unauthorized", 401) # TODO: make frontend hide logout button/"Welcome..." text if code is 401
-    hashed_token = db.hash_token(request.cookies["auth_token"])
-    username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
+        main_log(req=request, res=response)
+        return response
+    username = db.get_user_by_hashed_token(hashed_token)['username']
     data = {"username":username}
-    return jsonify(data)
-    # TODO: hash auth token, db lookup, and send 200 ok with json body of {'username':username}
+    response = make_response(jsonify(data))
+    main_log(req=request, res=response)
+    return response
 
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client

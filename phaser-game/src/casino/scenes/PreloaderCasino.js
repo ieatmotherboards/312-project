@@ -38,6 +38,7 @@ export class Preloader extends Phaser.Scene {
         // slot machine imgs
         this.load.setPath('phaser-game/assets/slots');
         this.load.image('slots_bg', 'empty_slots.png');
+        this.load.image('button', 'spin_button.png');
     }
 
     create() {

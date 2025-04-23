@@ -49,6 +49,17 @@ def does_hashed_token_exist(hashed_token : str):
     else:
         return True
 
+# validates request's auth token, returning it hashed if it is valid or returning error codes if invalid
+def try_hash_token(request : Request):
+    if 'auth_token' not in request.cookies.keys():
+        return (None, 'not logged in', 401)
+    hashed_token = hash_token(request.cookies['auth_token'])
+    if does_hashed_token_exist(hashed_token):
+        # success
+        return (hashed_token, '', 200)
+    else:
+        return (None, 'invalid auth token', 401)
+
 # testing to see if the database actually works
 if __name__ == '__main__':
     users.insert_one({"username": "test", "value": 3})
