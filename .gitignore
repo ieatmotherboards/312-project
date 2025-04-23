@@ -8,3 +8,4 @@ record.log
 pycache//
 /logs
 /public/pfps/*
+logfile.log
