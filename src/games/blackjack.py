@@ -2,11 +2,11 @@ from random import randint
 
 class Blackjack:
 
-    def __init__(self, bets : dict):
+    def __init__(self, bets : dict[str, int]):
         self.deck : list[Card] = create_deck()
         self.bets = bets
         self.players : list[str] = []
-        self.hands : dict[str:list[Card]] = {"dealer": []}
+        self.hands : dict[str, list[Card]] = {"dealer": []}
         # initializes player hands
         for player in self.bets:
             self.players.append(player)
@@ -30,7 +30,6 @@ class Blackjack:
 
     def calc_winnings(self):
         # Returns dict with player's winnings
-
         scores = {}
         for player in self.hands:
             scores[player] = calc_score(self.hands[player])
@@ -59,10 +58,10 @@ class Blackjack:
             else:
                 # draw
                 payout = player_bet
-            payouts[player] = payout
+            payouts[player] = float(payout)
         return payouts
 
-
+# maps card's ranks to their values
 value_map : dict[str: int | tuple[int, int]] = {
     "2": 2,
     "3": 3,
@@ -79,20 +78,25 @@ value_map : dict[str: int | tuple[int, int]] = {
     "Ace": (1, 11)
 }
 
+# card object, stores the card's suit, rank, and value.
+    # aces have their value stored as a tuple
 class Card:
     def __init__(self, suit : str, rank : str):
         self.suit : str = suit
         self.rank : str = rank
-        self.value : int | (int, int) = value_map[rank]
+        self.value : int | tuple[int, int] = value_map[rank]
 
     def __str__(self):
         return "'" + self.rank + "' of '" + self.suit + "' [" + str(self.value) + "]"
 
+    def to_id(self):
+        return self.rank + "_" + self.suit
+
 
 def create_deck():
-    # Returns a list of cards
-    suits = ['Hearts','Diamonds','Clubs','Spades']
-    ranks = ['2','3','4','5','6','7','8','9','10','Jack','Queen','King','Ace']
+    # Returns a single 52-card deck as a list
+    suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
     deck : list[Card] = []
     for suit in suits:
         for rank in ranks:
@@ -108,8 +112,8 @@ def calc_score(hand : list[Card]):
     score = 0
     ace_hold : list[Card] = []
     for card in hand:
-        rank = card.rank
-        suit = card.suit
+        # rank = card.rank
+        # suit = card.suit
         value = card.value
         if isinstance(value, tuple):
             ace_hold.append(card)
