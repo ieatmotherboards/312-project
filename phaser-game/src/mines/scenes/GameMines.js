@@ -23,6 +23,14 @@ export class Game extends Phaser.Scene {
         this.coalBroken = 0;
 
         this.coinCounter = new CoinCounter(this, 28, 28);
+
+        // getting user info
+        let request = new Request('/phaser/@me');
+        fetch(request).then(response => {
+            return response.json();
+        }).then(data => {
+            this.coinCounter.setCoins(data['coins']);
+        });
    }
 
     update(time, delta) {
@@ -70,9 +78,10 @@ export class Game extends Phaser.Scene {
         if (coin != undefined && !coin.collected) {
             this.coinCounter.incrementCoins();
             coin.collected = true;
-            let request = new Request ("/addCoin", {
+            let request = new Request ("/addCoins", {
                 method: "POST",
-                body: JSON.stringify({"coins": 1})
+                body: JSON.stringify({"coins": 1}),
+                headers: {"Content-Type": "application/json"}
                 });
             fetch(request);
             coin.destroy();

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register - Jesse's 312 Casino</title>
+    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
     <link href="/public/style.css" rel="stylesheet">
     <!-- ^^^^^  use this instead of the <style> tag. that has been moved to public/style.css !! -->
@@ -56,7 +57,7 @@
         })
         fetch(request).then(function(response) {
                 if (response.status == 200) {
-                    window.location.href = "/";
+                    window.location.href = "/login";
                 } else {
                     console.log("register failed, " + response.body);
                 }
