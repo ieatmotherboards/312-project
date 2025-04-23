@@ -27,16 +27,19 @@ def checkForItem(username,item):
     else:
         return False
     
-def trade(user1,user1Item,user2,user2Item):
+def trade(user1,user1ItemList,user2,user2ItemList):
 
     user1Data=Inventory.find({'username':user1},{'_id':0})
     user2Data=Inventory.find({'username':user2},{'_id':0})
     user1Inv=user1Data['inventory']
     user2Inv=user2Data['inventory']
-    user1Inv.remove(user1Item)
-    user1Inv.append(user2Item)
-    user2Inv.remove(user2Item)
-    user2Inv.append(user1Item)
+    for item in user1ItemList:
+        user1Inv.remove(item)
+        user2Inv.append(item)
+    for item in user2ItemList:
+        user1Inv.append(item)
+        user2Inv.remove(item)
+    
     Inventory.find_one_and_update({'username':user1},{'$set':{'inventory':user1Inv}})
     Inventory.find_one_and_update({'username':user2},{'$set':{'inventory':user2Inv}})
 
@@ -52,7 +55,7 @@ def buyItem(username,item,cost):
     else:
         return False
     
-def sellItem(user1,user1Item,user2,user2Cost):
+def sellItem(user1,user1ItemList,user2,user2Cost):
     user1Data=Inventory.find({'username':user1},{'_id':0})
     user2Data=Inventory.find({'username':user2},{'_id':0})
     user1Inv=user1Data['inventory']
@@ -60,8 +63,9 @@ def sellItem(user1,user1Item,user2,user2Cost):
     user1Coins=user1Data['coins']
     user2Coins=user2Data['coins']
     if user2Coins >= user2Cost:
-        user1Inv.remove(user1Item)
-        user2Inv.append(user1Item)
+        for item in user1ItemList:
+            user1Inv.remove(item)
+            user2Inv.append(item)
         user1Coins+=user2Cost
         user2Coins-=user2Cost
         Inventory.find_one_and_update({'username':user1},{'$set':{'inventory':user1Inv,'coins':user1Coins}})
