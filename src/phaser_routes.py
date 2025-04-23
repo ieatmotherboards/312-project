@@ -2,6 +2,7 @@ from flask import *
 import src.database as db
 import src.util as util
 from src.logging import main_log
+import src.games.slots as slots
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
@@ -38,18 +39,53 @@ def add_coins():
         main_log(req=request, res=response)
         return response
     coins = data['coins']
-    if 'auth_token' not in request.cookies.keys():
-        response = make_response('not logged in', 403)
+    # try auth token
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
         main_log(req=request, res=response)
         return response
-    hashed_token = db.hash_token(request.cookies['auth_token'])
+
     user = db.get_user_by_hashed_token(hashed_token)
-    if user is None:
-        response = make_response('invalid auth token', 403)
-        main_log(req=request, res=response)
-        return response
     new_coins = coins + user["coins"]
     db.users.update_one({"auth_token": hashed_token}, {"$set": {"coins": new_coins}})
     response = make_response()
     main_log(req=request, res=response)
     return response
+
+@phaser.route('/phaser/playSlots', methods=['POST'])
+def slots_request():
+    data = request.json
+    player_bet = data["bet"]
+    # try auth token
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
+        main_log(req=request, res=response)
+        return response
+
+    user = db.get_user_by_hashed_token(hashed_token)
+    new_coins : int = user['coins'] - player_bet
+    if new_coins < 0:
+        response = make_response("Not enough coins", 403)
+        main_log(req=request, res=response)
+        return response
+    result = slots.play_slots(player_bet)
+    payout : int = result['payout']
+    slots_array = slots_matrix_to_arrays(result['board'])
+    new_coins += payout
+
+    db.users.update_one({"auth_token": hashed_token}, {"$set": {"coins": new_coins}})
+    response = make_response(json.dumps({'slots': slots_array, 'payout': payout, 'newCoins': new_coins}))
+    main_log(req=request, res=response)
+    return response
+
+
+def slots_matrix_to_arrays(matrix):
+    ret = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    for y in range(0, 3):
+        for x in range(0, 3):
+            ret[y][x] = int(matrix[y][x])
+    return ret

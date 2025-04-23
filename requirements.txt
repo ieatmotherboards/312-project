@@ -2,3 +2,5 @@ Flask
 pymongo
 bcrypt
 flask-socketio
+numpy
+Werkzeug

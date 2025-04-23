@@ -51,11 +51,11 @@ def does_hashed_token_exist(hashed_token : str):
 
 def insert_item_by_username(username, item):
     """
-    Args: 
+    Args:
         username (string): String representing a username. While you should only call this function after validating if the user exists,
         this function still handlers the error in which username is not found in the db.
         item (string): String representing an item
-    Performs db lookup on username and adds the 
+    Performs db lookup on username and adds the
     Returns:
         None
     """
@@ -67,7 +67,7 @@ def insert_item_by_username(username, item):
             inventory = user['inventory']
             inventory[item] = 1
         users.update_one({"username":username}, {"$set":{"inventory":inventory}})
-            
+
 def get_inventory(username: str):
     """
     Args:
@@ -82,11 +82,11 @@ def get_inventory(username: str):
     if "inventory" not in lookup:
         return {}
     return lookup["inventory"]
-    
+
 def get_leaderboard(sort_key: str, ascending: bool) -> list:
     """
-    Args: 
-        sort_key: string representing what 
+    Args:
+        sort_key: string representing what
     Returns:
         List of all users sorted on the parameter key
     """
@@ -101,10 +101,21 @@ def get_leaderboard(sort_key: str, ascending: bool) -> list:
 
 #     users.insert_one({"username":"backend_testing_2"})
 #     insert_item_by_username("backend_testing_2","Axe")
-    
-#     app.logger.info("Axe" in get_inventory("backend_testing_2"))    
-   
+
+#     app.logger.info("Axe" in get_inventory("backend_testing_2"))
+
 #     insert_item_by_username("backend_testing_2","Coin")
-    
+
 #     app.logger.info("Axe" in get_inventory("backend_testing_2"))
 #     app.logger.info("Coin" in get_inventory("backend_testing_2"))
+
+# validates request's auth token, returning it hashed if it is valid or returning error codes if invalid
+def try_hash_token(request : Request):
+    if 'auth_token' not in request.cookies.keys():
+        return (None, 'not logged in', 401)
+    hashed_token = hash_token(request.cookies['auth_token'])
+    if does_hashed_token_exist(hashed_token):
+        # success
+        return (hashed_token, '', 200)
+    else:
+        return (None, 'invalid auth token', 401)
