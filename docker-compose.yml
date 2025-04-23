@@ -12,3 +12,4 @@ services:
       - '8080:8000'
     volumes:
       - ./logs:/app/logs
+      - ./public/pfps:/app/public/pfps
