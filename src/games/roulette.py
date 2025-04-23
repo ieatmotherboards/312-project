@@ -30,7 +30,8 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
     betAmmount -> Int of how much they bet
     numbers -> List of nubers their bet applies too if needed 
 
-    Out: Dictonary with keys being usernames and values being how much they won/lost
+    Out: index 0 = Dictonary with keys being usernames and values being how much they won/lost
+         index 1 = outcome of spinwheel
     '''
 
     outcome=spinWheel()
@@ -170,5 +171,5 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
             else:
                 out['House']=(out['House']+Ammount)
                 out[Better]=(-1*Ammount)
-    return out
+    return [out,outcome]
 

@@ -1,61 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Settings Page</title>
-    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
-    <link href="/public/style.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Settings Page</title>
+  <link rel="icon" type="image/x-icon" href="public/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap" rel="stylesheet">
+  <link href="/public/style.css" rel="stylesheet">
 </head>
-<body>
-<div class="container">
+<body onload="getPfp()">
+
+  <div class="container">
     <h1>Account Settings</h1>
-
-    <img src="https://via.placeholder.com/150" alt="Profile Picture"
-         style="border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 30px;">
-
-    <button class="button" onclick="document.getElementById('pfpInput').click()">Change Profile Picture</button>
-    <input type="file" id="pfpInput" accept="image/*" style="display:none"/>
-
+    <!-- Old, uglier logic
+    <form id="myForm" enctype="multipart/form-data">
+      <img src="public/blank-pfp.png" id="pfp" alt="Profile Picture" style="border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 30px; width: 175px; text-align: center;">
+      <br>
+      <input type="file" id="pfpInput" name="file" value="Submit" accept="image/*" placeholder="Submit...">
+      <br><br>
+      <button class="button">Change Profile Picture</button>
+    </form> -->
+    <form id="myForm" enctype="multipart/form-data">
+      <img src="public/blank-pfp.png" id="pfp" alt="Profile Picture"
+           style="border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 30px; width: 175px; text-align: center;">
+      <br>
+    
+      <input type="file" id="pfpInput" name="file" accept="image/*" style="display: none;">
+      
+      <label for="pfpInput" class="button" id="fileLabel">Browse...</label>
+      
+      <br>
+      <button class="button">Change Profile Picture</button>
+    </form>
+    
+<!-- Keeping these commented out since no auth implementation
     <br>
     <button class="button">Change Username</button>
-    <button class="button">Change Password</button>
-</div>
+    <button class="button">Change Password</button>     -->
+  </div>
 </body>
 <script>
-    const pfpInput = document.getElementById('pfpInput');
-    const profileImg = document.querySelector('img');
-
-    pfpInput.addEventListener('change', async () => {
-        const file = pfpInput.files[0];
-        if (!file) return;
-
-        // Preview the selected image
-        const reader = new FileReader();
-        reader.onload = () => {
-            profileImg.src = reader.result;
-        };
-        reader.readAsDataURL(file);
-
-        // Upload image to backend
-        const formData = new FormData();
-        formData.append('profilePicture', file);
-
-        try {
-            const response = await fetch('/upload_pfp', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error('Upload failed');
-            }
-
-            console.log('Profile picture updated!');
-        } catch (err) {
-            console.error(err);
-            alert('Error uploading profile picture.');
-        }
+    fetch('/@me').then(response => {
+      if (response.status === 401) {
+        window.location.href = "/register";
+      }
     });
+
+    form = document.getElementById("myForm");
+    const pfpInput = document.getElementById("pfpInput");
+
+    const fileLabel = document.getElementById("fileLabel");
+
+    pfpInput.addEventListener("change", () => {
+      const fileName = pfpInput.files.length > 0 ? pfpInput.files[0].name : "Browse...";
+      fileLabel.textContent = fileName;
+    });
+
+    form.addEventListener("submit", async(e) => { 
+      e.preventDefault();
+      const file = pfpInput.files[0];
+      if (!file) {
+        console.log("please select a pfp!");
+        return;
+      }
+      const formData = new FormData(form);
+      try{
+        const response = await fetch("/upload_pfp", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok){
+          console.log("success!");
+          getPfp();
+        }else{
+          throw new Error("Upload failed!");
+        }
+
+      }catch (error){
+        console.error("Error uploading pfp:", error);
+        // alertManager.newAlert(
+        //   "Failed to upload profile picture. Please try again.",
+        //   "error",
+        //   5000,
+        //   "Upload Error"
+        // );
+      }
+    });
+  
+    function getPfp(){
+      try{
+      fetch('/get_pfp')
+        .then((response) => response.json())
+        .then((data) => {
+        console.log("attempting to update pfp");
+        console.log("path is: "+data.path);
+        document.getElementById("pfp").src=data.path;
+       });
+      }catch (error){
+          console.log("error fetching pfp");
+      }
+
+    }  
+
 </script>
 </html>
