@@ -1,5 +1,7 @@
 import os
 import hashlib
+
+from flask import Request
 from pymongo import MongoClient
 
 docker_db = os.environ.get('DOCKER_DB', "false")
@@ -14,6 +16,15 @@ db = mongo_client["312_project"]
 
 users = db["users"]
 
+# users.delete_many({})
+
+def register_user(username : str, password : str):
+    db.users.insert_one({
+        'username': username,
+        'password': password,
+        'coins': 0
+    })
+
 def get_user_by_hashed_token(hashed_token : str):
     search = users.find_one({"auth_token": hashed_token})
     return search
@@ -26,6 +37,13 @@ def hash_token(token):
 
 def does_username_exist(username : str) -> bool:
     search = get_user_by_username(username)
+    if search is None:
+        return False
+    else:
+        return True
+
+def does_hashed_token_exist(hashed_token : str):
+    search = get_user_by_hashed_token(hashed_token)
     if search is None:
         return False
     else:

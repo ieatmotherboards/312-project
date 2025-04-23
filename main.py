@@ -1,7 +1,8 @@
+#hello world
 from flask import *
 from flask_socketio import SocketIO
 from src.auth import register_new_account, login, logout
-from src.database import users, hash_token, get_user_by_hashed_token, get_inventory, insert_item_by_username
+import src.database as db
 from src.logging import main_log
 import logging
 import datetime
@@ -10,6 +11,8 @@ import os
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.websockets import connect_websocket  # for some reason this needs to be imported for websockets to work?
 import uuid
+from src.phaser_routes import phaser
+import src.util as util
 
 
 logging.basicConfig(filename='logs/record.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
@@ -19,6 +22,7 @@ UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.register_blueprint(phaser)
 
 @app.route('/') # this routes to the main page
 def home():
@@ -103,8 +107,8 @@ def at_me():
         res = make_response("Unauthorized", 401) 
         main_log(req=request, res=res)
         return res
-    hashed_token = hash_token(request.cookies["auth_token"])
-    username = get_user_by_hashed_token(hashed_token=hashed_token)['username']
+    hashed_token = db.hash_token(request.cookies["auth_token"])
+    username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
     data = {"username":username}
     main_log(req=request, res= make_response("OK", 200))
     return jsonify(data)
@@ -112,21 +116,7 @@ def at_me():
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
-    try:
-        data = get_file("public/" + subpath)
-        response = Response(data, mimetype=get_mime_type(subpath))
-    except FileNotFoundError:
-        response = make_response("Not Found", 404)
-    main_log(req=request, res=response)
-    return response
-
-@app.route('/phaser-game/<path:subpath>') # sends phaser game files to client
-def send_phaser_stuff(subpath):
-    try:
-        data = get_file("phaser-game/" + subpath)
-        response = Response(data, mimetype=get_mime_type(subpath))
-    except FileNotFoundError:
-        response = make_response("Not Found", 404)
+    response = util.send_file_response("public/" + subpath)
     main_log(req=request, res=response)
     return response
 
@@ -154,8 +144,8 @@ def upload_pfp():
         main_log(req=request,res=res)
         return res
 
-    token = hash_token(request.cookies['auth_token'])
-    username = get_user_by_hashed_token(token)["username"]
+    token = db.hash_token(request.cookies['auth_token'])
+    username = db.get_user_by_hashed_token(token)["username"]
     
     file = request.files['file']
     if file and is_allowed_file(file.filename):
@@ -166,7 +156,7 @@ def upload_pfp():
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         app.logger.info("Saving to: " + upload_path)
         file.save(upload_path)
-        users.update_one({"username":username},{"$set":{"pfp":new_filename}}) #TODO: pass in correct path
+        db.users.update_one({"username":username},{"$set":{"pfp":new_filename}}) #TODO: pass in correct path
         res = make_response("OK", 200)
         main_log(req=request, res=res)
         return res
@@ -183,8 +173,8 @@ def get_pfp():
         return res
     
     # TODO: get file path and pass in as param to send_public_file
-    hashed_token = hash_token(request.cookies['auth_token'])
-    user = get_user_by_hashed_token(hashed_token=hashed_token)
+    hashed_token = db.hash_token(request.cookies['auth_token'])
+    user = db.get_user_by_hashed_token(hashed_token=hashed_token)
     if "pfp" in user:
         filename = user["pfp"]
         main_log(req=request, res=make_response("OK",200))
@@ -221,5 +211,4 @@ def get_file(filename):
         return file.read()
 
 if __name__ == '__main__':
-    # app.run(debug = False, host='0.0.0.0', port=8000)
     socketio.run(app, debug=False, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)

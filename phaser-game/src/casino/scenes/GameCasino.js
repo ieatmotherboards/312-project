@@ -1,8 +1,9 @@
 import { Player } from '../../gameObjects/Player.js';
-import { CoinCounter } from '../../gameObjects/CoinCounter.js'
-import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js'
-import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js'
-import  '../../../../public/socket.io.js'
+import { PlayerGhost } from '../../gameObjects/PlayerGhost.js';
+import { CoinCounter } from '../../gameObjects/CoinCounter.js';
+import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js';
+import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js';
+import  '../../../../public/socket.io.js';
 
 export class Game extends Phaser.Scene {
     constructor() {
@@ -12,20 +13,22 @@ export class Game extends Phaser.Scene {
 
     // this file has lots of commented out code from the tutorial i followed
     create() {
-        this.add.image(400, 300, 'sky');
+        this.add.image(400, 300, 'sky'); // background image
 
-        // this.platforms = this.physics.add.staticGroup();
+        this.socketId = ''; // id for websockets
 
-        // this.platforms.create(400, 568, 'platform').setScale(2).refreshBody();
+        this.player = new Player(this, 100, 450); // player object
 
-        // this.platforms.create(600, 400, 'platform');
-        // this.platforms.create(50, 250, 'platform');
-        // this.platforms.create(720, 220, 'platform');
+        this.timePassed = 0;    // time passed for movment broadcasting
+        this.timeToNext = 50;  // how much time needs to pass before broadcasting next movement
+        this.prevPosition = {x: this.player.x, y: this.player.y}; // previously broadcasted position
 
-        this.player = new Player(this, 100, 450);
+        this.slots = []; // array for slot machine objects
+        this.playerGhosts = {}; // dict for player ghost objects, maps their id to their object
 
-        this.slots = [];
+        this.coinCounter = new CoinCounter(this, 28, 28); // coin counter object
 
+        // populates slots array with 12 slot machines facing down
         let i = 0;
         let x = 150;
         while (i < 12) {
@@ -34,6 +37,7 @@ export class Game extends Phaser.Scene {
             i += 1;
             x += 50;
         }
+        // populates slots array with 12 slot machines facing left and right
         i = 0;
         let y = 200;
         while (i < 6) {
@@ -45,44 +49,52 @@ export class Game extends Phaser.Scene {
             y += 50;
         }
 
+        // getting user info
+        let request = new Request('/phaser/@me');
+        fetch(request).then(response => {
+            return response.json();
+        }).then(data => {
+            this.coinCounter.setCoins(data['coins']);
+        });
+
+        // movement keys
         this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
         this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
-        // this.stars = this.physics.add.group({
-        //     key: 'coin',
-        //     repeat: 11,
-        //     setXY: {x: 12, y: 0, stepX: 70},
-        //     gravityY: 500,
-        //     setScale: {x: 2, y:2}
+        // websocket initialization
+        this.websocket = io();
+        this.websocket.scene = this;
+        //// when connected to server
+        // this.websocket.on('connect', function() {
+        //     this.emit('connected');
         // });
-
-        // this.physics.add.collider(this.player, this.slots); // adds collision between the player and all slot machines
-        // for (let i in this.slots) {
-        //     let machine = this.slots[i];
-        //     // machine.refreshBody();
-        // }
-
-        this.coinCounter = new CoinCounter(this, 28, 28);
-
-        this.websocket = io();  
-        this.websocket.on('connect', function() {
-            this.emit('connected');
+        // when recieving message of type "connect_echo"
+        this.websocket.on('connect_echo', function(data) {
+            this.scene.socketId = data.id;
+            console.log('connected to server, my name is ' + this.scene.socketId);
         });
-        this.websocket.on('connect_echo', function() {
-            console.log('connected to server')
-        });
+        // when recieving message of type "movement"
         this.websocket.on('movement', function(data) {
-            let recieved_data = data.data
+            let recieved_data = data.data;
+            let x = recieved_data.x;
+            let y = recieved_data.y;
+            let id = recieved_data.id;
+            if (id != this.scene.socketId) {
+                if (!(id in this.scene.playerGhosts)) {
+                    this.scene.playerGhosts[id] = new PlayerGhost(this.scene, x, y);
+                } else {
+                    let ghost = this.scene.playerGhosts[id];
+                    ghost.sprite.setX(x).setY(y);
+                }
+            }
             // console.log('id: ' + recieved_data.id + ', x: ' + recieved_data.x + ', y: ' + recieved_data.y);
         });
-        this.timePassed = 0;
-        this.timeToNext = 500;
-        this.prevPosition = {x: this.player.x, y: this.player.y}
     }
 
     update(time, delta) {
+        // handles player movement
         let moved = false
         if (this.keyA.isDown) {
             this.player.moveLeft();
@@ -109,15 +121,20 @@ export class Game extends Phaser.Scene {
         if (!moved) {
             this.player.idle();
         }
-        this.timePassed += delta;
-        if (this.timePassed >= this.timeToNext && (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y) ) {
-            this.prevPosition.x = this.player.x;
-            this.prevPosition.y = this.player.y;
-            this.websocket.emit('player_move', {'data': {
-                'id': 'admin', 
-                'x': this.player.x, 
-                'y': this.player.y
-                }});
+        // handles movement broadcasting
+        if (this.timePassed >= this.timeToNext) {
+            if (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y) {
+                this.timePassed -= this.timeToNext;
+                this.prevPosition.x = this.player.x;
+                this.prevPosition.y = this.player.y;
+                this.websocket.emit('player_move', {'data': {
+                    'id': this.socketId, 
+                    'x': this.player.x, 
+                    'y': this.player.y
+                    }});
+            }
+        } else {
+            this.timePassed += delta;
         }
     }
 

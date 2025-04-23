@@ -35,6 +35,7 @@ export class Preloader extends Phaser.Scene {
         this.load.image('slotmachine_side', 'slotmachine_side.png');
         this.load.image('coin', 'coin.png');
 
+        this.load.image('ghost', 'pfp_border.png')
         this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
     }
 
