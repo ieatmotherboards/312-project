@@ -9,6 +9,6 @@ services:
       WAIT_HOSTS: mongo:27017
       DOCKER_DB: "true"
     ports:
-      - '8080:8000'
+      - '80:8000'
     volumes:
       - ./logs:/app/logs
