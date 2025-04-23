@@ -184,7 +184,7 @@ def get_pfp():
         main_log(req=request, res=make_response("OK",200))
         return jsonify({"path":'public/pfps/'+filename})
     else:
-        res = make_response("Bad Request", 400) # no pfp found
+        res = make_response("Profile picture not found", 400) # no pfp found
         main_log(req=request, res=res)
         return res
 
