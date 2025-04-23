@@ -184,29 +184,6 @@ def get_pfp():
         main_log(req=request, res=res)
         return res
 
-
-# incomplete dict for mime types
-mime_type = {
-    'js': 'text/javascript',
-    'png': 'image/png',
-    'css': 'text/css',
-    'ico':'image/x-icon',
-    'jpg':'image/jpeg',
-    'jpeg':'image/jpeg',
-    'JPG':'image/jpeg',
-    'gif':'image/gif',
-}
-
-def get_mime_type(path: str):
-    app.logger.info("entered get_mime_type")
-    """
-    returns a mime type based on a file's extension
-    """
-    split_path = path.split('.')
-    filetype = split_path[len(split_path)-1]
-    app.logger.info("filetype is:"+filetype)
-    return mime_type[filetype]
-
 # returns a file's contents as bytes
 def get_file(filename):
     with open(filename, 'rb') as file:
