@@ -7,7 +7,7 @@ COPY . .
 #For Use on Local
 # ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
 #For Use with AWS
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait_aarch64 /wait
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait-aarch64 /wait
 RUN chmod +x /wait
 
 CMD /wait && python main.py
