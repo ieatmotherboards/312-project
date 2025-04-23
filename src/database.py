@@ -65,14 +65,17 @@ def get_inventory(username: str):
         return {}
     return lookup["inventory"]
     
-def get_leaderboard(sort_key: str) -> list:
+def get_leaderboard(sort_key: str, ascending: bool) -> list:
     """
     Args: 
-        sort_key: string representing 
+        sort_key: string representing what 
     Returns:
         List of all users sorted on the parameter key
     """
-    pass
+    order = 1
+    if not ascending:
+        order = -1
+    return users.find({}).sort({sort_key:order}).to_list()
 
 # def inventory_test():
 #     users.insert_one({"username":"backend_testing_1","inventory":{"Axe":1}})
