@@ -1,4 +1,4 @@
-from database import db
+from src.database import db
 
 from pymongo import MongoClient
 
@@ -79,3 +79,7 @@ def listInventory(username):
     return allItems
 
     
+def getCoins(username):
+    userdata=Inventory.find_one({'username':username})
+    coins=userdata['coins']
+    return coins
