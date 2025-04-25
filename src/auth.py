@@ -8,7 +8,6 @@ import hashlib
 
 from src.logging import main_log, auth_log, logout_log, register_log
 
-
 def parse_data():
     '''
     dummy function to pull out username and password from frontend, replace this with actual logic later
