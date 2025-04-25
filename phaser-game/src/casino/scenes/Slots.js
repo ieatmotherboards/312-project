@@ -7,7 +7,6 @@ export class Slots extends Phaser.Scene {
     }
 
     create() {
-        
         this.add.image(400, 300, 'slots_bg').setDisplaySize(800, 600);
         this.coinCounter = new CoinCounter(this, 28, 28);
         this.button = this.add.sprite(700, 500, 'button').setScale(2);
@@ -32,6 +31,11 @@ export class Slots extends Phaser.Scene {
                 }
             });
         });
-        
+        let request = new Request('/phaser/@me');
+        fetch(request).then(response => {
+            return response.json();
+        }).then(data => {
+            this.coinCounter.setCoins(data['coins']);
+        });
     }
 }

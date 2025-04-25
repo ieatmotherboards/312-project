@@ -81,7 +81,8 @@ def slots_request():
     if payout > 0:
         updateCoins(username,payout)
     slots_array = slots_matrix_to_arrays(result['board'])
-    
+
+
     response = make_response(json.dumps({'slots': slots_array, 'newCoins': getCoins(username)}))
     main_log(req=request, res=response)
     return response

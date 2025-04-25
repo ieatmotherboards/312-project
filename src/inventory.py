@@ -9,18 +9,18 @@ def createInventory(username):
     Inventory.insert_one({'username':username,'coins':100,'inventory':[]})
 
 def updateCoins(username,coinChange):
-    temp=Inventory.find({'username':username},{'_id':0})
+    temp=Inventory.find_one({'username':username},{'_id':0})
     coins=temp['coins']+coinChange
     Inventory.find_one_and_update({'username':username},{'$set':{'coins':coins}})
 
 def addItem(username,item):
-    temp=Inventory.find({'username':username},{'_id':0})
+    temp=Inventory.find_one({'username':username},{'_id':0})
     curInv=temp['inventory']
     curInv.append(item)
     Inventory.find_one_and_update({'username':username},{'$set':{'inventory':curInv}})
 
 def checkForItem(username,item):
-    temp=Inventory.find({'username':username},{'_id':0})
+    temp=Inventory.find_one({'username':username},{'_id':0})
     inventory=temp['inventory']
     if item in inventory:
         return True
@@ -29,8 +29,8 @@ def checkForItem(username,item):
     
 def trade(user1,user1ItemList,user2,user2ItemList):
 
-    user1Data=Inventory.find({'username':user1},{'_id':0})
-    user2Data=Inventory.find({'username':user2},{'_id':0})
+    user1Data=Inventory.find_one({'username':user1},{'_id':0})
+    user2Data=Inventory.find_one({'username':user2},{'_id':0})
     user1Inv=user1Data['inventory']
     user2Inv=user2Data['inventory']
     for item in user1ItemList:
@@ -44,7 +44,7 @@ def trade(user1,user1ItemList,user2,user2ItemList):
     Inventory.find_one_and_update({'username':user2},{'$set':{'inventory':user2Inv}})
 
 def buyItem(username,item,cost):
-    userData=Inventory.find({'username':username},{'_id':0})
+    userData=Inventory.find_one({'username':username},{'_id':0})
     userCoins=userData['coins']
     userInv=userData['inventory']
     if userCoins >= cost:
@@ -56,8 +56,8 @@ def buyItem(username,item,cost):
         return False
     
 def sellItem(user1,user1ItemList,user2,user2Cost):
-    user1Data=Inventory.find({'username':user1},{'_id':0})
-    user2Data=Inventory.find({'username':user2},{'_id':0})
+    user1Data=Inventory.find_one({'username':user1},{'_id':0})
+    user2Data=Inventory.find_one({'username':user2},{'_id':0})
     user1Inv=user1Data['inventory']
     user2Inv=user2Data['inventory']
     user1Coins=user1Data['coins']
