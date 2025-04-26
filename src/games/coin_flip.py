@@ -1,8 +1,9 @@
 from random import randint
 
 def coinflip():
-    flip = randint(1,2)
+    # returns: True if heads, False if tails
+    flip = randint(0, 1)
     if flip == 1:
-        return "Heads"
+        return True # Heads
     else:
-        return "Tails"
+        return False # Tails

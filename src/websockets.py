@@ -28,3 +28,15 @@ def connect_websocket():
 @socketio.on('player_move')
 def player_move(data):
     emit('movement', data, broadcast=True)
+
+@socketio.on('challenge_player')
+def challenge_player(data):
+    json_data = json.loads(data)
+    challenge_data = {'to': json_data['defender'], 'from': json_data['challenger']}
+    emit('challenge', data, broadcast=True)
+
+# @socketio.on('challenge_accepted')
+# def challenge_accepted(data):
+#     json_data = json.loads(data)
+#     challenge_data = {'to': json_data['defender'], 'from': json_data['challenger']}
+#     emit('challenge', data, broadcast=True)
