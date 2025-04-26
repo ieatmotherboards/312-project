@@ -15,14 +15,14 @@ else:
 db = mongo_client["312_project"]
 
 users = db["users"]
+inv_db = db["inventory"]
 
 # users.delete_many({})
 
 def register_user(username : str, password : str):
     db.users.insert_one({
         'username': username,
-        'password': password,
-        'coins': 0
+        'password': password
     })
 
 def get_user_by_hashed_token(hashed_token : str):

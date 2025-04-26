@@ -3,7 +3,7 @@ import src.database as db
 import src.util as util
 from src.logging import main_log
 import src.games.slots as slots
-from src.inventory import getCoins, updateCoins
+from src.inventory import get_coins, update_coins
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
@@ -20,12 +20,13 @@ def send_phaser_file(subpath):
 def phaser_me():
     if 'auth_token' in request.cookies:
         hashed_token = db.hash_token(request.cookies['auth_token'])
-        username = db.get_user_by_hashed_token(hashed_token)['username']
-        if username is None:
+        user = db.get_user_by_hashed_token(hashed_token)
+        username = user['username']
+        if user is None:
             response = make_response('Invalid auth token', 403)
         else:
             response = make_response({
-                'coins': getCoins(username)
+                'coins': get_coins(username)
             })
     else:
         response = make_response('Not logged in', 403)
@@ -51,7 +52,7 @@ def add_coins():
 
     user = db.get_user_by_hashed_token(hashed_token)
     username=user['username']
-    updateCoins(username,coins)
+    update_coins(username, coins)
     response = make_response()
     main_log(req=request, res=response)
     return response
@@ -70,8 +71,8 @@ def slots_request():
 
     user = db.get_user_by_hashed_token(hashed_token)
     username=user['username']
-    updateCoins(username,(-1*player_bet))
-    new_coins : int = getCoins(username) - player_bet
+    update_coins(username, (-1 * player_bet))
+    new_coins : int = get_coins(username) - player_bet
     if new_coins < 0:
         response = make_response("Not enough coins", 403)
         main_log(req=request, res=response)
@@ -79,11 +80,10 @@ def slots_request():
     result = slots.play_slots(player_bet)
     payout : int = result['payout']
     if payout > 0:
-        updateCoins(username,payout)
+        update_coins(username, payout)
     slots_array = slots_matrix_to_arrays(result['board'])
 
-
-    response = make_response(json.dumps({'slots': slots_array, 'newCoins': getCoins(username)}))
+    response = make_response(json.dumps({'slots': slots_array, 'newCoins': get_coins(username)}))
     main_log(req=request, res=response)
     return response
 

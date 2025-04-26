@@ -42,7 +42,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite
 
     moveRight() {
         this.setVelocityX(200);
-        this.anims.play('right', true)
+        this.anims.play('right', true);
     }
 
     moveUp() {
