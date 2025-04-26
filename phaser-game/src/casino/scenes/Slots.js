@@ -31,5 +31,11 @@ export class Slots extends Phaser.Scene {
                 }
             });
         });
+        let request = new Request('/phaser/@me');
+        fetch(request).then(response => {
+            return response.json();
+        }).then(data => {
+            this.coinCounter.setCoins(data['coins']);
+        });
     }
 }
