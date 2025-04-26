@@ -83,3 +83,8 @@ def getCoins(username):
     userdata=Inventory.find_one({'username':username})
     coins=userdata['coins']
     return coins
+
+def getLeaderBoard():
+    soretedData=Inventory.find().sort('coins',1)
+    return soretedData
+
