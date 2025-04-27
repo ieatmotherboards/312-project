@@ -21,13 +21,34 @@ def spinWheel():
     spin=outcomes[randint(0,len(outcomes)-1)]
     return spin
 
-def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/num/etc ...), betAmmount: ammountOfBet,numbers: [allNumbers]}
+len_dict = {
+    1: "Straight up",
+    2: "Split",
+    3: " Street",
+    4: "corner bet",
+    5: "5Number",
+    6: "Line"
+}
+
+def find_types(numbers: list) -> str:
+    '''
+    Args:
+        List of int that the better picked. Max length is 6
+    Output:
+        String representing the bet type they made
+    '''
+    if len(numbers) > 6:
+        return "error"
+    return len_dict[len(numbers)]
+
+
+def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/num/etc ...), betAmount: ammountOfBet,numbers: [allNumbers]}
 
     '''
     In: List of Dictonarys with keys 
     name -> username
     betType -> type of bet (Straight up, Split, Street, Corner bet, 5Number, Line, First12, Second12, Third12, First18, Second18, Red, Black, Odd, Even)
-    betAmmount -> Int of how much they bet
+    betAmount -> Int of how much they bet
     numbers -> List of nubers their bet applies too if needed 
 
     Out: index 0 = Dictonary with keys being usernames and values being how much they won/lost
@@ -64,7 +85,7 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
     for bet in betList:
         Better=bet['name']
         BetType=bet['betType']
-        Ammount=bet['betAmmount']
+        Ammount=bet['betAmount']
 
         if BetType == 'Straight up':
             if outcome == bet['numbers']:

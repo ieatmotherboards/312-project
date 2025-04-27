@@ -1,38 +1,24 @@
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/, TIME:2025-04-23 21:11:28.679448, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/public/style.css, TIME:2025-04-23 21:11:28.831805, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/@me, TIME:2025-04-23 21:11:29.032745, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/casino, TIME:2025-04-23 21:11:30.205560, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/casino/mainCasino.js, TIME:2025-04-23 21:11:30.301624, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/phaser.js, TIME:2025-04-23 21:11:30.312460, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/casino/scenes/BootCasino.js, TIME:2025-04-23 21:11:30.380798, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/casino/scenes/GameCasino.js, TIME:2025-04-23 21:11:30.388339, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/casino/scenes/GameOver.js, TIME:2025-04-23 21:11:30.403049, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/casino/scenes/Slots.js, TIME:2025-04-23 21:11:30.426181, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/casino/scenes/PreloaderCasino.js, TIME:2025-04-23 21:11:30.426908, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/PlayerGhost.js, TIME:2025-04-23 21:11:30.574690, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/Player.js, TIME:2025-04-23 21:11:30.575173, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/CoinCounter.js, TIME:2025-04-23 21:11:30.588009, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/SlotMachineSide.js, TIME:2025-04-23 21:11:30.588339, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/public/socket.io.js, TIME:2025-04-23 21:11:30.591664, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/SlotMachineDown.js, TIME:2025-04-23 21:11:30.592480, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/SlotMachine.js, TIME:2025-04-23 21:11:30.623376, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/bg.png, TIME:2025-04-23 21:11:31.429472, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/debug.png, TIME:2025-04-23 21:11:31.432718, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/sky.png, TIME:2025-04-23 21:11:31.555737, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/phaser.png, TIME:2025-04-23 21:11:31.564486, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/slotmachine.png, TIME:2025-04-23 21:11:31.571635, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/slotmachine_side.png, TIME:2025-04-23 21:11:31.588951, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/coin.png, TIME:2025-04-23 21:11:31.594353, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/play_popup.png, TIME:2025-04-23 21:11:31.595301, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/pfp_border.png, TIME:2025-04-23 21:11:31.611219, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/dude.png, TIME:2025-04-23 21:11:31.613344, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/slots/empty_slots.png, TIME:2025-04-23 21:11:31.622179, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser-game/assets/slots/spin_button.png, TIME:2025-04-23 21:11:31.639018, CODE:200
-INFO:src.init:	METHOD:GET, IP:172.19.0.1, PATH:/phaser/@me, TIME:2025-04-23 21:11:31.906160, CODE:200
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:35.412028, CODE:403
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:35.920885, CODE:403
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:37.828940, CODE:403
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:38.239777, CODE:403
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:38.734822, CODE:403
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:39.176843, CODE:403
-INFO:src.init:	METHOD:POST, IP:172.19.0.1, PATH:/phaser/playSlots, TIME:2025-04-23 21:11:39.657662, CODE:403
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/roulette2, TIME:2025-04-27 19:07:02.862378, CODE:404
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/roulette, TIME:2025-04-27 19:08:04.500093, CODE:200
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/phaser-game/src/casino/scenes/Roulette.js, TIME:2025-04-27 19:08:04.652912, CODE:200
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/phaser-game/phaser.js, TIME:2025-04-27 19:08:04.661270, CODE:200
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/phaser-game/src/gameObjects/CoinCounter.js, TIME:2025-04-27 19:08:04.860821, CODE:200
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/phaser-game/assets/roulette/roulette_bg_2.png, TIME:2025-04-27 19:08:06.237049, CODE:200
+INFO:src.init:	METHOD:GET, USERNAME:t, IP:172.19.0.1, PATH:/phaser-game/assets/roulette/roulette_wheel.png, TIME:2025-04-27 19:08:06.253887, CODE:200
+INFO:src.init:Wager amount: 0
+INFO:src.init:bet_type: 3rd Twelve
+INFO:src.init:username: t
+ERROR:src.init:Exception on /phaser/playRoulette [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/app/src/phaser_routes.py", line 145, in roulette_request
+    data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
+KeyError: 't'
+INFO:src.init:	METHOD:POST, USERNAME:t, IP:172.19.0.1, PATH:/phaser/playRoulette, TIME:2025-04-27 19:08:14.610018, CODE:500
