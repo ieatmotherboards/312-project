@@ -54,14 +54,13 @@ def parse_login():
     
 @app.route('/logout_data', methods=['POST'])
 def parse_logout():
+    main_log(req=request, res=make_response("OK", 200))
     logout_result = logout(request=request)
-    if logout_result[0] == 200:
-        response = make_response("Logout Success", 200)
-        response.set_cookie('auth_token', 'logged out', max_age=0, httponly=True)
-    else:
-        response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
-    main_log(req=request, res=response)
-    return response
+    # if logout_result[0] == 200:
+        
+    # else:
+    #     response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
+    return logout_result
 
 @app.route('/register')
 def register():

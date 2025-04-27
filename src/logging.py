@@ -21,7 +21,8 @@ def internal_error(error):
 
 def main_log(req : Request, res : Response): 
     status_code = res.status_code
-    if 'auth_token' in req.cookies:
+    if 'auth_token' in req.cookies and req.cookies['auth_token'] != "LOGGED OUT":
+        app.logger.info("auth_token is: " + str(req.cookies['auth_token']))
         username = get_user_by_hashed_token(hash_token(token=req.cookies['auth_token']))['username']
         app.logger.info("\tMETHOD:%s, USERNAME:%s, IP:%s, PATH:%s, TIME:%s, CODE:%s", req.method, username, req.remote_addr, req.path, datetime.datetime.now(), str(status_code))
     else:
@@ -41,6 +42,6 @@ logging TODO:
     - double check all errors get logged in the stack trace (intentionally break some code (i think this is already done -- thanks flask)) 
     - set up second logfile for full requests/responses
         - add this to volumes
-        - should only log first 2048 butes
+        - should only log first 2048 bytes
         - only log headers for registration, login, and pfp upload requests 
 """
