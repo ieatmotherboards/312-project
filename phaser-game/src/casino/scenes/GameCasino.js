@@ -15,6 +15,7 @@ export class Game extends Phaser.Scene {
         this.add.image(400, 300, 'sky'); // background image
 
         this.socketId = ''; // id for websockets
+        this.username;
 
         this.player = new Player(this, 100, 450); // player object
 
@@ -59,6 +60,7 @@ export class Game extends Phaser.Scene {
             return response.json();
         }).then(data => {
             this.coinCounter.setCoins(data['coins']);
+            this.username = data['username'];
         });
 
         // movement keys
@@ -72,10 +74,6 @@ export class Game extends Phaser.Scene {
         // websocket initialization
         this.websocket = io();
         this.websocket.scene = this;
-        //// when connected to server
-        // this.websocket.on('connect', function() {
-        //     this.emit('connected');
-        // });
         // when recieving message of type "connect_echo"
         this.websocket.on('connect_echo', function(data) {
             this.scene.socketId = data.id;
@@ -84,19 +82,31 @@ export class Game extends Phaser.Scene {
         // when recieving message of type "movement"
         this.websocket.on('movement', function(data) {
             let recieved_data = data.data;
-            let x = recieved_data.x;
-            let y = recieved_data.y;
-            let id = recieved_data.id;
-            if (id != this.scene.socketId) {
-                if (!(id in this.scene.playerGhosts)) {
-                    this.scene.playerGhosts[id] = new PlayerGhost(this.scene, x, y);
+            let x = recieved_data['x'];
+            let y = recieved_data['y'];
+            let user = recieved_data['user'];
+            let scene_user = this.scene.username;
+            if (scene_user != undefined && user != scene_user) {
+                if (!(user in this.scene.playerGhosts)) {
+                    this.scene.playerGhosts[user] = new PlayerGhost(this.scene, x, y, user);
                 } else {
-                    let ghost = this.scene.playerGhosts[id];
-                    ghost.sprite.setX(x).setY(y);
+                    let ghost = this.scene.playerGhosts[user];
+                    ghost.move(x, y);
                 }
             }
-            // console.log('id: ' + recieved_data.id + ', x: ' + recieved_data.x + ', y: ' + recieved_data.y);
         });
+        // when recieving a challenge from another user
+        this.websocket.on('challenge', function(data) {
+            // TODO
+        })
+        // when a user you challenge accepts
+        this.websocket.on('ch_accept', function(data) {
+            // TODO
+        })
+        // when a user you challenge declines
+        this.websocket.on('ch_decline', function(data) {
+            // TODO
+        })
     }
 
     update(time, delta) {
@@ -129,12 +139,12 @@ export class Game extends Phaser.Scene {
         }
         // handles movement broadcasting
         if (this.timePassed >= this.timeToNext) {
-            if (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y) {
+            if (this.username != undefined && (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y)) {
                 this.timePassed -= this.timeToNext;
                 this.prevPosition.x = this.player.x;
                 this.prevPosition.y = this.player.y;
                 this.websocket.emit('player_move', {'data': {
-                    'id': this.socketId, 
+                    'user': this.username, 
                     'x': this.player.x, 
                     'y': this.player.y
                     }});

@@ -2,28 +2,25 @@ from flask import *
 from flask_socketio import *
 from src.init import app, socketio
 import src.database as db
-import secrets
 
-# websockets = Blueprint('websockets', __name__)
-        # blueprints can be used to modularize normal flask stuff, but not websockets
+# maps a username to their socket ID
+sid_map : dict[str:str] = {}
 
-socket_id_map : dict[str:str] = {}
-# maps a socket's id to the user's auth token
 
 @socketio.on('connect')
-def connect_websocket():
+def connect_websocket(socket):
     cookies = request.cookies
     if 'auth_token' in cookies.keys():
         token = cookies['auth_token']
         hashed_token = db.hash_token(token)
         if db.does_hashed_token_exist(hashed_token):
-            socket_id = secrets.token_hex()
-            socket_id_map[socket_id] = hashed_token
-            emit('connect_echo', {'id': socket_id})
+            socket_id = request.sid
+            username = db.get_user_by_hashed_token(hashed_token)['username']
+            sid_map[socket_id] = username
+            emit('connect_echo', {'id': socket_id}, broadcast=False)
             print("connected with " + socket_id)
             return
     print("connected without login")
-
 
 @socketio.on('player_move')
 def player_move(data):
@@ -31,12 +28,21 @@ def player_move(data):
 
 @socketio.on('challenge_player')
 def challenge_player(data):
+    # data: {'challenger': user who initiates, 'defender': user who will be sent the request}
     json_data = json.loads(data)
-    challenge_data = {'to': json_data['defender'], 'from': json_data['challenger']}
-    emit('challenge', data, broadcast=True)
+    defender_username = json_data['defender']
+    challenge_data = {'from': json_data['challenger']}
+    emit('challenge', challenge_data, to=sid_map[defender_username])
 
-# @socketio.on('challenge_accepted')
-# def challenge_accepted(data):
-#     json_data = json.loads(data)
-#     challenge_data = {'to': json_data['defender'], 'from': json_data['challenger']}
-#     emit('challenge', data, broadcast=True)
+@socketio.on('challenge_response')
+def challenge_response(data):
+    # data: {'acceptor': user that was sent a challenge, 'challenger': user who initiated the challenge}
+    json_data = json.loads(data)
+    challenger_username = json_data['challenger']
+    challenge_data = {'from': json_data['acceptor']}
+    if json_data['accepted']:
+        emit('ch_accept', challenge_data, to=sid_map[challenger_username])
+    else:
+        emit('ch_decline', challenge_data, to=sid_map[challenger_username])
+
+
