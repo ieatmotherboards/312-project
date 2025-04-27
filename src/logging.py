@@ -34,7 +34,7 @@ def logout_log(username: str, success: bool, message: str):
     app.logger.info("\t\tattempt from [%s] to log out, successful?:%s. %s",username, str(success), message)
 
 def register_log(username: str, success: bool, message: str):
-    app.logger.info("\t\tattempt from [%s] to log out, successful?:%s. %s",username, str(success), message)
+    app.logger.info("\t\tattempt from [%s] to register, successful?:%s. %s",username, str(success), message)
 
 """
 logging TODO:

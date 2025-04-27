@@ -123,9 +123,9 @@ def roulette_request():
     wager = data['wager']
     bet_type = data['bet_type']
     bet_amount = min(wager, user['coins']) # bet as many coins as user has if they wager more than in invetory
-    app.logger.info("Wager amount: " + str(bet_amount))
-    app.logger.info("bet_type: " + bet_type)
-    app.logger.info("username: " + username)
+    # app.logger.info("Wager amount: " + str(bet_amount))
+    # app.logger.info("bet_type: " + bet_type)
+    # app.logger.info("username: " + username)
 
     if bet_type == "Number(s)": # TODO: frontend says Number or Number(s), handle either
         numbers_unparsed = data['numbers']
@@ -137,11 +137,11 @@ def roulette_request():
 
     else:
         result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":bet_type}])
-    # app.logger.info("user_cashout_dict:", str(result[0]))
-    # app.logger.info("outcome:", str(result[1]))
 
     user_cashout_dict = result[0]
     outcome = result[1]
     data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
+    res = make_response(jsonify(data))
+    main_log(req=request, res=res)
 
-    return make_response(jsonify(data))
+    return res
