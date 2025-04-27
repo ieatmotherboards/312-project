@@ -3,6 +3,10 @@ import src.database as db
 import src.util as util
 from src.logging import main_log
 import src.games.slots as slots
+import src.games.roulette as roulette
+
+from src.init import app
+
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
@@ -89,3 +93,55 @@ def slots_matrix_to_arrays(matrix):
         for x in range(0, 3):
             ret[y][x] = int(matrix[y][x])
     return ret
+
+@phaser.route('/phaser/playRoulette',methods=['POST']) # TODO: finish this
+def roulette_request():
+    """
+    Args: None. uses JSON from POST request
+    
+    Returns: 
+        - response with JSON in the format:
+            "payout" : int representing the coins won,
+            "winning_num" : int representing the winning number  
+        - also edits coin amount in user DB          
+    """
+    try_token = db.try_hash_token(request=request)
+    if try_token[0] is None:
+        response = make_response(try_token[1], try_token[2])
+        main_log(req=request, res=response)
+        return response
+    
+    user = db.get_user_by_hashed_token(try_token[0])
+    username = user['username']
+    data = request.json
+    ''' JSON fields are:
+    wager
+    bet_type
+    numbers
+    '''    
+    
+    wager = data['wager']
+    bet_type = data['bet_type']
+    bet_amount = min(wager, user['coins']) # bet as many coins as user has if they wager more than in invetory
+    app.logger.info("Wager amount: " + str(bet_amount))
+    app.logger.info("bet_type: " + bet_type)
+    app.logger.info("username: " + username)
+
+    if bet_type == "Number(s)": # TODO: frontend says Number or Number(s), handle either
+        numbers_unparsed = data['numbers']
+        numbers = numbers_unparsed.split(', ')
+        # app.logger.info("numbers are:", numbers)
+        numbers = [int(num) for num in numbers]
+        result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":roulette.find_types(numbers), "numbers":numbers}])
+        # update user coins on backend
+
+    else:
+        result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":bet_type}])
+    # app.logger.info("user_cashout_dict:", str(result[0]))
+    # app.logger.info("outcome:", str(result[1]))
+
+    user_cashout_dict = result[0]
+    outcome = result[1]
+    data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
+
+    return make_response(jsonify(data))
