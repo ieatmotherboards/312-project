@@ -1,8 +1,16 @@
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
 import { ExitSign } from '../../gameObjects/ExitSign.js';
 
-export class Slots extends Phaser.Scene {
+export class CoinFlip extends Phaser.Scene {
     constructor() {
-        super('Slots');
+        super('CoinFlip');
+    }
+
+    create() {
+        this.coin = this.add.sprite(400, 300, 'coin_flip');
+    }
+
+    update() {
+        
     }
 }

@@ -41,6 +41,10 @@ export class Preloader extends Phaser.Scene {
         this.load.image('slots_bg', 'slots_bg.png');
         this.load.image('button', 'spin_button.png');
         this.load.spritesheet('slot_icons', 'slots_icons.png', {frameWidth: 32, frameHeight: 32});
+
+        // coin flip imgs
+        this.load.setPath('phaser-game/assets/coin_toss');
+        this.load.spritesheet('coin_flip', 'coin_flip.png', {framewidth: 128, frameHeight: 128});
     }
 
     create() {
