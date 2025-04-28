@@ -1,7 +1,7 @@
 from flask import *
 import src.database as db
 import src.util as util
-from src.logging import main_log
+from src.logging_things import main_log
 from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette

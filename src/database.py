@@ -16,6 +16,7 @@ db = mongo_client["312_project"]
 
 users = db["users"]
 inv_db = db["inventory"]
+item_db = db["items"]
 
 # users.delete_many({})
 

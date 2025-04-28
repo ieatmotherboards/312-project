@@ -11,7 +11,7 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.logging import main_log
+from src.logging_things import main_log
 import src.util as util
 
 # routes & websockets

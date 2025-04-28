@@ -6,7 +6,7 @@ import bcrypt
 import secrets
 import hashlib
 import src.inventory as inv
-from src.logging import main_log, auth_log, logout_log, register_log
+from src.logging_things import main_log, auth_log, logout_log, register_log
 
 def parse_data():
     '''
