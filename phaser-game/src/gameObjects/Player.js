@@ -33,33 +33,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite
     }
 
     // these methods handle movement and are called by the parent scene
-    moveLeft() {
-        this.setVelocityX(-200);
-        this.anims.play('left', true)
-    }
-
-    moveRight() {
-        this.setVelocityX(200);
-        this.anims.play('right', true);
-    }
-
-    moveUp() {
-        this.setVelocityY(-200);
-    }
-
-    moveDown() {
-        this.setVelocityY(200);
-    }
-
-    idleX() {
-        this.setVelocityX(0);
-    }
-    
-    idleY() {
-        this.setVelocityY(0);
-    }
-
-    idle() {
-        this.anims.play('turn');
+    move(x, y) {
+        this.setVelocityX(x);
+        if (x > 0) {
+            this.anims.play('right', true);
+        } else if (x < 0) {
+            this.anims.play('left', true);
+        }
+        this.setVelocityY(y);
+        if (x == 0 && y == 0) {
+            this.anims.play('turn');
+        }
     }
 }

@@ -7,6 +7,7 @@ export class CoinFlip extends Phaser.Scene {
     }
 
     create() {
+        this.add.image(400, 300, 'table');
         this.coin = this.add.sprite(400, 300, 'coin_flip');
 
         this.face = true; // True = heads, False = tails
