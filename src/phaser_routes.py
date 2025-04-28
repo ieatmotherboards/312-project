@@ -2,11 +2,11 @@ from flask import *
 import src.database as db
 import src.util as util
 from src.logging import main_log
+from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
 
 from src.init import app
-
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
@@ -27,8 +27,10 @@ def phaser_me():
         if user is None:
             response = make_response('Invalid auth token', 403)
         else:
+            username = user['username']
             response = make_response({
-                'coins': user['coins']
+                'coins': get_coins(username),
+                'username': username
             })
     else:
         response = make_response('Not logged in', 403)
@@ -52,8 +54,8 @@ def add_coins():
         return response
 
     user = db.get_user_by_hashed_token(hashed_token)
-    new_coins = coins + user["coins"]
-    db.users.update_one({"auth_token": hashed_token}, {"$set": {"coins": new_coins}})
+    username=user['username']
+    update_coins(username, coins)
     response = make_response()
     main_log(req=request, res=response)
     return response
@@ -71,18 +73,20 @@ def slots_request():
         return response
 
     user = db.get_user_by_hashed_token(hashed_token)
-    new_coins : int = user['coins'] - player_bet
+    username=user['username']
+    update_coins(username, (-1 * player_bet))
+    new_coins : int = get_coins(username) - player_bet
     if new_coins < 0:
         response = make_response("Not enough coins", 403)
         main_log(req=request, res=response)
         return response
     result = slots.play_slots(player_bet)
     payout : int = result['payout']
+    if payout > 0:
+        update_coins(username, payout)
     slots_array = slots_matrix_to_arrays(result['board'])
-    new_coins += payout
 
-    db.users.update_one({"auth_token": hashed_token}, {"$set": {"coins": new_coins}})
-    response = make_response(json.dumps({'slots': slots_array, 'payout': payout, 'newCoins': new_coins}))
+    response = make_response(json.dumps({'slots': slots_array, 'newCoins': get_coins(username)}))
     main_log(req=request, res=response)
     return response
 
@@ -98,19 +102,19 @@ def slots_matrix_to_arrays(matrix):
 def roulette_request():
     """
     Args: None. uses JSON from POST request
-    
-    Returns: 
+
+    Returns:
         - response with JSON in the format:
             "payout" : int representing the coins won,
-            "winning_num" : int representing the winning number  
-        - also edits coin amount in user DB          
+            "winning_num" : int representing the winning number
+        - also edits coin amount in user DB
     """
     try_token = db.try_hash_token(request=request)
     if try_token[0] is None:
         response = make_response(try_token[1], try_token[2])
         main_log(req=request, res=response)
         return response
-    
+
     user = db.get_user_by_hashed_token(try_token[0])
     username = user['username']
     data = request.json
@@ -118,8 +122,8 @@ def roulette_request():
     wager
     bet_type
     numbers
-    '''    
-    
+    '''
+
     wager = data['wager']
     bet_type = data['bet_type']
     bet_amount = min(wager, user['coins']) # bet as many coins as user has if they wager more than in invetory

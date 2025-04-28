@@ -2,29 +2,90 @@ from flask import *
 from flask_socketio import *
 from src.init import app, socketio
 import src.database as db
-import secrets
+import src.games.coin_flip as coin
+import src.inventory as inv
 
-# websockets = Blueprint('websockets', __name__)
-        # blueprints can be used to modularize normal flask stuff, but not websockets
+# maps a username to their socket ID
+sid_map : dict[str:str] = {}
 
-socket_id_map : dict[str:str] = {}
-# maps a socket's id to the user's auth token
 
 @socketio.on('connect')
-def connect_websocket():
+def connect_websocket(socket):
     cookies = request.cookies
     if 'auth_token' in cookies.keys():
         token = cookies['auth_token']
         hashed_token = db.hash_token(token)
         if db.does_hashed_token_exist(hashed_token):
-            socket_id = secrets.token_hex()
-            socket_id_map[socket_id] = hashed_token
-            emit('connect_echo', {'id': socket_id})
+            socket_id = request.sid
+            username = db.get_user_by_hashed_token(hashed_token)['username']
+            sid_map[username] = socket_id
+            emit('connect_echo', {'id': socket_id}, broadcast=False)
             print("connected with " + socket_id)
             return
     print("connected without login")
 
+casino_users = {}
+
+def update_user_pos(data : dict[str, dict[str, int]]):
+    username = data['username']
+    position = data['pos']
+    casino_users[username] = {'x': position['x'], 'y': position['y']}
+
+@socketio.on('casino_join')
+def casino_join(data):
+    update_user_pos(data)
+    emit('movement', data, broadcast=True)
+    socket_id = sid_map[data['username']]
+    for player in casino_users:
+        emit('movement', {'username': player, 'pos': casino_users[player]}, to=socket_id)
+
+@socketio.on('casino_leave')
+def casino_leave(data):
+    username = data['username']
+    casino_users.pop(username)
+    emit('casino_leave', data, broadcast=True)
 
 @socketio.on('player_move')
 def player_move(data):
+    update_user_pos(data)
     emit('movement', data, broadcast=True)
+
+@socketio.on('challenge_player')
+def challenge_player(data):
+    # data: {'challenger': user who initiates, 'defender': user who will be sent the request}
+    defender_username = data['defender']
+    challenge_data = {'from': data['challenger']}
+    emit('challenge', challenge_data, to=sid_map[defender_username])
+
+@socketio.on('challenge_response')
+def challenge_response(data):
+    # data: {'acceptor': user that was sent a challenge, 'challenger': user who initiated the challenge}
+    challenger_username = data['challenger']
+    challenge_data = {'from': data['acceptor']}
+    if data['accepted']:
+        emit('ch_accept', challenge_data, to=sid_map[challenger_username])
+    else:
+        emit('ch_decline', challenge_data, to=sid_map[challenger_username])
+
+# TODO: add consent
+@socketio.on("flip_coin")
+def flip_coin(data):
+    # data = {'to': user they are competing with, 'from': user in question}
+    sending_user = data['from']
+    receiving_user = data['to']
+    result = coin.coinflip()
+    if result:
+        inv.update_coins(sending_user, 1)
+        inv.update_coins(receiving_user, -1)
+    else:
+        inv.update_coins(sending_user, -1)
+        inv.update_coins(receiving_user, 1)
+    result_data = {sending_user: inv.get_coins(sending_user), receiving_user: inv.get_coins(receiving_user), 'result': result}
+    emit('flip_result', result_data, to=sid_map[sending_user])
+    emit('flip_result', result_data, to=sid_map[receiving_user])
+
+@socketio.on('get_coins')
+def get_coins_ws(data):
+    username = data['username']
+    result_data = {'username': username, 'coins': inv.get_coins(username)}
+    emit('coins', result_data, to=request.sid)

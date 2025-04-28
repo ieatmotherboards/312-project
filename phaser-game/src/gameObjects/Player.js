@@ -2,13 +2,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite
 {
     constructor(scene, x, y) {
         super(scene, x, y, 'dude');
-        scene.add.existing(this);
-        scene.physics.add.existing(this);
+        this.scene.add.existing(this);
+        this.scene.physics.add.existing(this);
 
         this.setCollideWorldBounds(true);   // enables player collision with world bounds
-        this.initAninations();      
-
-        this.score = 0; // score variable from tutorial
+        this.initAninations();
     }
 
     // initializes player's animations (from tutorial) (maybe won't use later)
@@ -42,7 +40,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite
 
     moveRight() {
         this.setVelocityX(200);
-        this.anims.play('right', true)
+        this.anims.play('right', true);
     }
 
     moveUp() {

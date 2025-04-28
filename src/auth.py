@@ -5,7 +5,7 @@ import src.database as db
 import bcrypt
 import secrets
 import hashlib
-from src.inventory import createInventory
+from src.inventory import create_inventory
 from src.logging import main_log, auth_log, logout_log, register_log
 
 def parse_data():
@@ -57,7 +57,7 @@ def register_new_account(request : Request):
             db.register_user(username, hashed_password)
 
             register_log(username=username, success=True, message='successfully registered')
-            createInventory(username)
+            create_inventory(username)
             return make_response()
         else:
             register_log(username=username, success=False, message='password was not strong enough')
