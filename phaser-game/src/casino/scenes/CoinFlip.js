@@ -6,13 +6,6 @@ export class CoinFlip extends Phaser.Scene {
         super('CoinFlip');
     }
 
-    // initializes using data from casino scene, called before create()
-    init(data) {
-        this.opponent = data['opponent'];
-        this.websocket = data['websocket'];
-        this.websocket.scene = this
-    }
-
     create() {
         this.coin = this.add.sprite(400, 300, 'coin_flip');
 
@@ -20,7 +13,7 @@ export class CoinFlip extends Phaser.Scene {
 
         this.myCoinCounter = new CoinCounter(this, 28, 28);
         this.myUserText = this.add.text(20, 65, '', { fontSize: '16px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0, 0.5);
-        this.enemyUserText = this.add.text(780, 65, this.opponent, { fontSize: '16px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(1, 0.5);
+        this.enemyUserText = this.add.text(780, 65, '', { fontSize: '16px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(1, 0.5);
         this.enemyCoinCounter = new CoinCounter(this, 650, 28);
         this.exitSign = new ExitSign(this, 400, 32, 'Game');
 
@@ -36,9 +29,8 @@ export class CoinFlip extends Phaser.Scene {
             this.myCoinCounter.setCoins(data['coins']);
             this.username = data['username'];
             this.myUserText.setText(this.username);
+            this.websocket.emit('get_opponent', { 'username': this.username });
         });
-        
-        this.websocket.emit('get_coins', { 'username': this.opponent });
 
         this.coin.anims.create({
             key: 'heads',
@@ -66,10 +58,13 @@ export class CoinFlip extends Phaser.Scene {
             }
         });
 
-
         this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.interacted = false;
+
+        // websocket initialization
+        this.websocket = io();
+        this.websocket.scene = this;
 
         this.websocket.on('coins', function(data) {
             let username = data['username'];
@@ -78,6 +73,12 @@ export class CoinFlip extends Phaser.Scene {
             } else if (username == this.scene.opponent) {
                 this.scene.enemyCoinCounter.setCoins(data['coins']);
             }
+        });
+
+        this.websocket.on('opponent', function(data) {
+            this.scene.opponent = data['opponent'];
+            this.scene.enemyUserText.setText(this.scene.opponent);
+            this.scene.websocket.emit('get_coins', { 'username': this.scene.opponent });
         });
 
         this.websocket.on('flip_result', function(data) {
