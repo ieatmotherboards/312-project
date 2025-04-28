@@ -8,7 +8,6 @@ import hashlib
 from src.inventory import create_inventory
 from src.logging import main_log, auth_log, logout_log, register_log
 
-
 def parse_data():
     '''
     dummy function to pull out username and password from frontend, replace this with actual logic later
@@ -98,7 +97,7 @@ def login(request : Request):
 def extract_cookie(cookie_val):
     print(cookie_val)
 
-# returns tuple: (status_code, message)
+# returns Flask response, 200 OK or 403
 def logout(request : Request):
     cookies = request.cookies
 
@@ -114,8 +113,10 @@ def logout(request : Request):
     if user is not None:
         db.users.update_one({'auth_token': hashed_token}, {'$set': {'auth_token': 'LOGGED OUT'}})
 
+        response = make_response("Logout Success", 200)
+        response.set_cookie('auth_token', 'logged out', max_age=0, httponly=True)
         logout_log(username=user['username'], success=True, message='successfully logged out')
-        return (200, '')
+        return response
     else:
         logout_log("invalid user", success=False, message='invalid auth token')
-        return (403, 'invalid auth token')
+        return ('Invalid Auth Token', 403)

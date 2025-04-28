@@ -19,8 +19,8 @@ from src.websockets import connect_websocket  # for some reason this needs to be
 from src.phaser_routes import phaser
 
 
-logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w") # configure logger in logs file -- must be in logs directory
-logging.getLogger('werkzeug').disabled = True # use this to supress automagical werkzeug logs, functional but ugly
+logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w") 
+logging.getLogger('werkzeug').disabled = True # use this to supress automatic werkzeug logs (which are free game but super cluttered)
 
 UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -54,14 +54,13 @@ def parse_login():
     
 @app.route('/logout_data', methods=['POST'])
 def parse_logout():
+    main_log(req=request, res=make_response("OK", 200))
     logout_result = logout(request=request)
-    if logout_result[0] == 200:
-        response = make_response("Logout Success", 200)
-        response.set_cookie('auth_token', 'logged out', max_age=0, httponly=True)
-    else:
-        response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
-    main_log(req=request, res=response)
-    return response
+    # if logout_result[0] == 200:
+        
+    # else:
+    #     response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
+    return logout_result
 
 @app.route('/register')
 def register():
@@ -81,6 +80,18 @@ def render_casino():
         response = redirect('/', code=302)  # TODO: should change to a 400-level response and display an alert on frontend
     else:
         response = make_response(render_template("game.html", path='casino/mainCasino.js'))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/roulette')
+def render_roulette():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)  # TODO: should change to a 400-level response and display an alert on frontend
+        return response
+    
+    js_path = 'casino/scenes/Roulette.js'
+
+    response = make_response(render_template("game.html", path=js_path))
     main_log(req=request, res=response)
     return response
 

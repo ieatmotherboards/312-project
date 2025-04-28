@@ -86,14 +86,18 @@ def get_inventory(username: str):
 def get_leaderboard(sort_key: str, ascending: bool) -> list:
     """
     Args:
-        sort_key: string representing what
+        sort_key: string representing what term to sort users db by, eg "coins", etc
     Returns:
         List of all users sorted on the parameter key
     """
-    order = 1
-    if not ascending:
-        order = -1
+    order = 1 if ascending else -1
     return users.find({}).sort({sort_key:order}).to_list()
+
+def get_coins_leaderboard() -> list:
+    """
+    Simple function that returns a list of all users with coins, sorted in descending order
+    """
+    return get_leaderboard("coins", ascending=False)
 
 # def inventory_test():
 #     users.insert_one({"username":"backend_testing_1","inventory":{"Axe":1}})

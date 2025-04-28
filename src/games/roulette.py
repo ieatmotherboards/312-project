@@ -21,13 +21,34 @@ def spinWheel():
     spin=outcomes[randint(0,len(outcomes)-1)]
     return spin
 
-def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/num/etc ...), betAmmount: ammountOfBet,numbers: [allNumbers]}
+len_dict = {
+    1: "Straight up",
+    2: "Split",
+    3: "Street",
+    4: "Corner bet",
+    5: "5Number",
+    6: "Line"
+}
+
+def find_types(numbers: list) -> str:
+    '''
+    Args:
+        List of int that the better picked. Max length is 6
+    Output:
+        String representing the bet type they made
+    '''
+    if len(numbers) > 6:
+        return "error"
+    return len_dict[len(numbers)]
+
+
+def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/num/etc ...), betAmount: ammountOfBet,numbers: [allNumbers]}
 
     '''
     In: List of Dictonarys with keys 
     name -> username
-    betType -> type of bet (Straight up, Split, Street, Corner bet, 5Number, Line, First12, Second12, Third12, First18, Second18, Red, Black, Odd, Even)
-    betAmmount -> Int of how much they bet
+    betType -> type of bet (Straight up, Split, Street, Corner bet, 5Number, Line, 1st Twelve, 2nd Twelve, 3rd Twelve, First 18, Second 18, Red, Black, Odd, Even)
+    betAmount -> Int of how much they bet
     numbers -> List of nubers their bet applies too if needed 
 
     Out: index 0 = Dictonary with keys being usernames and values being how much they won/lost
@@ -45,16 +66,16 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
         winningBets.append('Black')
     
     if outcome <= 12 and outcome >0:
-        winningBets.append('First12')
+        winningBets.append('1st Twelve')
     elif outcome > 12 and outcome<=24:
-        winningBets.append('Second12')
+        winningBets.append('2nd Twelve')
     elif outcome >24 and outcome <= 36:
-        winningBets.append("Third12")
+        winningBets.append("3rd Twelve")
     
     if outcome>0 and outcome <=18:
-        winningBets.append('First18')
+        winningBets.append('First 18')
     elif outcome >18 and outcome <=36:
-        winningBets.append('Second18')
+        winningBets.append('Second 18')
 
     if outcome not in [0,0.0]:
         if outcome %2 ==0:
@@ -64,7 +85,7 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
     for bet in betList:
         Better=bet['name']
         BetType=bet['betType']
-        Ammount=bet['betAmmount']
+        Ammount=bet['betAmount']
 
         if BetType == 'Straight up':
             if outcome == bet['numbers']:
@@ -108,35 +129,35 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
             else:
                 out['House']=(out['House']+Ammount)
                 out[Better]=(-1*Ammount)
-        elif BetType == 'First12':
+        elif BetType == '1st Twelve':
             if BetType in winningBets:
                 out['House']=(out['House']-(3*Ammount))
                 out[Better]=3*Ammount
             else:
                 out['House']=(out['House']+Ammount)
                 out[Better]=(-1*Ammount)
-        elif BetType == 'Second12':
+        elif BetType == '2nd Twelve':
             if BetType in winningBets:
                 out['House']=(out['House']-(3*Ammount))
                 out[Better]=3*Ammount
             else:
                 out['House']=(out['House']+Ammount)
                 out[Better]=(-1*Ammount) 
-        elif BetType == 'Third12':
+        elif BetType == '3rd Twelve':
             if BetType in winningBets:
                 out['House']=(out['House']-(3*Ammount))
                 out[Better]=3*Ammount
             else:
                 out['House']=(out['House']+Ammount)
                 out[Better]=(-1*Ammount)
-        elif BetType == "First18":
+        elif BetType == "First 18":
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
                 out[Better]=(-1*Ammount)
-        elif BetType == "Second18":
+        elif BetType == "Second 18":
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
