@@ -25,7 +25,7 @@ def connect_websocket(socket):
     print("connected without login")
 
 @socketio.on('disconnect')
-def connect_websocket(socket):
+def disconnect_websocket(socket):
     cookies = request.cookies
     if 'auth_token' in cookies.keys():
         token = cookies['auth_token']

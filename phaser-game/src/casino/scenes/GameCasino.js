@@ -12,38 +12,47 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(400, 300, 'sky'); // background image
+    // INITIAL GRAPHICS
+        // casino floor repeating texture
+        this.add.tileSprite(400, 300, 800, 600, 'back');
+        // screen for when another player challenges you to a coin toss
         this.chScreen = this.add.image(400, 300, 'challenge_screen').setDepth(1);
         this.chTopText = this.add.text(400, 280, '[Player] has challenged you!', { fontSize: '20px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5).setDepth(2);
         this.chBottomText = this.add.text(400, 320, 'E: Accept  SPACE: Deny', { fontSize: '18px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5).setDepth(2);
         this.chScreenVisible(false);
+        // player's coin counter
+        this.coinCounter = new CoinCounter(this, 28, 28);
 
+    // INSTANCE VARS
+        // this player's username, assigned value through fetch to phaser/@me
+        this.username;
         // id for websockets
         this.socketId;
-        // username, assigned value through fetch to phaser/@me
-        this.username;
-
         // array of objects to call update() on
         this.objsToUpdate = [];
-
-        // player object
-        this.player = new Player(this, 100, 450);
-
         // time passed for movement broadcasting
         this.timePassed = 0;
         // how much time needs to pass before broadcasting next movement
         this.timeToNext = 50;
-        // previously broadcasted position
-        this.prevPosition = {x: this.player.x, y: this.player.x}; 
+        // the player that challenged this user, null if none
+        this.challenger = null;
+        // disables movement & interaction inputs
+        this.disableMovement = false;
 
-        this.slots = []; // array for slot machine objects
-        this.playerGhosts = {}; // dict for player ghost objects, maps their id to their object
-
-        this.coinCounter = new CoinCounter(this, 28, 28); // coin counter object
-        
-        // sset of objects player is colliding with
+        // array containing slot machine objects
+        this.slots = [];
+        // dict for player ghost objects, maps their username to their object
+        this.playerGhosts = {};
+        // sets of hitboxes player is overlapping
         this.slotOverlaps = new Set();
         this.challengeOverlaps = new Set();
+        
+        
+    // GAME OBJECT INIT
+        // player object
+        this.player = new Player(this, 100, 450);
+        // previously broadcasted position
+        this.prevPosition = {x: this.player.x, y: this.player.x}; 
 
         // populates slots array with 12 slot machines facing down
         let i = 0;
@@ -74,7 +83,7 @@ export class Game extends Phaser.Scene {
         this.challengePopup.text = this.add.text(400, 60, 'Press E to challenge [player]!', { fontSize: '24px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
         this.chPopupVisible(false);
 
-        // getting user info
+    // GETTING USER INFO
         let request = new Request('/phaser/@me');
         fetch(request).then(response => {
             return response.json();
@@ -85,10 +94,7 @@ export class Game extends Phaser.Scene {
             this.websocket.emit('casino_join', { 'username': this.username, 'pos': {'x': this.player.x, 'y': this.player.y} });
         });
 
-        // the player that challenged this user, null if none
-        this.challenger = null;
-        // disables movement & interaction inputs
-        this.disableMovement = false;
+    // INPUT KEYS
         // movement keys
         this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
         this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -98,15 +104,16 @@ export class Game extends Phaser.Scene {
         this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
+    // WEBSOCKETS
         // websocket initialization
         this.websocket = io();
         this.websocket.scene = this;
-        // when recieving message of type "connect_echo"
+        // server acknowledges connection
         this.websocket.on('connect_echo', function(data) {
             this.scene.socketId = data.id;
             console.log('connected to server, my name is ' + this.scene.socketId);
         });
-        // when recieving message of type "movement"
+        // recieving player movement data
         this.websocket.on('movement', function(data) {
             let x = data['pos']['x'];
             let y = data['pos']['y'];
@@ -124,63 +131,55 @@ export class Game extends Phaser.Scene {
                 }
             }
         });
-        // when recieving notice that a player has left the casino
+        // player leaves casino
         this.websocket.on('casino_leave', function(data) {
             let username = data['username'];
             this.scene.playerGhosts[username].leave();
             delete this.scene.playerGhosts[username];
         })
-        // when recieving a player's coin number
+        // recieving player's coin count
         this.websocket.on('coins', function(data) {
             let username = data['username'];
             if (username != this.scene.username && this.scene.playerGhosts[username] != undefined) {
                 this.scene.playerGhosts[username].coinsText.setText('Coins: ' + data['coins']);
             }
         });
-        // when recieving a challenge from another user
+        // recieving a challenge from another user
         this.websocket.on('challenge', function(data) {
             this.scene.disableMovement = true;
             this.scene.challenger = data['from'];
             this.scene.chScreenVisible(true);
         })
-        // when a user you challenge accepts
+        // a user you challenge accepts
         this.websocket.on('ch_accept', function(data) {
             this.scene.coinflipSwap();
         })
-        // when a user you challenge declines
+        // a user you challenge declines
         this.websocket.on('ch_decline', function(data) {
             // TODO
         })
     }
 
+    // called every tick
     update(time, delta) {
         // handles player movement
-        let moved = false
-        if (this.keyA.isDown && !this.disableMovement) {
-            this.player.moveLeft();
-            moved = true;
+        let x = 0;
+        let y = 0;
+        if (!this.disableMovement) {
+            if (this.keyA.isDown) {
+                x -= 200;
+            }
+            if (this.keyD.isDown) {
+                x += 200;
+            }
+            if (this.keyW.isDown) {
+                y -= 200;
+            }
+            if (this.keyS.isDown) {
+                y += 200;
+            }
         }
-        else if (this.keyD.isDown && !this.disableMovement) {
-            this.player.moveRight();
-            moved = true;
-        }
-        else {
-            this.player.idleX();
-        }
-        if (this.keyW.isDown && !this.disableMovement) {
-            this.player.moveUp();
-            moved = true;
-        }
-        else if (this.keyS.isDown && !this.disableMovement) {
-            this.player.moveDown();
-            moved = true;
-        }
-        else {
-            this.player.idleY();
-        }
-        if (!moved) {
-            this.player.idle();
-        }
+        this.player.move(x, y);
         // handles challenge accept or deny
         if (this.challenger != null) {
             let accepted = null;
@@ -257,13 +256,13 @@ export class Game extends Phaser.Scene {
 
     coinflipSwap() {
         this.scene.start('CoinFlip');
-        this.websocket.emit('casino_leave', {'username': this.username});
+        // this.websocket.emit('casino_leave', {'username': this.username});
         this.websocket.disconnect(false);
     }
 
     slotsSwap() {
         this.scene.start('Slots');
-        this.websocket.emit('casino_leave', {'username': this.username});
+        // this.websocket.emit('casino_leave', {'username': this.username});
         this.websocket.disconnect(false);
     }
 }

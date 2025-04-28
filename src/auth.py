@@ -5,7 +5,7 @@ import src.database as db
 import bcrypt
 import secrets
 import hashlib
-from src.inventory import create_inventory
+import src.inventory as inv
 from src.logging import main_log, auth_log, logout_log, register_log
 
 def parse_data():
@@ -57,7 +57,7 @@ def register_new_account(request : Request):
             db.register_user(username, hashed_password)
 
             register_log(username=username, success=True, message='successfully registered')
-            create_inventory(username)
+            inv.create_inventory(username)
             return make_response()
         else:
             register_log(username=username, success=False, message='password was not strong enough')
@@ -82,13 +82,13 @@ def login(request : Request):
             hashed_token = db.hash_token(token)
 
             db.users.update_one({'username': username}, {'$set': {'auth_token': hashed_token}})
+            inv.check_inventory(username)
 
             auth_log(username=username, success=True, message='successfully logged in')
-            return {"auth_token": token}
-
+            return {'auth_token': token}
         else:
             auth_log(username=username, success=False, message='incorrect password')
-            return {"error": 'Incorrect Password'}
+            return {'error': 'Incorrect Password'}
     else:
         auth_log(username=username, success=False, message='username does not exist')
         return {'error': 'No Account With That Name Found'}

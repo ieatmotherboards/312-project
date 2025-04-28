@@ -26,6 +26,7 @@ export class Preloader extends Phaser.Scene {
         this.load.setPath('phaser-game/assets');
         this.load.image('sky', 'sky.png');
         this.load.image('phaser', 'phaser.png');
+        this.load.image('back', 'back_mod.png');
 
         // casino floor imgs
         this.load.image('slotmachine', 'slotmachine.png');
@@ -45,6 +46,7 @@ export class Preloader extends Phaser.Scene {
 
         // coin flip imgs
         this.load.setPath('phaser-game/assets/coin_toss');
+        this.load.image('table', 'crust_table.png');
         this.load.spritesheet('coin_flip', 'coin_flip.png', {frameWidth: 128, frameHeight: 128});
     }
 
