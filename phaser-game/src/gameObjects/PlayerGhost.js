@@ -53,6 +53,7 @@ export class PlayerGhost extends Phaser.GameObjects.GameObject {
         this.hitbox.destroy();
         this.sprite.destroy();
         this.nameText.destroy();
+        this.coinsText.destroy();
         this.destroy();
     }
 }
