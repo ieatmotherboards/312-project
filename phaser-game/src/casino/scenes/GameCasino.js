@@ -188,7 +188,6 @@ export class Game extends Phaser.Scene {
                 accepted = false;
             } else if (this.keyE.isDown) {
                 accepted = true;
-                this.coinflipSwap();
             }
             if (accepted != null) {
                 this.websocket.emit('challenge_response', {
@@ -196,8 +195,12 @@ export class Game extends Phaser.Scene {
                     'acceptor': this.username, 
                     'challenger': this.challenger
                 });
-                this.disableMovement = false;
+            }
+            if (accepted == true) {
+                this.coinflipSwap();
+            } else if (accepted == false) {
                 this.challenger = null;
+                this.disableMovement = false;
                 this.chScreenVisible(false);
             }
         }
@@ -253,12 +256,14 @@ export class Game extends Phaser.Scene {
     }
 
     coinflipSwap() {
-        this.scene.start('CoinFlip', { 'opponent': this.challenger, 'websocket': this.websocket });
+        this.scene.start('CoinFlip');
         this.websocket.emit('casino_leave', {'username': this.username});
+        this.websocket.disconnect(false);
     }
 
     slotsSwap() {
         this.scene.start('Slots');
         this.websocket.emit('casino_leave', {'username': this.username});
+        this.websocket.disconnect(false);
     }
 }

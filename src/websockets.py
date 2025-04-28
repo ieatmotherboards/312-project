@@ -24,6 +24,21 @@ def connect_websocket(socket):
             return
     print("connected without login")
 
+@socketio.on('disconnect')
+def connect_websocket(socket):
+    cookies = request.cookies
+    if 'auth_token' in cookies.keys():
+        token = cookies['auth_token']
+        hashed_token = db.hash_token(token)
+        if db.does_hashed_token_exist(hashed_token):
+            socket_id = request.sid
+            username = db.get_user_by_hashed_token(hashed_token)['username']
+            if username in casino_users:
+                casino_users.pop(username)
+                emit('casino_leave', {'username': username}, broadcast=True)
+            return
+    print("connected without login")
+
 casino_users = {}
 
 def update_user_pos(data : dict[str, dict[str, int]]):
@@ -57,13 +72,18 @@ def challenge_player(data):
     challenge_data = {'from': data['challenger']}
     emit('challenge', challenge_data, to=sid_map[defender_username])
 
+coinflip_instances = {}
+
 @socketio.on('challenge_response')
 def challenge_response(data):
     # data: {'acceptor': user that was sent a challenge, 'challenger': user who initiated the challenge}
     challenger_username = data['challenger']
-    challenge_data = {'from': data['acceptor']}
+    acceptor_username = data['acceptor']
+    challenge_data = {'from': acceptor_username}
     if data['accepted']:
         emit('ch_accept', challenge_data, to=sid_map[challenger_username])
+        coinflip_instances[challenger_username] = acceptor_username
+        coinflip_instances[acceptor_username] = challenger_username
     else:
         emit('ch_decline', challenge_data, to=sid_map[challenger_username])
 
@@ -89,3 +109,9 @@ def get_coins_ws(data):
     username = data['username']
     result_data = {'username': username, 'coins': inv.get_coins(username)}
     emit('coins', result_data, to=request.sid)
+
+@socketio.on('get_opponent')
+def get_opponent(data):
+    username = data['username']
+    opponent_data = {'opponent': coinflip_instances[username]}
+    emit('opponent', opponent_data, to=request.sid)
