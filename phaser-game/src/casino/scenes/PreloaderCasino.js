@@ -34,6 +34,7 @@ export class Preloader extends Phaser.Scene {
         this.load.image('popup', 'play_popup.png');
         this.load.image('ghost', 'pfp_border.png');
         this.load.image('exit', 'exit_sign.png');
+        this.load.image('challenge_screen', 'challenge_screen.png');
         this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
 
         // slot machine imgs

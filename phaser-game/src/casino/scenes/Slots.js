@@ -15,7 +15,7 @@ export class Slots extends Phaser.Scene {
         this.spinning = false;
         this.currentBet = 1;
 
-        this.exitSign = new ExitSign(this, 730, 32, 'Game')
+        this.exitSign = new ExitSign(this, 730, 32, 'Game');
 
         // initialize spin button
         this.button = this.add.sprite(700, 500, 'button').setScale(2);

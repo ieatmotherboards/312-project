@@ -1,55 +1,39 @@
-export class SlotMachine {
+import { Hitbox } from './Hitbox_no_virus.js';
+
+export class SlotMachine extends Phaser.GameObjects.GameObject {
 
     constructor(scene, x, y, key) {
-        this.scene = scene;
+        super(scene, key);
+        // initializes display sprite
         this.sprite = this.scene.physics.add.staticSprite(x, y, key).setScale(2.5, 2.5).refreshBody();
-
+        // collider with player
         this.scene.physics.add.collider(this.sprite, this.scene.player);
 
-        this.DEBUG = true;
-    }
-
-    addOverlapBox(xOff, yOff, scale) {
-        this.overlap = this.scene.physics.add.sprite(this.sprite.x + xOff, this.sprite.y + yOff, 'debug').setScale(scale);
-        if (this.DEBUG) {
-            this.overlap.setAlpha(0.5);
-        } else {
-            this.overlap.setAlpha(0);
-        }
-        this.scene.physics.add.overlap(this.overlap, this.scene.player, this.playerCollide, null, this);
-        // this.overlap.refreshBody();
-        this.firstOverlap = true;
-        this.stoppedOverlap = true;
         this.interacted = false;
     }
 
-    playerCollide() {
-        this.stoppedOverlap = false
-        if (this.firstOverlap) {
-            // console.log('started overlapping')
-            this.scene.colliding.add(this);
-            this.scene.popupVisible(true);
-            this.firstOverlap = false;
-        }
-        if (this.scene.keySpace.isDown && !this.interacted) {
-            // console.log('interacted');
+    addOverlapBox(xOff, yOff, scale) {
+        this.hitbox = new Hitbox(this.scene, this, this.sprite.x + xOff, this.sprite.y + yOff, scale);
+        this.hitbox.addOverlap(this.scene.player);
+    }
+
+    startOverlap() {
+        this.scene.slotOverlaps.add(this);
+        this.scene.playPopupVisible(true);
+    }
+
+    duringOverlap() {
+        if (this.scene.keySpace.isDown && !this.interacted && !this.scene.disableMovement) {
             this.interacted = true;
-            this.scene.scene.start('Slots');
+            this.scene.slotsSwap();
         }
         else if (!this.scene.keySpace.isDown && this.interacted) {
             this.interacted = false;
         }
     }
 
-    update() {
-        let touching = !this.overlap.body.touching.none || this.overlap.body.embedded;
-        let wasTouching = !this.overlap.body.wasTouching.none;
-        if (!touching && wasTouching && !this.stoppedOverlap) {
-            // console.log('stopped overlapping');
-            this.stoppedOverlap = true;
-            this.firstOverlap = true;
-            this.scene.colliding.delete(this);
-            this.scene.stoppedColliding();
-        }
+    stopOverlap() {
+        this.scene.slotOverlaps.delete(this);
+        this.scene.stoppedColliding();
     }
 }
