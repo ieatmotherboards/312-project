@@ -56,18 +56,13 @@ def get_item_properties(item_id):
     item_type = item_db.find_one({'id": item_id'})['type']
     return item_type_map[item_type]
 
-<<<<<<< HEAD
     
-def getCoins(username):
-    userdata=Inventory.find_one({'username':username})
-    coins=userdata['coins']
-    return coins
+
 
 def getLeaderBoard():
-    soretedData=Inventory.find().sort('coins',1)
+    soretedData=inv_db.find().sort('coins',1)
     return soretedData
 
-=======
 
 # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}
 def trade(user1, user1_stuff, user2, user2_stuff):
@@ -133,4 +128,3 @@ if __name__ == '__main__':
     trade_items(user1_inventory, ['1', '2'], ['3'])
     trade_items(user2_inventory, ['3'], ['1', '2'])
     pass
->>>>>>> main
