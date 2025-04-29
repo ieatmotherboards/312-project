@@ -26,19 +26,28 @@ export class Preloader extends Phaser.Scene {
         this.load.setPath('phaser-game/assets');
         this.load.image('sky', 'sky.png');
         this.load.image('phaser', 'phaser.png');
+        this.load.image('back', 'back_mod.png');
 
         // casino floor imgs
         this.load.image('slotmachine', 'slotmachine.png');
         this.load.image('slotmachine_side', 'slotmachine_side.png');
         this.load.image('coin', 'coin.png');
-        this.load.image('popup', 'play_popup.png')
-        this.load.image('ghost', 'pfp_border.png')
+        this.load.image('popup', 'play_popup.png');
+        this.load.image('ghost', 'pfp_border.png');
+        this.load.image('exit', 'exit_sign.png');
+        this.load.image('challenge_screen', 'challenge_screen.png');
         this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
 
         // slot machine imgs
         this.load.setPath('phaser-game/assets/slots');
-        this.load.image('slots_bg', 'empty_slots.png');
+        this.load.image('slots_bg', 'slots_bg.png');
         this.load.image('button', 'spin_button.png');
+        this.load.spritesheet('slot_icons', 'slots_icons.png', {frameWidth: 32, frameHeight: 32});
+
+        // coin flip imgs
+        this.load.setPath('phaser-game/assets/coin_toss');
+        this.load.image('table', 'crust_table.png');
+        this.load.spritesheet('coin_flip', 'coin_flip.png', {frameWidth: 128, frameHeight: 128});
     }
 
     create() {

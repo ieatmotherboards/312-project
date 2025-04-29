@@ -15,14 +15,15 @@ else:
 db = mongo_client["312_project"]
 
 users = db["users"]
+inv_db = db["inventory"]
+item_db = db["items"]
 
 # users.delete_many({})
 
 def register_user(username : str, password : str):
     db.users.insert_one({
         'username': username,
-        'password': password,
-        'coins': 0
+        'password': password
     })
 
 def get_user_by_hashed_token(hashed_token : str):
@@ -59,7 +60,7 @@ def insert_item_by_username(username, item):
     Returns:
         None
     """
-    user = get_user_by_username(username=username)
+    user = get_user_by_username(username)
     if user is not None:
         if "inventory" not in user:
             inventory = {item:1}
@@ -68,46 +69,21 @@ def insert_item_by_username(username, item):
             inventory[item] = 1
         users.update_one({"username":username}, {"$set":{"inventory":inventory}})
 
-def get_inventory(username: str):
-    """
-    Args:
-        username: string representing a player's username
-    Returns:
-        Set representing a player's inventory
-        None if player doesn't exist
-    """
-    if not does_username_exist(username=username):
-        return None
-    lookup = get_user_by_username(username=username)
-    if "inventory" not in lookup:
-        return {}
-    return lookup["inventory"]
-
 def get_leaderboard(sort_key: str, ascending: bool) -> list:
     """
     Args:
-        sort_key: string representing what
+        sort_key: string representing what term to sort users db by, eg "coins", etc
     Returns:
         List of all users sorted on the parameter key
     """
-    order = 1
-    if not ascending:
-        order = -1
+    order = 1 if ascending else -1
     return users.find({}).sort({sort_key:order}).to_list()
 
-# def inventory_test():
-#     users.insert_one({"username":"backend_testing_1","inventory":{"Axe":1}})
-#     app.logger.info("Axe" in get_inventory("backend_testing_1"))
-
-#     users.insert_one({"username":"backend_testing_2"})
-#     insert_item_by_username("backend_testing_2","Axe")
-
-#     app.logger.info("Axe" in get_inventory("backend_testing_2"))
-
-#     insert_item_by_username("backend_testing_2","Coin")
-
-#     app.logger.info("Axe" in get_inventory("backend_testing_2"))
-#     app.logger.info("Coin" in get_inventory("backend_testing_2"))
+def get_coins_leaderboard() -> list:
+    """
+    Simple function that returns a list of all users with coins, sorted in descending order
+    """
+    return get_leaderboard("coins", ascending=False)
 
 # validates request's auth token, returning it hashed if it is valid or returning error codes if invalid
 def try_hash_token(request : Request):

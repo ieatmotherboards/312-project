@@ -5,8 +5,8 @@ import src.database as db
 import bcrypt
 import secrets
 import hashlib
-from src.inventory import createInventory
-from src.logging import main_log, auth_log, logout_log, register_log
+import src.inventory as inv
+from src.logging_things import main_log, auth_log, logout_log, register_log
 
 def parse_data():
     '''
@@ -57,7 +57,7 @@ def register_new_account(request : Request):
             db.register_user(username, hashed_password)
 
             register_log(username=username, success=True, message='successfully registered')
-            createInventory(username)
+            inv.create_inventory(username)
             return make_response()
         else:
             register_log(username=username, success=False, message='password was not strong enough')
@@ -82,13 +82,13 @@ def login(request : Request):
             hashed_token = db.hash_token(token)
 
             db.users.update_one({'username': username}, {'$set': {'auth_token': hashed_token}})
+            inv.check_inventory(username)
 
             auth_log(username=username, success=True, message='successfully logged in')
-            return {"auth_token": token}
-
+            return {'auth_token': token}
         else:
             auth_log(username=username, success=False, message='incorrect password')
-            return {"error": 'Incorrect Password'}
+            return {'error': 'Incorrect Password'}
     else:
         auth_log(username=username, success=False, message='username does not exist')
         return {'error': 'No Account With That Name Found'}
@@ -97,7 +97,7 @@ def login(request : Request):
 def extract_cookie(cookie_val):
     print(cookie_val)
 
-# returns tuple: (status_code, message)
+# returns Flask response, 200 OK or 403
 def logout(request : Request):
     cookies = request.cookies
 
@@ -113,8 +113,10 @@ def logout(request : Request):
     if user is not None:
         db.users.update_one({'auth_token': hashed_token}, {'$set': {'auth_token': 'LOGGED OUT'}})
 
+        response = make_response("Logout Success", 200)
+        response.set_cookie('auth_token', 'logged out', max_age=0, httponly=True)
         logout_log(username=user['username'], success=True, message='successfully logged out')
-        return (200, '')
+        return response
     else:
         logout_log("invalid user", success=False, message='invalid auth token')
-        return (403, 'invalid auth token')
+        return ('Invalid Auth Token', 403)

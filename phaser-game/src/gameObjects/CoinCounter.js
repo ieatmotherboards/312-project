@@ -9,12 +9,20 @@ export class CoinCounter extends Phaser.GameObjects.Sprite {
         this.text = scene.add.text(x + 20, y - 12, "x0", { fontSize: '32px', fill: '#000' });
     }
 
+    updateDisplay() {
+        this.text.setText("x" + this.coins);
+    }
+
     setCoins(c) {
         this.coins = c;
-        this.text.setText("x" + this.coins);
+        this.updateDisplay();
     }
 
     incrementCoins() {
         this.setCoins(this.coins + 1);
+    }
+
+    addCoins(c) {
+        this.setCoins(this.coins + c);
     }
 }

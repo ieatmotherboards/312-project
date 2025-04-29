@@ -12,25 +12,47 @@ export class Game extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(400, 300, 'sky'); // background image
+    // INITIAL GRAPHICS
+        // casino floor repeating texture
+        this.add.tileSprite(400, 300, 800, 600, 'back');
+        // screen for when another player challenges you to a coin toss
+        this.chScreen = this.add.image(400, 300, 'challenge_screen').setDepth(1);
+        this.chTopText = this.add.text(400, 280, '[Player] has challenged you!', { fontSize: '20px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5).setDepth(2);
+        this.chBottomText = this.add.text(400, 320, 'E: Accept  SPACE: Deny', { fontSize: '18px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5).setDepth(2);
+        this.chScreenVisible(false);
+        // player's coin counter
+        this.coinCounter = new CoinCounter(this, 28, 28);
 
-        this.socketId = ''; // id for websockets
+    // INSTANCE VARS
+        // this player's username, assigned value through fetch to phaser/@me
+        this.username;
+        // id for websockets
+        this.socketId;
+        // array of objects to call update() on
+        this.objsToUpdate = [];
+        // time passed for movement broadcasting
+        this.timePassed = 0;
+        // how much time needs to pass before broadcasting next movement
+        this.timeToNext = 50;
+        // the player that challenged this user, null if none
+        this.challenger = null;
+        // disables movement & interaction inputs
+        this.disableMovement = false;
 
-        this.player = new Player(this, 100, 450); // player object
-
-        this.timePassed = 0;    // time passed for movment broadcasting
-        this.timeToNext = 50;  // how much time needs to pass before broadcasting next movement
-        this.prevPosition = {x: this.player.x, y: this.player.y}; // previously broadcasted position
-
-        this.slots = []; // array for slot machine objects
-        this.playerGhosts = {}; // dict for player ghost objects, maps their id to their object
-
-        this.coinCounter = new CoinCounter(this, 28, 28); // coin counter object
-
-        this.popup = this.add.image(400, 540, 'popup').setScale(2);
-        this.popup.text = this.add.text(210, 525, 'Press SPACE to play!', { fontSize: '32px', align: 'center', color: '#000', fontStyle: "bold"});
-        this.popupVisible(false);
-        this.colliding = new Set()  // set of objects player is colliding with
+        // array containing slot machine objects
+        this.slots = [];
+        // dict for player ghost objects, maps their username to their object
+        this.playerGhosts = {};
+        // sets of hitboxes player is overlapping
+        this.slotOverlaps = new Set();
+        this.challengeOverlaps = new Set();
+        
+        
+    // GAME OBJECT INIT
+        // player object
+        this.player = new Player(this, 100, 450);
+        // previously broadcasted position
+        this.prevPosition = {x: this.player.x, y: this.player.x}; 
 
         // populates slots array with 12 slot machines facing down
         let i = 0;
@@ -53,14 +75,26 @@ export class Game extends Phaser.Scene {
             y += 50;
         }
 
-        // getting user info
+        this.playPopup = this.add.image(400, 540, 'popup').setScale(2);
+        this.playPopup.text = this.add.text(400, 540, 'Press SPACE to play!', { fontSize: '32px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
+        this.playPopupVisible(false);
+
+        this.challengePopup = this.add.image(400, 60, 'popup').setScale(2);
+        this.challengePopup.text = this.add.text(400, 60, 'Press E to challenge [player]!', { fontSize: '24px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
+        this.chPopupVisible(false);
+
+    // GETTING USER INFO
         let request = new Request('/phaser/@me');
         fetch(request).then(response => {
             return response.json();
         }).then(data => {
             this.coinCounter.setCoins(data['coins']);
+            this.username = data['username'];
+            // broadcasting join message
+            this.websocket.emit('casino_join', { 'username': this.username, 'pos': {'x': this.player.x, 'y': this.player.y} });
         });
 
+    // INPUT KEYS
         // movement keys
         this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
         this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -68,95 +102,167 @@ export class Game extends Phaser.Scene {
         this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         // interaction keys
         this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
+    // WEBSOCKETS
         // websocket initialization
         this.websocket = io();
         this.websocket.scene = this;
-        //// when connected to server
-        // this.websocket.on('connect', function() {
-        //     this.emit('connected');
-        // });
-        // when recieving message of type "connect_echo"
+        // server acknowledges connection
         this.websocket.on('connect_echo', function(data) {
             this.scene.socketId = data.id;
             console.log('connected to server, my name is ' + this.scene.socketId);
         });
-        // when recieving message of type "movement"
+        // recieving player movement data
         this.websocket.on('movement', function(data) {
-            let recieved_data = data.data;
-            let x = recieved_data.x;
-            let y = recieved_data.y;
-            let id = recieved_data.id;
-            if (id != this.scene.socketId) {
-                if (!(id in this.scene.playerGhosts)) {
-                    this.scene.playerGhosts[id] = new PlayerGhost(this.scene, x, y);
+            let x = data['pos']['x'];
+            let y = data['pos']['y'];
+            let user = data['username'];
+            let scene_user = this.scene.username;
+            if (scene_user != undefined && user != scene_user) {
+                if (!(user in this.scene.playerGhosts)) {
+                    let ghost = new PlayerGhost(this.scene, x, y, user);
+                    ghost.move(x, y);
+                    this.scene.playerGhosts[user] = ghost;
+                    this.scene.websocket.emit('get_coins', { 'username': user });
                 } else {
-                    let ghost = this.scene.playerGhosts[id];
-                    ghost.sprite.setX(x).setY(y);
+                    let ghost = this.scene.playerGhosts[user];
+                    ghost.move(x, y);
                 }
             }
-            // console.log('id: ' + recieved_data.id + ', x: ' + recieved_data.x + ', y: ' + recieved_data.y);
         });
+        // player leaves casino
+        this.websocket.on('casino_leave', function(data) {
+            let username = data['username'];
+            this.scene.playerGhosts[username].leave();
+            delete this.scene.playerGhosts[username];
+        })
+        // recieving player's coin count
+        this.websocket.on('coins', function(data) {
+            let username = data['username'];
+            if (username != this.scene.username && this.scene.playerGhosts[username] != undefined) {
+                this.scene.playerGhosts[username].coinsText.setText('Coins: ' + data['coins']);
+            }
+        });
+        // recieving a challenge from another user
+        this.websocket.on('challenge', function(data) {
+            this.scene.disableMovement = true;
+            this.scene.challenger = data['from'];
+            this.scene.chScreenVisible(true);
+        })
+        // a user you challenge accepts
+        this.websocket.on('ch_accept', function(data) {
+            this.scene.coinflipSwap();
+        })
+        // a user you challenge declines
+        this.websocket.on('ch_decline', function(data) {
+            // TODO
+        })
     }
 
+    // called every tick
     update(time, delta) {
         // handles player movement
-        let moved = false
-        if (this.keyA.isDown) {
-            this.player.moveLeft();
-            moved = true;
+        let x = 0;
+        let y = 0;
+        if (!this.disableMovement) {
+            if (this.keyA.isDown) {
+                x -= 200;
+            }
+            if (this.keyD.isDown) {
+                x += 200;
+            }
+            if (this.keyW.isDown) {
+                y -= 200;
+            }
+            if (this.keyS.isDown) {
+                y += 200;
+            }
         }
-        else if (this.keyD.isDown) {
-            this.player.moveRight();
-            moved = true;
-        }
-        else {
-            this.player.idleX();
-        }
-        if (this.keyW.isDown) {
-            this.player.moveUp();
-            moved = true;
-        }
-        else if (this.keyS.isDown) {
-            this.player.moveDown();
-            moved = true;
-        }
-        else {
-            this.player.idleY();
-        }
-        if (!moved) {
-            this.player.idle();
+        this.player.move(x, y);
+        // handles challenge accept or deny
+        if (this.challenger != null) {
+            let accepted = null;
+            if (this.keySpace.isDown) {
+                accepted = false;
+            } else if (this.keyE.isDown) {
+                accepted = true;
+            }
+            if (accepted != null) {
+                this.websocket.emit('challenge_response', {
+                    'accepted': accepted, 
+                    'acceptor': this.username, 
+                    'challenger': this.challenger
+                });
+            }
+            if (accepted == true) {
+                this.coinflipSwap();
+            } else if (accepted == false) {
+                this.challenger = null;
+                this.disableMovement = false;
+                this.chScreenVisible(false);
+            }
         }
         // handles movement broadcasting
         if (this.timePassed >= this.timeToNext) {
-            if (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y) {
+            if (this.username != undefined && (this.prevPosition.x != this.player.x || this.prevPosition.y != this.player.y)) {
                 this.timePassed -= this.timeToNext;
                 this.prevPosition.x = this.player.x;
                 this.prevPosition.y = this.player.y;
-                this.websocket.emit('player_move', {'data': {
-                    'id': this.socketId, 
-                    'x': this.player.x, 
-                    'y': this.player.y
+                this.websocket.emit('player_move', {
+                    'username': this.username, 
+                    'pos': {
+                        'x': this.player.x, 
+                        'y': this.player.y
                     }});
             }
         } else {
             this.timePassed += delta;
         }
-        // handles slot machine updates
-        for (let x in this.slots) {
-            this.slots[x].update()
+        // handles GameObject updates
+        for (let x in this.objsToUpdate) {
+            this.objsToUpdate[x].update();
         }
     }
 
     stoppedColliding() {
-        if (this.colliding.size == 0) {
-            this.popupVisible(false);
+        if (this.slotOverlaps.size == 0) {
+            this.playPopupVisible(false);
+        }
+        if (this.challengeOverlaps.size == 0) {
+            this.chPopupVisible(false);
         }
     }
 
-    popupVisible(x) {
-        this.popup.visible = x;
-        this.popup.text.visible = x;
+    playPopupVisible(x) {
+        this.playPopup.visible = x;
+        this.playPopup.text.visible = x;
     }
 
+    chPopupVisible(x) {
+        this.challengePopup.visible = x;
+        this.challengePopup.text.visible = x;
+    }
+
+    chScreenVisible(x) {
+        this.chScreen.visible = x;
+        this.chTopText.visible = x;
+        this.chBottomText.visible = x;
+    }
+
+    chPopupText(text) {
+        this.challengePopup.text.setText("Press E to challenge " + text + " !");
+    }
+
+    coinflipSwap() {
+        this.scene.start('CoinFlip');
+        // this.websocket.emit('casino_leave', {'username': this.username});
+        this.websocket.disconnect(false);
+    }
+
+    slotsSwap() {
+        this.scene.start('Slots');
+        // this.websocket.emit('casino_leave', {'username': this.username});
+        this.websocket.disconnect(false);
+    }
 }
