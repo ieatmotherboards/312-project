@@ -11,6 +11,7 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
+from src.inventory import purchase_loot_box
 from src.logging import main_log
 import src.util as util
 
@@ -93,6 +94,24 @@ def render_mines():
 @app.route('/settings')
 def render_settings():
     response = make_response(render_template("settings.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/open-lootbox') # routes to the login page
+def render_lootbox():
+    response = make_response(render_template("open_lootbox.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/open-lootbox', methods = ['POST']) # routes to the login page
+def render_lootbox():
+    response = purchase_loot_box(request)
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/item-shop') # routes to the login page
+def render_shop():
+    response = make_response(render_template("item_shop.html"))
     main_log(req=request, res=response)
     return response
 

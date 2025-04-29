@@ -1,4 +1,8 @@
+from dns.message import make_response
+
 from database import db
+from random import randint
+from logging import purchase_log
 
 from pymongo import MongoClient
 
@@ -79,3 +83,30 @@ def listInventory(username):
     return allItems
 
     
+def loot_box_open():
+    random = randint(1,10)
+
+    if random == 10:
+        random = randint
+
+    return random
+
+def purchase_loot_box(request):
+    cookies = request.cookies
+
+    token = cookies['auth_token']
+    hashed_token = db.hash_token(token)
+
+    user = db.get_user_by_hashed_token(hashed_token)
+
+    if user['coins'] < 100:
+        purchase_log(user['username'], success=False, message='not logged in')
+        return (403, 'not logged in')
+
+    else:
+        #Needs to be updated to add to lootboxes
+        #Inventory.find_one_and_update({'auth_token': hashed_token}, {'$set': {'coins': user['coins'] - 100, ''}})
+        print('')
+
+    purchase_log(user['username'], success=True, message='purchased')
+    return (200, '')

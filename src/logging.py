@@ -14,3 +14,6 @@ def logout_log(username: str, success: bool, message: str):
 
 def register_log(username: str, success: bool, message: str):
     app.logger.info("\t\tattempt from [%s] to log out, successful?:%s. %s",username, str(success), message)
+
+def purchase_log(username: str, success: bool, message: str):
+    app.logger.info("\t\tattempt from [%s] to purchase, successful?:%s. %s",username, str(success), message)
