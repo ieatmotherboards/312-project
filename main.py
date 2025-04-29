@@ -11,9 +11,8 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.logging_things import main_log
 from src.inventory import purchase_loot_box
-from src.logging import main_log
+from src.logging_things import main_log
 import src.util as util
 
 # routes & websockets
@@ -116,7 +115,7 @@ def render_lootbox():
     return response
 
 @app.route('/open-lootbox', methods = ['POST']) # routes to the login page
-def render_lootbox():
+def open_lootbox():
     response = purchase_loot_box(request)
     main_log(req=request, res=response)
     return response

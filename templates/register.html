@@ -8,47 +8,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
     <link href="/public/style.css" rel="stylesheet">
     <style>
-        /* Stack the form elements vertically */
+        /* Stack the form elements vertically and center the content */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
         form {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
         }
 
         form label,
         form input {
+            width: 100%;
             margin-bottom: 15px;
         }
 
         form input {
-            width: 100%;
             padding: 10px;
             box-sizing: border-box;
         }
 
-        /* Add styling for the password requirements box */
-        .password-requirements {
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 15px;
-            width: 100%;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .top-right {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
+        /* Center the Register button */
         .button {
+            width: 100%;
+            max-width: 200px;
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
+            text-align: center;
         }
 
         .button:hover {
@@ -62,6 +60,22 @@
         .login-link a {
             color: #4CAF50;
         }
+
+        /* Password requirements text styling */
+        .password-hint {
+            font-size: 12px;
+            color: white; /* Updated to white */
+            font-style: italic;
+            margin-bottom: 15px; /* Adjust margin */
+            text-align: center;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -82,19 +96,13 @@
         <label for="confirm">Confirm Password</label>
         <input type="password" id="confirm" name="confirm" required>
 
+        <!-- Password requirements moved above the register button -->
+        <div class="password-hint">
+            Passwords must be at least 8 characters long, include one lowercase letter, one uppercase letter, and one special character (e.g., @, #, $, etc.).
+        </div>
+
         <button class="button" type="button" onclick="registerUser()">Register</button>
     </form>
-
-    <!-- Password Requirements Box -->
-    <div class="password-requirements">
-        <h3>Password Requirements:</h3>
-        <ul>
-            <li>At least 8 characters long</li>
-            <li>Must include at least one lowercase letter</li>
-            <li>Must include at least one uppercase letter</li>
-            <li>Must include at least one special character (e.g., @, #, $, etc.)</li>
-        </ul>
-    </div>
 
     <div class="login-link">
         Already have an account? <a href="/login">Login here</a>

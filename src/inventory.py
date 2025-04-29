@@ -1,9 +1,9 @@
 from dns.message import make_response
 from src.database import *
 import uuid
-from database import db
+from src.database import db
 from random import randint
-from logging_things import purchase_log
+from src.logging_things import purchase_log
 
 def create_inventory(username):
     inv_db.insert_one({'username': username, 'coins': 100, 'inventory': []})

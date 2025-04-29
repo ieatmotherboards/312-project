@@ -8,20 +8,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
     <link href="/public/style.css" rel="stylesheet">
     <style>
-        /* Stack the form elements vertically */
+        /* Centering the entire container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Horizontally center */
+            justify-content: center; /* Vertically center */
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* Centering form elements */
         form {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center; /* Horizontally center the form elements */
+            width: 100%;
+            max-width: 400px; /* Limit the width of the form */
         }
 
         form label,
         form input {
+            width: 100%; /* Ensure inputs and labels take full width of the form */
             margin-bottom: 15px;
+            text-align: left; /* Align labels and inputs to the left */
         }
 
         form input {
-            width: 100%;
             padding: 10px;
             box-sizing: border-box;
         }
@@ -38,6 +51,9 @@
             color: white;
             border: none;
             cursor: pointer;
+            width: 100%; /* Make the button take the full width of the form */
+            max-width: 200px; /* Limit the width of the button */
+            text-align: center; /* Ensure text is centered within the button */
         }
 
         .button:hover {
@@ -46,6 +62,7 @@
 
         .register-link {
             margin-top: 20px;
+            text-align: center; /* Center the register link */
         }
 
         .register-link a {
@@ -76,6 +93,7 @@
     </div>
 </div>
 
+<!-- Place the script just before the closing </body> tag -->
 <script>
     function goHome() {
         window.location.href = "/";
@@ -95,11 +113,19 @@
 
         fetchPromise.then((response) => {
             console.log(response.status);
-            if (response.status == 200){
+            if (response.status == 200) {
+                // Redirect to home page on successful login
                 window.location.href = '/';
-            }else{
-                console.log("Login: failure");
+            } else if (response.status == 403) {
+                // Show an alert if the response status is 403
+                alert("No account found with that username and password combination.");
+            } else {
+                // Handle other responses (optional)
+                console.log("Login failed: Unknown error");
             }
+        }).catch((error) => {
+            // Handle any errors that occur during fetch
+            console.error("Error during fetch:", error);
         });
     }
 </script>
