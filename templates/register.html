@@ -7,7 +7,62 @@
     <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
     <link href="/public/style.css" rel="stylesheet">
-    <!-- ^^^^^  use this instead of the <style> tag. that has been moved to public/style.css !! -->
+    <style>
+        /* Stack the form elements vertically */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        form label,
+        form input {
+            margin-bottom: 15px;
+        }
+
+        form input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Add styling for the password requirements box */
+        .password-requirements {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 15px;
+            width: 100%;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .login-link {
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #4CAF50;
+        }
+    </style>
 </head>
 <body>
 <div class="top-right">
@@ -30,6 +85,17 @@
         <button class="button" type="button" onclick="registerUser()">Register</button>
     </form>
 
+    <!-- Password Requirements Box -->
+    <div class="password-requirements">
+        <h3>Password Requirements:</h3>
+        <ul>
+            <li>At least 8 characters long</li>
+            <li>Must include at least one lowercase letter</li>
+            <li>Must include at least one uppercase letter</li>
+            <li>Must include at least one special character (e.g., @, #, $, etc.)</li>
+        </ul>
+    </div>
+
     <div class="login-link">
         Already have an account? <a href="/login">Login here</a>
     </div>
@@ -50,17 +116,18 @@
             return;
         }
 
-        let request = new Request ('register_data', {
+        let request = new Request('register_data', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({username, password})
-        })
+        });
+
         fetch(request).then(function(response) {
-                if (response.status == 200) {
-                    window.location.href = "/login";
-                } else {
-                    console.log("register failed, " + response.body);
-                }
+            if (response.status == 200) {
+                window.location.href = "/login";
+            } else {
+                console.log("Register failed, " + response.body);
+            }
         });
     }
 </script>

@@ -1,5 +1,9 @@
-from src.database import inv_db, item_db
+from dns.message import make_response
+from src.database import *
 import uuid
+from database import db
+from random import randint
+from logging_things import purchase_log
 
 def create_inventory(username):
     inv_db.insert_one({'username': username, 'coins': 100, 'inventory': []})
@@ -114,6 +118,36 @@ def sell_item(user1, user1_item_list, user2, user2_cost):
 def list_inventory(username):
     all_items = inv_db.find_one({'username': username})['inventory']
     return all_items
+
+
+def loot_box_open():
+    random = randint(1,10)
+
+    if random == 10:
+        random = randint
+
+    return random
+
+def purchase_loot_box(request):
+    cookies = request.cookies
+
+
+    token = cookies['auth_token']
+    hashed_token = db.hash_token(token)
+
+    user = db.get_user_by_hashed_token(hashed_token)
+
+    if user['coins'] < 100:
+        purchase_log(user['username'], success=False, message='not logged in')
+        return (403, 'not logged in')
+
+    else:
+        #Needs to be updated to add to lootboxes
+        #Inventory.find_one_and_update({'auth_token': hashed_token}, {'$set': {'coins': user['coins'] - 100, ''}})
+        print('')
+
+    purchase_log(user['username'], success=True, message='purchased')
+    return (200, '')
 
 if __name__ == '__main__':
     user1_inventory = ['0', '1', '2']

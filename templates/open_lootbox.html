@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Open Lootbox - Jesse's 312 Casino</title>
+    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link href="/public/style.css" rel="stylesheet">
+    <style>
+        .animation-box {
+            margin: 20px auto;
+            padding: 30px;
+            text-align: center;
+            border: 2px dashed #888;
+            width: 300px;
+            height: 100px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+        }
+        .result {
+            font-size: 24px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+<div class="top-right">
+    <button class="button" onclick="goHome()">Home</button>
+    <button class="button" onclick="goShop()">Shop</button>
+</div>
+
+<div class="container">
+    <h1>Open a Lootbox</h1>
+
+    <div id="player-stats">
+        <p>Money: <span id="money">...</span></p>
+        <p>Lootboxes: <span id="lootboxes">...</span></p>
+    </div>
+
+    <div class="animation-box" id="animation-box">🎁 Ready to open...</div>
+
+    <button class="button" id="open-button" onclick="openLootbox()">Open Lootbox</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    async function goHome() {
+        window.location.href = "/";
+    }
+
+    async function goShop() {
+        window.location.href = "/item_shop.html";
+    }
+
+    async function fetchPlayerStats() {
+        const res = await fetch('/player_stats');
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById("money").textContent = `$${data.money}`;
+            document.getElementById("lootboxes").textContent = data.lootboxes;
+
+            const openBtn = document.getElementById("open-button");
+            openBtn.disabled = data.lootboxes <= 0;
+        }
+    }
+
+    async function openLootbox() {
+        const animBox = document.getElementById("animation-box");
+        const resultBox = document.getElementById("result");
+        const openBtn = document.getElementById("open-button");
+
+        openBtn.disabled = true;
+        resultBox.textContent = "";
+        animBox.textContent = "✨ Opening...";
+
+        // Simulated spin animation
+        const items = ["💎 Rare Gem", "🎩 Fancy Hat", "🃏 Joker Card", "💰 Cash Bundle", "🎲 Lucky Dice"];
+        let i = 0;
+        const spin = setInterval(() => {
+            animBox.textContent = `🔄 ${items[i % items.length]}`;
+            i++;
+        }, 100);
+
+        // Make request and stop animation after 2 seconds
+        const res = await fetch('/open_lootbox', { method: 'POST' });
+        setTimeout(async () => {
+            clearInterval(spin);
+            if (res.ok) {
+                const data = await res.json(); // e.g. { reward: "Golden Fedora" }
+                animBox.textContent = "🎁 Opened!";
+                resultBox.textContent = `You won: ${data.reward}!`;
+            } else {
+                animBox.textContent = "❌ Failed to open.";
+                resultBox.textContent = "Something went wrong.";
+            }
+
+            await fetchPlayerStats();
+        }, 2000);
+    }
+
+    fetchPlayerStats();
+</script>
+</body>
+</html>

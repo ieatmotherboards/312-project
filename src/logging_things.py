@@ -37,6 +37,9 @@ def logout_log(username: str, success: bool, message: str):
 def register_log(username: str, success: bool, message: str):
     app.logger.info("\t\tattempt from [%s] to register, successful?:%s. %s",username, str(success), message)
 
+def purchase_log(username: str, success: bool, message: str):
+    app.logger.info("\t\tattempt from [%s] to purchase, successful?:%s. %s", username, str(success), message)
+
 """
 logging TODO:
     - double check all errors get logged in the stack trace (intentionally break some code (i think this is already done -- thanks flask)) 

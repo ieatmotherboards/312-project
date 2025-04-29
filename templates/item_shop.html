@@ -1,0 +1,62 @@
+<!-- item_shop.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Item Shop - Jesse's 312 Casino</title>
+    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <link href="/public/style.css" rel="stylesheet">
+</head>
+<body>
+<div class="top-right">
+    <button class="button" onclick="goHome()">Home</button>
+    <button class="button">Settings</button>
+</div>
+
+<div class="container">
+    <h1>Item Shop</h1>
+
+    <div id="player-stats">
+        <p>Money: <span id="money">...</span></p>
+        <p>Lootboxes: <span id="lootboxes">...</span></p>
+    </div>
+
+    <div class="shop-item">
+        <h2>Lootbox</h2>
+        <p>Try your luck! Contains a random prize.</p>
+        <button class="button" onclick="buyLootbox()">Buy for 100 Coins</button>
+    </div>
+</div>
+
+<script>
+    async function goHome() {
+        window.location.href = "/";
+    }
+
+    async function fetchPlayerStats() {
+        const res = await fetch('/player_stats');
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById("money").textContent = `$${data.money}`;
+            document.getElementById("lootboxes").textContent = data.lootboxes;
+        }
+    }
+
+    async function buyLootbox() {
+        const res = await fetch('/buy_lootbox', {
+            method: 'POST'
+        });
+
+        if (res.ok) {
+            alert("Lootbox purchased!");
+            fetchPlayerStats(); // update numbers
+        } else {
+            alert("Not enough money!");
+        }
+    }
+
+    fetchPlayerStats();
+</script>
+</body>
+</html>

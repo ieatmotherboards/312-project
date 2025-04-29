@@ -7,7 +7,51 @@
     <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
     <link href="/public/style.css" rel="stylesheet">
-    <!-- ^^^^^  use this instead of the <style> tag. that has been moved to public/style.css !! -->
+    <style>
+        /* Stack the form elements vertically */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        form label,
+        form input {
+            margin-bottom: 15px;
+        }
+
+        form input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .register-link {
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: #4CAF50;
+        }
+    </style>
 </head>
 <body>
 <div class="top-right">
@@ -58,7 +102,6 @@
             }
         });
     }
-
 </script>
 </body>
 </html>

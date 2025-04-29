@@ -12,6 +12,8 @@ from src.init import app, socketio  # importing app and socketio from src.init i
 from src.auth import register_new_account, login, logout
 import src.database as db
 from src.logging_things import main_log
+from src.inventory import purchase_loot_box
+from src.logging import main_log
 import src.util as util
 
 # routes & websockets
@@ -19,7 +21,7 @@ from src.websockets import connect_websocket  # for some reason this needs to be
 from src.phaser_routes import phaser
 
 
-logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w") 
+logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
 logging.getLogger('werkzeug').disabled = True # use this to supress automatic werkzeug logs (which are free game but super cluttered)
 
 UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
@@ -57,7 +59,7 @@ def parse_logout():
     main_log(req=request, res=make_response("OK", 200))
     logout_result = logout(request=request)
     # if logout_result[0] == 200:
-        
+
     # else:
     #     response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
     return logout_result
@@ -88,7 +90,7 @@ def render_roulette():
     if 'auth_token' not in request.cookies:
         response = redirect('/', code=302)  # TODO: should change to a 400-level response and display an alert on frontend
         return response
-    
+
     js_path = 'casino/scenes/Roulette.js'
 
     response = make_response(render_template("game.html", path=js_path))
@@ -104,6 +106,24 @@ def render_mines():
 @app.route('/settings')
 def render_settings():
     response = make_response(render_template("settings.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/open-lootbox') # routes to the login page
+def render_lootbox():
+    response = make_response(render_template("open_lootbox.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/open-lootbox', methods = ['POST']) # routes to the login page
+def render_lootbox():
+    response = purchase_loot_box(request)
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/item-shop') # routes to the login page
+def render_shop():
+    response = make_response(render_template("item_shop.html"))
     main_log(req=request, res=response)
     return response
 
