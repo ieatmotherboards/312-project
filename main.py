@@ -135,7 +135,7 @@ def at_me():
             - 401 response if not logged in OR
             - JSON response in format {"username":[USERNAME]}
     """
-    token_attempt = db.try_hash_token(request)
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
     hashed_token = token_attempt[0]
     if hashed_token is None:
         response = make_response(token_attempt[1], token_attempt[2])
