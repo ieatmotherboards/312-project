@@ -119,4 +119,4 @@ def logout(request : Request):
         return response
     else:
         logout_log("invalid user", success=False, message='invalid auth token')
-        return ('Invalid Auth Token', 403)
+        return make_response('Invalid Auth Token', 403)
