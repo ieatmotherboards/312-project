@@ -1,5 +1,12 @@
+/*
+    FOR DOMINIC: Changes to be made to migrate this to phaser (first two have comments of what to change to)
+    - Line 7
+    - 116 (can keep the var named exitSign2)
+    - 439 - 454, not sure how your Phaser implementation handles this
+*/
+
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
-import { ExitSign2 } from '../../gameObjects/ExitSign2.js'; // change this to just ExitSign
+import { ExitSign2 } from '../../gameObjects/ExitSign2.js'; // import { ExitSign } from '../../gameObjects/ExitSign.js';
 
 export class Roulette extends Phaser.Scene {
 
@@ -94,7 +101,6 @@ export class Roulette extends Phaser.Scene {
             { number: '2', x: 0, y: 0 } // dummy fallback
         ];
         
-        // add coin counter AND FIX
         this.coinCounter = new CoinCounter(this, 28, 28);
 
         this.betInfo = {
@@ -109,7 +115,7 @@ export class Roulette extends Phaser.Scene {
 
         // this.createBackButton();
 
-        this.exitSign2 = new ExitSign2(this, this.scale.width, 0, 'Game').setOrigin(1, 0); // change this to just ExitSign
+        this.exitSign2 = new ExitSign2(this, this.scale.width, 0, 'Game').setOrigin(1, 0); // this.exitSign2 = new ExitSign(this, this.scale.width, 0, 'Game').setOrigin(1, 0);
         
         const betResult = this.add.text(imageStartX, imageStartY, '',{
             fontSize: '40px',
@@ -402,6 +408,10 @@ export class Roulette extends Phaser.Scene {
         down1.on('pointerdown', () => {
             console.log('down1 clicked!');
             let prevNum = this.coinsWageredNumber.text;
+            if((parseInt(prevNum) - 1) < 0){
+                console.log("please don't select a negative number :DD");
+                return;
+            }
             let newNum = (parseInt(prevNum) - 1).toString();
             this.coinsWageredNumber.setText(newNum);
         });
@@ -410,6 +420,11 @@ export class Roulette extends Phaser.Scene {
         down5.on('pointerdown', () => {
             console.log('down5 clicked!');
             let prevNum = this.coinsWageredNumber.text;
+            if((parseInt(prevNum) - 5) < 0){
+                console.log("please don't select a negative number :DD");
+                return;
+            }
+            
             let newNum = (parseInt(prevNum) - 5).toString();
             this.coinsWageredNumber.setText(newNum);
         });
