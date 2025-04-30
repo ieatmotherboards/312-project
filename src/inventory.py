@@ -6,7 +6,7 @@ from random import randint
 from src.logging_things import purchase_log
 
 def create_inventory(username):
-    inv_db.insert_one({'username': username, 'coins': 100, 'inventory': []})
+    inv_db.insert_one({'username': username, 'coins': 10, 'inventory': [],'LootBoxes':0})
 
 def check_inventory(username):
     inv = inv_db.find_one({'username': username})
@@ -65,7 +65,13 @@ def get_item_properties(item_id):
 
 def getLeaderBoard():
     soretedData=inv_db.find().sort('coins',1)
-    return soretedData
+    out=[]
+    for person in soretedData:
+        name=person['usermane']
+        coinCount=person['coins']
+        out.append((name,coinCount))
+
+    return out
 
 
 # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}
