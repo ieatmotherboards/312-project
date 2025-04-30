@@ -1,7 +1,7 @@
 import datetime
 from flask import request, jsonify, Request, Response, make_response
 from src.init import app
-from src.database import get_user_by_hashed_token, hash_token
+from src.database import get_user_by_hashed_token, hash_token, does_hashed_token_exist
 
 
 @app.errorhandler(404)
@@ -21,7 +21,7 @@ def internal_error(error):
 
 def main_log(req : Request, res : Response): 
     status_code = res.status_code
-    if 'auth_token' in req.cookies and req.cookies['auth_token'] != "LOGGED OUT":
+    if 'auth_token' in req.cookies and req.cookies['auth_token'] != "LOGGED OUT" and does_hashed_token_exist(hashed_token=hash_token(req.cookies['auth_token'])):
         app.logger.info("auth_token is: " + str(req.cookies['auth_token']))
         username = get_user_by_hashed_token(hash_token(token=req.cookies['auth_token']))['username']
         app.logger.info("\tMETHOD:%s, USERNAME:%s, IP:%s, PATH:%s, TIME:%s, CODE:%s", req.method, username, req.remote_addr, req.path, datetime.datetime.now(), str(status_code))

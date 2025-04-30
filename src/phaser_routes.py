@@ -126,7 +126,8 @@ def roulette_request():
 
     wager = data['wager']
     bet_type = data['bet_type']
-    bet_amount = min(wager, user['coins']) # bet as many coins as user has if they wager more than in invetory
+    coins = user['coins']
+    bet_amount = min(wager, coins) # bet as many coins as user has if they wager more than in invetory
     # app.logger.info("Wager amount: " + str(bet_amount))
     # app.logger.info("bet_type: " + bet_type)
     # app.logger.info("username: " + username)
@@ -136,14 +137,17 @@ def roulette_request():
         numbers = numbers_unparsed.split(', ')
         # app.logger.info("numbers are:", numbers)
         numbers = [int(num) for num in numbers]
-        result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":roulette.find_types(numbers), "numbers":numbers}])
+        result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":roulette.find_types(numbers), "numbers":numbers}])
         # update user coins on backend
+        
 
     else:
-        result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":bet_type}])
+        result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":bet_type}])
 
     user_cashout_dict = result[0]
     outcome = result[1]
+    
+    db.users.find_one_and_update({"username":username}, {"$set":{"coins":coins + user_cashout_dict[username]}}) # TODO: math
     data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
     res = make_response(jsonify(data))
     main_log(req=request, res=res)
