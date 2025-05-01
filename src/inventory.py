@@ -64,8 +64,14 @@ def get_item_properties(item_id):
 
 
 def getLeaderBoard():
-    soretedData=inv_db.find().sort('coins',1)
-    return soretedData
+    sortedData=inv_db.find().sort('coins', -1).to_list(10)
+    ret_list = []
+    rank = 1
+    for person in sortedData:
+
+        ret_list.append({"rank":rank, 'player':person['username'], 'coins':person['coins'],})
+        rank+=1
+    return ret_list
 
 
 # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}

@@ -11,7 +11,7 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box
+from src.inventory import purchase_loot_box, getLeaderBoard
 from src.logging_things import main_log
 import src.util as util
 
@@ -144,6 +144,22 @@ def at_me():
     username = db.get_user_by_hashed_token(hashed_token)['username']
     data = {"username":username}
     response = make_response(jsonify(data))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/leaderboard')
+def render_leaderboard():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302) 
+    else:
+        response = make_response(render_template("leaderboard.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/leaderboard', methods = ['POST'])
+def send_leaderboard_data():
+    sorted = getLeaderBoard()
+    response = make_response(jsonify({"leaderboard": sorted}))
     main_log(req=request, res=response)
     return response
 
