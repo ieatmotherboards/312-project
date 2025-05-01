@@ -5,7 +5,7 @@ from src.logging_things import main_log
 from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
-
+import src.achievements as ach
 from src.init import app
 
 # passed into main.py to register routes
@@ -151,6 +151,8 @@ def roulette_request():
     app.logger.info("user " + username + " bet on " + bet_type + " and won/lost " + str(user_cashout_dict[username]) + " coins ")
     app.logger.info("they now have "+ str(coins + user_cashout_dict[username]))
     # db.invetory.find_one_and_update({"username":username}, {"$set":{"coins":coins + user_cashout_dict[username]}}) # TODO: math
+    if user_cashout_dict[username] >0:
+        ach.increment_carousel(username)
     update_coins(username=username, coin_change=user_cashout_dict[username])
     data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
     res = make_response(jsonify(data))
