@@ -139,6 +139,7 @@ def at_me():
     hashed_token = token_attempt[0]
     if hashed_token is None:
         response = make_response(token_attempt[1], token_attempt[2])
+        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
         main_log(req=request, res=response)
         return response
     username = db.get_user_by_hashed_token(hashed_token)['username']
