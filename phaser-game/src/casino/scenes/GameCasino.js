@@ -3,6 +3,7 @@ import { PlayerGhost } from '../../gameObjects/PlayerGhost.js';
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
 import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js';
 import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js';
+import { MineEntrance } from '../../gameObjects/MineEntrance.js';
 import  '../../../../public/socket.io.js';
 
 export class Game extends Phaser.Scene {
@@ -75,13 +76,17 @@ export class Game extends Phaser.Scene {
             y += 50;
         }
 
+        // popup to play games
         this.playPopup = this.add.image(400, 540, 'popup').setScale(2);
         this.playPopup.text = this.add.text(400, 540, 'Press SPACE to play!', { fontSize: '32px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
         this.playPopupVisible(false);
-
+        // popup to challenge players
         this.challengePopup = this.add.image(400, 60, 'popup').setScale(2);
         this.challengePopup.text = this.add.text(400, 60, 'Press E to challenge [player]!', { fontSize: '24px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
         this.chPopupVisible(false);
+
+        // mines entrance
+        this.mineEnter = new MineEntrance(this, 780, 300);
 
     // GETTING USER INFO
         let request = new Request('/phaser/@me');
@@ -92,6 +97,10 @@ export class Game extends Phaser.Scene {
             this.username = data['username'];
             // broadcasting join message
             this.websocket.emit('casino_join', { 'username': this.username, 'pos': {'x': this.player.x, 'y': this.player.y} });
+            this.load.image(this.username, 'phaser-game/assets/pfps/'+this.username+'.png');
+            this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                this.player.setTexture(this.username)
+            });
         });
 
     // INPUT KEYS
@@ -254,15 +263,20 @@ export class Game extends Phaser.Scene {
         this.challengePopup.text.setText("Press E to challenge " + text + " !");
     }
 
-    coinflipSwap() {
-        this.scene.start('CoinFlip');
-        // this.websocket.emit('casino_leave', {'username': this.username});
+    sceneSwap(sceneKey) {
+        this.scene.start(sceneKey);
         this.websocket.disconnect(false);
     }
 
+    coinflipSwap() {
+        this.sceneSwap('CoinFlip');
+    }
+
     slotsSwap() {
-        this.scene.start('Slots');
-        // this.websocket.emit('casino_leave', {'username': this.username});
-        this.websocket.disconnect(false);
+        this.sceneSwap('Slots');
+    }
+
+    minesSwap() {
+        this.sceneSwap('Mines');
     }
 }

@@ -1,9 +1,9 @@
-import { CoinCounter } from '../../gameObjects/CoinCounter.js'
+import { CoinCounter } from '../../gameObjects/CoinCounter.js';
+import { ExitSign } from '../../gameObjects/ExitSign.js';
 
-export class Game extends Phaser.Scene {
+export class Mines extends Phaser.Scene {
     constructor() {
-        super('Game');
-
+        super('Mines');
     }
 
     create() {
@@ -23,6 +23,7 @@ export class Game extends Phaser.Scene {
         this.coalBroken = 0;
 
         this.coinCounter = new CoinCounter(this, 28, 28);
+        this.exit = new ExitSign(this, 730, 32, 'Game');
 
         // getting user info
         let request = new Request('/phaser/@me');

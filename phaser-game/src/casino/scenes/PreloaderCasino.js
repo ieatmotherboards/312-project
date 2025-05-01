@@ -36,7 +36,15 @@ export class Preloader extends Phaser.Scene {
         this.load.image('ghost', 'pfp_border.png');
         this.load.image('exit', 'exit_sign.png');
         this.load.image('challenge_screen', 'challenge_screen.png');
-        this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
+        this.load.image('mine_entrance', 'mine_entrance.png');
+        this.load.image('pfp', 'placeholder_pfp.png');
+        // this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
+
+        // mines imgs
+        this.load.setPath('phaser-game/assets/mines');
+        this.load.image('cave', 'cave.png');
+        this.load.image('coal', 'coal.png');
+        this.load.image('coal_breaking', 'coal_breaking.png');
 
         // slot machine imgs
         this.load.setPath('phaser-game/assets/slots');

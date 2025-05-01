@@ -78,7 +78,7 @@ def register_new():
 @app.route('/casino') # routes to the phaser game's page
 def render_casino():
     if 'auth_token' not in request.cookies:
-        response = redirect('/', code=302)  # TODO: should change to a 400-level response and display an alert on frontend
+        response = redirect('/', code=302)
     else:
         response = make_response(render_template("game.html", path='casino/mainCasino.js'))
     main_log(req=request, res=response)
@@ -87,18 +87,12 @@ def render_casino():
 @app.route('/roulette')
 def render_roulette():
     if 'auth_token' not in request.cookies:
-        response = redirect('/', code=302)  # TODO: should change to a 400-level response and display an alert on frontend
+        response = redirect('/', code=302)
         return response
 
     js_path = 'casino/scenes/Roulette.js'
 
     response = make_response(render_template("game.html", path=js_path))
-    main_log(req=request, res=response)
-    return response
-
-@app.route('/mines') # routes to the mines page
-def render_mines():
-    response = make_response(render_template("game.html", path='mines/mainMines.js'))
     main_log(req=request, res=response)
     return response
 
