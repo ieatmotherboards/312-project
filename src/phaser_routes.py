@@ -128,6 +128,7 @@ def roulette_request():
     bet_type = data['bet_type']
     coins = get_coins(username)
     app.logger.info("to start, user has " + str(coins) + " coins.")
+    wager = 1 if wager < 0 else wager
     bet_amount = min(wager, coins) # bet as many coins as user has if they wager more than in invetory
     # app.logger.info("Wager amount: " + str(bet_amount))
     # app.logger.info("bet_type: " + bet_type)
