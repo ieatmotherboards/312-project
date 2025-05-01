@@ -4,7 +4,8 @@ export class PlayerGhost extends Phaser.GameObjects.GameObject {
 
     constructor(scene, x, y, username) {
         super(scene, "ghost_" + username);
-        this.sprite = this.scene.add.sprite(x, y, 'ghost').setScale(.5, .5);
+        this.sprite = this.scene.add.sprite(x, y, 'pfp').setDisplaySize(34, 34);
+        this.border = this.scene.add.sprite(x, y, 'ghost').setDisplaySize(34, 34);
         this.username = username;
 
         this.nameText = this.scene.add.text(this.x, this.y + 30, username, { fontSize: '14px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
@@ -14,10 +15,29 @@ export class PlayerGhost extends Phaser.GameObjects.GameObject {
         this.hitbox.addOverlap(this.scene.player)
 
         this.interacted = false;
+
+        // GETTING USER INFO
+        let textureKey = 'user_' + this.username;
+        if (this.scene.textures.exists(textureKey)) {
+            this.sprite.setTexture(textureKey);
+        } else {
+            let request = new Request('/@user/' + this.username);
+            fetch(request).then(response => {
+                return response.json();
+            }).then(data => {
+                this.scene.load.image(textureKey, data['pfp_path']);
+                this.scene.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                    this.sprite.setTexture(textureKey);
+                    this.sprite.setDisplaySize(34, 34);
+                }, this);
+                this.scene.load.start();
+            });
+        }
     }
 
     move(x, y) {
         this.sprite.setX(x).setY(y);
+        this.border.setX(x).setY(y);
         this.hitbox.setX(x).setY(y);
         this.nameText.setX(x).setY(y + 30);
         this.coinsText.setX(x).setY(y - 30);

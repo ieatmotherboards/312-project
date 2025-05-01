@@ -11,7 +11,7 @@ export class Hitbox extends Phaser.Physics.Arcade.Sprite {
         this.scene.objsToUpdate.push(this);
 
         // controls visibility of all hitboxes
-        this.DEBUG = true;
+        this.DEBUG = false;
 
         if (this.DEBUG) {
             this.setAlpha(0.5);

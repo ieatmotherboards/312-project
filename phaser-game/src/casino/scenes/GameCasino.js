@@ -89,19 +89,27 @@ export class Game extends Phaser.Scene {
         this.mineEnter = new MineEntrance(this, 780, 300);
 
     // GETTING USER INFO
-        let request = new Request('/phaser/@me');
+        let request = new Request('/@me');
         fetch(request).then(response => {
             return response.json();
         }).then(data => {
             this.coinCounter.setCoins(data['coins']);
             this.username = data['username'];
+            let textureKey = 'user_' + this.username;
             // broadcasting join message
             this.websocket.emit('casino_join', { 'username': this.username, 'pos': {'x': this.player.x, 'y': this.player.y} });
-            this.load.image(this.username, 'phaser-game/assets/pfps/'+this.username+'.png');
-            this.load.once(Phaser.Loader.Events.COMPLETE, () => {
-                this.player.setTexture(this.username)
-            });
+            if (this.textures.exists(textureKey)) {
+                this.player.setTexture(textureKey);
+            } else {
+                this.load.image(textureKey, data['pfp_path']);
+                this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                    this.player.setTexture(textureKey);
+                    this.player.setDisplaySize(34, 34);
+                }, this);
+                this.load.start();
+            }
         });
+        
 
     // INPUT KEYS
         // movement keys

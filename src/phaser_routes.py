@@ -19,24 +19,6 @@ def send_phaser_file(subpath):
     main_log(req=request, res=response)
     return response
 
-@phaser.route('/phaser/@me')
-def phaser_me():
-    if 'auth_token' in request.cookies:
-        hashed_token = db.hash_token(request.cookies['auth_token'])
-        user = db.get_user_by_hashed_token(hashed_token)
-        if user is None:
-            response = make_response('Invalid auth token', 403)
-        else:
-            username = user['username']
-            response = make_response({
-                'coins': get_coins(username),
-                'username': username
-            })
-    else:
-        response = make_response('Not logged in', 403)
-    main_log(req=request, res=response)
-    return response
-
 @phaser.route('/addCoins', methods=['POST'])
 def add_coins():
     data = request.json

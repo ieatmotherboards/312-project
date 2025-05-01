@@ -6,7 +6,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
 
-        this.border = this.scene.add.sprite(x, y, 'ghost').setDisplaySize(36, 36);
+        // this.border = this.scene.add.sprite(x, y, 'ghost').setDisplaySize(36, 36);
 
         this.setCollideWorldBounds(true);   // enables player collision with world bounds
     }
@@ -23,6 +23,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite
         // if (x == 0 && y == 0) {
         //     this.anims.play('turn');
         // }
-        this.border.setX(this.x).setY(this.y);
+        // this.border.setX(this.x).setY(this.y);
     }
 }

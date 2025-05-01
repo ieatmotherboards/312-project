@@ -6,6 +6,7 @@ import datetime
 from werkzeug.utils import secure_filename
 import os
 import uuid
+from PIL import Image
 
 # our code
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
@@ -14,6 +15,7 @@ import src.database as db
 from src.inventory import purchase_loot_box
 from src.logging_things import main_log
 import src.util as util
+import src.inventory as inv
 
 # routes & websockets
 from src.websockets import connect_websocket  # for some reason this needs to be imported for websockets to work
@@ -127,7 +129,7 @@ def at_me():
             None. Just make a frontend fetch call to this endpoint.
         Returns:
             - 401 response if not logged in OR
-            - JSON response in format {"username":[USERNAME]}
+            - JSON response in format {"username": username, "coins": user's current coins, "pfp_path": path to pfp}
     """
     token_attempt = db.try_hash_token(request)
     hashed_token = token_attempt[0]
@@ -135,12 +137,24 @@ def at_me():
         response = make_response(token_attempt[1], token_attempt[2])
         main_log(req=request, res=response)
         return response
-    username = db.get_user_by_hashed_token(hashed_token)['username']
-    data = {"username":username}
+    user = db.get_user_by_hashed_token(hashed_token)
+    username = user['username']
+    coins = inv.get_coins(username)
+    pfp = user['pfp']
+    data = {"username": username, "coins": coins, "pfp_path": pfp}
     response = make_response(jsonify(data))
     main_log(req=request, res=response)
     return response
 
+@app.route('/@user/<path:subpath>') # sends files in public directory to client
+def at_user(subpath):
+    user : dict = db.get_user_by_username(subpath)
+    if user is None:
+        response = make_response("user does not exist", 404)
+    else:
+        response = make_response({ "pfp_path": user["pfp"], "coins": inv.get_coins(subpath) })
+    main_log(req=request, res=response)
+    return response
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
@@ -178,13 +192,21 @@ def upload_pfp():
     file = request.files['file']
     if file and is_allowed_file(file.filename):
 
-        new_filename = str(uuid.uuid4()) + "." + file.filename.split(".")[1]
+        new_filename = str(uuid.uuid4()) + '.png'
         filename = secure_filename(new_filename)
 
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         app.logger.info("Saving to: " + upload_path)
-        file.save(upload_path)
-        db.users.update_one({"username":username},{"$set":{"pfp":new_filename}}) #TODO: pass in correct path
+        image = Image.open(file)
+        size = image.size
+        if size[0] < size[1]:
+            size = size[0]
+        else:
+            size = size[1]
+        image = image.crop((0, 0, size, size))
+        image = image.resize((64, 64))
+        image.save(upload_path)
+        db.users.update_one({"username":username},{"$set":{"pfp": "public/pfps/"+new_filename}}) #TODO: pass in correct path
         res = make_response("OK", 200)
         main_log(req=request, res=res)
         return res
@@ -206,7 +228,7 @@ def get_pfp():
     if "pfp" in user:
         filename = user["pfp"]
         main_log(req=request, res=make_response("OK",200))
-        return jsonify({"path":'public/pfps/'+filename})
+        return jsonify({"path": filename})
     else:
         res = make_response("Profile picture not found", 400) # no pfp found
         main_log(req=request, res=res)

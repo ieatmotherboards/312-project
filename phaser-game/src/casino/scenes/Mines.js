@@ -26,7 +26,7 @@ export class Mines extends Phaser.Scene {
         this.exit = new ExitSign(this, 730, 32, 'Game');
 
         // getting user info
-        let request = new Request('/phaser/@me');
+        let request = new Request('/@me');
         fetch(request).then(response => {
             return response.json();
         }).then(data => {
