@@ -27,6 +27,8 @@ export class Preloader extends Phaser.Scene {
         this.load.image('sky', 'sky.png');
         this.load.image('phaser', 'phaser.png');
         this.load.image('back', 'back_mod.png');
+        this.load.image('youwin', 'youwin.png');
+        this.load.image('youlose', 'youlose.png');
 
         // casino floor imgs
         this.load.image('slotmachine', 'slotmachine.png');
@@ -38,6 +40,7 @@ export class Preloader extends Phaser.Scene {
         this.load.image('challenge_screen', 'challenge_screen.png');
         this.load.image('mine_entrance', 'mine_entrance.png');
         this.load.image('pfp', 'placeholder_pfp.png');
+        this.load.image('roulette_table', 'roulette_table.png');
         // this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
 
         // mines imgs
@@ -56,6 +59,17 @@ export class Preloader extends Phaser.Scene {
         this.load.setPath('phaser-game/assets/coin_toss');
         this.load.image('table', 'crust_table.png');
         this.load.spritesheet('coin_flip', 'coin_flip.png', {frameWidth: 128, frameHeight: 128});
+
+        // roulette imgs
+        this.load.setPath('phaser-game/assets/roulette');
+        this.load.image('roulette_bg', 'roulette_bg_2.png'); 
+        this.load.image('wheel', 'roulette_wheel.png'); 
+        this.load.image('up1', 'up1.png');
+        this.load.image('up5', 'up5.png'); 
+        this.load.image('down1', 'down1.png'); 
+        this.load.image('down5', 'down5.png'); 
+        this.load.image('ball', 'ball.png');
+        this.load.image('place_bet', 'place_bet.png');
     }
 
     create() {

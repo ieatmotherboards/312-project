@@ -4,6 +4,7 @@ import { CoinCounter } from '../../gameObjects/CoinCounter.js';
 import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js';
 import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js';
 import { MineEntrance } from '../../gameObjects/MineEntrance.js';
+import { RouletteTable } from '../../gameObjects/RouletteTable.js';
 import  '../../../../public/socket.io.js';
 
 export class Game extends Phaser.Scene {
@@ -45,7 +46,7 @@ export class Game extends Phaser.Scene {
         // dict for player ghost objects, maps their username to their object
         this.playerGhosts = {};
         // sets of hitboxes player is overlapping
-        this.slotOverlaps = new Set();
+        this.gameOverlaps = new Set();
         this.challengeOverlaps = new Set();
         
         
@@ -75,6 +76,8 @@ export class Game extends Phaser.Scene {
             i += 1;
             y += 50;
         }
+
+        new RouletteTable(this, 200, 500);
 
         // popup to play games
         this.playPopup = this.add.image(400, 540, 'popup').setScale(2);
@@ -243,7 +246,7 @@ export class Game extends Phaser.Scene {
     }
 
     stoppedColliding() {
-        if (this.slotOverlaps.size == 0) {
+        if (this.gameOverlaps.size == 0) {
             this.playPopupVisible(false);
         }
         if (this.challengeOverlaps.size == 0) {
@@ -286,5 +289,9 @@ export class Game extends Phaser.Scene {
 
     minesSwap() {
         this.sceneSwap('Mines');
+    }
+
+    rouletteSwap() {
+        this.sceneSwap('Roulette');
     }
 }

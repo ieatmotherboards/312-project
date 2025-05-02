@@ -1,20 +1,19 @@
 import { Hitbox } from './Hitbox_no_virus.js';
 
-export class SlotMachine extends Phaser.GameObjects.GameObject {
+export class RouletteTable extends Phaser.Physics.Arcade.Sprite {
 
-    constructor(scene, x, y, key) {
-        super(scene, key);
-        // initializes display sprite
-        this.sprite = this.scene.physics.add.staticSprite(x, y, key).setScale(2.5, 2.5).refreshBody();
+    constructor(scene, x, y) {
+        super(scene, x, y, 'roulette_table');
+        // this.setScale(3);
+        this.scene.add.existing(this);
+        this.scene.physics.add.existing(this);
         // collider with player
-        this.scene.physics.add.collider(this.sprite, this.scene.player);
+        this.scene.physics.add.collider(this, this.scene.player);
+
+        this.hitbox = new Hitbox(this.scene, this, x, y, 6);
+        this.hitbox.addOverlap(this.scene.player);
 
         this.interacted = false;
-    }
-
-    addOverlapBox(xOff, yOff, scale) {
-        this.hitbox = new Hitbox(this.scene, this, this.sprite.x + xOff, this.sprite.y + yOff, scale);
-        this.hitbox.addOverlap(this.scene.player);
     }
 
     startOverlap() {
@@ -25,7 +24,7 @@ export class SlotMachine extends Phaser.GameObjects.GameObject {
     duringOverlap() {
         if (this.scene.keySpace.isDown && !this.interacted && !this.scene.disableMovement) {
             this.interacted = true;
-            this.scene.slotsSwap();
+            this.scene.rouletteSwap();
         }
         else if (!this.scene.keySpace.isDown && this.interacted) {
             this.interacted = false;
