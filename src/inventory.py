@@ -187,7 +187,9 @@ def purchase_loot_box(request):
         return (403, 'not enough coins')
 
     else:
-        inv_db.find_one_and_update({'username': user}, {'$set': {'coins': inventory['coins'] - 100, 'LootBoxes': inventory['LootBoxes'] + 1}})
+        update_coins(user, -100)
+
+        inv_db.find_one_and_update({'username': user}, {'$set': {'LootBoxes': inventory['LootBoxes'] + 1}})
 
     purchase_log(user, success=True, message='purchased')
     return (200, '')
