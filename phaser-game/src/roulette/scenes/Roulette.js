@@ -1,26 +1,65 @@
+/*
+    FOR DOMINIC: Changes to be made to migrate this to phaser (first two have comments of what to change to)
+    - Line 7
+    - 116 (can keep the var named exitSign2)
+    - 439 - 454, not sure how your Phaser implementation handles this
+*/
+
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
-import { ExitSign } from '../../gameObjects/ExitSign.js';
+import { ExitSign2 } from '../../gameObjects/ExitSign2.js'; // import { ExitSign } from '../../gameObjects/ExitSign.js';
 
 export class Roulette extends Phaser.Scene {
 
     constructor() {
-        super('Roulette');
+        super({ key: 'Roulette' });
     }
 
-    // preload() {
-    //     this.scale.resize(1000, 600);
-    //     this.cameras.main.setViewport(0, 0, 1000, 600);
-    // }
+    preload() {
+        this.load.image('roulette', '/phaser-game/assets/roulette/roulette_bg_2.png'); 
+        this.load.image('wheel', '/phaser-game/assets/roulette/roulette_wheel.png'); 
+        this.load.image('up1', '/phaser-game/assets/roulette/up1.png');
+        this.load.image('up5', '/phaser-game/assets/roulette/up5.png'); 
+        this.load.image('down1', '/phaser-game/assets/roulette/down1.png'); 
+        this.load.image('down5', '/phaser-game/assets/roulette/down5.png'); 
+        this.load.image('ball', '/phaser-game/assets/roulette/ball.png');
+        this.load.image('youwin', '/phaser-game/assets/youwin.png');
+        this.load.image('youlose', '/phaser-game/assets/youlose.png');
+        this.load.image('place_bet', '/phaser-game/assets/roulette/place_bet.png');
+
+    }
 
     create() {
         const width = this.scale.width;
         const height = this.scale.height;
 
-        // bg image
-        this.add.image(400, 300, 'roulette_bg');
+        const bg = this.add.image(width / 2, height / 2, 'roulette');
+        bg.setOrigin(0.5);
 
-        // spawning wheel
-        this.rouletteWheel = this.add.image(200, 300, 'wheel').setScale(1);
+        const scaleX = width / bg.width;
+        const scaleY = height / bg.height;
+        const scale = Math.max(scaleX, scaleY); // fill the screen
+        bg.setScale(scale);
+
+
+        // debugging box
+        // const debug = this.add.graphics();
+        // debug.lineStyle(4, 0x00ff00);
+        // debug.strokeRect(0, 0, this.scale.width, this.scale.height);
+
+
+        //wheel logic
+        const imageStartX = width * .25;
+        const imageStartY = height * .5;
+        this.rouletteWheel = this.add.image(imageStartX, imageStartY, 'wheel');
+
+        const originalWidth = this.rouletteWheel.width;
+        const originalHeight = this.rouletteWheel.height;
+
+        const maxDisplayWidth = width * 0.6;
+        const maxDisplayHeight = height * 0.6;
+
+        const wheel_scale = Math.min(maxDisplayWidth / originalWidth, maxDisplayHeight / originalHeight);
+        this.rouletteWheel.setDisplaySize(originalWidth * wheel_scale, originalHeight * wheel_scale);
 
         // Ball positions based on wheel
         this.ballPositions = [
@@ -78,9 +117,9 @@ export class Roulette extends Phaser.Scene {
 
         // this.createBackButton();
 
-        new ExitSign(this, 730, 0, 'Game').setOrigin(.5, 0); // this.exitSign2 = new ExitSign(this, this.scale.width, 0, 'Game').setOrigin(1, 0);
+        this.exitSign2 = new ExitSign2(this, this.scale.width, 0, 'Game').setOrigin(1, 0); // this.exitSign2 = new ExitSign(this, this.scale.width, 0, 'Game').setOrigin(1, 0);
         
-        const betResult = this.add.text(200, 300, '',{
+        const betResult = this.add.text(imageStartX, imageStartY, '',{
             fontSize: '40px',
             fill: '#fd0000'
         }).setOrigin(.5);
@@ -430,27 +469,3 @@ export class Roulette extends Phaser.Scene {
     }
     
 }
-
-
-// const config = {
-//     type: Phaser.AUTO,
-//     width: window.innerWidth,
-//     height: window.innerHeight,
-//     scale: {
-//         mode: Phaser.Scale.RESIZE,
-//         autoCenter: Phaser.Scale.CENTER_BOTH,
-//         width: '100%',
-//         height: '100%',
-//     },
-//     backgroundColor: '#1a1a1a',
-//     parent: 'game-container',
-//     scene: [Roulette]
-// };
-
-/*
-    FOR DOMINIC: Changes to be made to migrate this to phaser (first two have comments of what to change to)
-    - Line 7
-    - 116 (can keep the var named exitSign2)
-    - 439 - 454, not sure how your Phaser implementation handles this
-*/
-

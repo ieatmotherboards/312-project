@@ -292,6 +292,6 @@ export class Game extends Phaser.Scene {
     }
 
     rouletteSwap() {
-        this.sceneSwap('Roulette');
+        window.location.href('/roulette');
     }
 }

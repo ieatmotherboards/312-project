@@ -31,8 +31,6 @@ export class Preloader extends Phaser.Scene {
         this.load.image('youlose', 'youlose.png');
 
         // casino floor imgs
-        this.load.image('slotmachine', 'slotmachine.png');
-        this.load.image('slotmachine_side', 'slotmachine_side.png');
         this.load.image('coin', 'coin.png');
         this.load.image('popup', 'play_popup.png');
         this.load.image('ghost', 'pfp_border.png');
@@ -40,25 +38,18 @@ export class Preloader extends Phaser.Scene {
         this.load.image('challenge_screen', 'challenge_screen.png');
         this.load.image('mine_entrance', 'mine_entrance.png');
         this.load.image('pfp', 'placeholder_pfp.png');
-        this.load.image('roulette_table', 'roulette_table.png');
         // this.load.spritesheet('dude', 'dude.png', {frameWidth: 32, frameHeight: 48});
 
-        // mines imgs
-        this.load.setPath('phaser-game/assets/mines');
-        this.load.image('cave', 'cave.png');
-        this.load.image('coal', 'coal.png');
-        this.load.image('coal_breaking', 'coal_breaking.png');
-
-        // slot machine imgs
-        this.load.setPath('phaser-game/assets/slots');
-        this.load.image('slots_bg', 'slots_bg.png');
-        this.load.image('button', 'spin_button.png');
-        this.load.spritesheet('slot_icons', 'slots_icons.png', {frameWidth: 32, frameHeight: 32});
-
-        // coin flip imgs
-        this.load.setPath('phaser-game/assets/coin_toss');
-        this.load.image('table', 'crust_table.png');
-        this.load.spritesheet('coin_flip', 'coin_flip.png', {frameWidth: 128, frameHeight: 128});
+        // roulette imgs
+        this.load.setPath('phaser-game/assets/roulette');
+        this.load.image('roulette_bg', 'roulette_bg_2.png'); 
+        this.load.image('wheel', 'roulette_wheel.png'); 
+        this.load.image('up1', 'up1.png');
+        this.load.image('up5', 'up5.png'); 
+        this.load.image('down1', 'down1.png'); 
+        this.load.image('down5', 'down5.png'); 
+        this.load.image('ball', 'ball.png');
+        this.load.image('place_bet', 'place_bet.png');
     }
 
     create() {
