@@ -37,13 +37,13 @@ def increment_carousel(username):
     achievements_db.find_one_and_update({'username' : username}, {'$set' : {'Carousel' : RouletteWon}})
 
 def set_bankrupt(username):
-    user_data = achievements_db.find_one({'username' : username}, {'_id' : 0})
+    user_data = inv_db.find_one({'username' : username})
     balance = user_data['coins']
-    if balance == 0:
+    if balance <= 0:
         achievements_db.find_one_and_update({'username' : username}, {'$set' : {'Bankrupt' : True}})
 
 def set_get_rich(username):
-    user_data = achievements_db.find_one({'username' : username}, {'_id' : 0})
+    user_data = inv_db.find_one({'username' : username}, {'_id' : 0})
     balance = user_data['coins']
     if balance >= 1000:
         achievements_db.find_one_and_update({'username' : username}, {'$set' : {'Get Rich' : True}})
