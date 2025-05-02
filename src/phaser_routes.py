@@ -57,9 +57,10 @@ def slots_request():
     user = db.get_user_by_hashed_token(hashed_token)
     username=user['username']
     update_coins(username, (-1 * player_bet))
-    new_coins : int = get_coins(username) - player_bet
+    new_coins : int = get_coins(username)
     if new_coins < 0:
         response = make_response("Not enough coins", 403)
+        update_coins(username, (player_bet))
         main_log(req=request, res=response)
         return response
     result = slots.play_slots(player_bet)

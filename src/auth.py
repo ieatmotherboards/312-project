@@ -85,6 +85,7 @@ def login(request : Request):
 
             db.users.update_one({'username': username}, {'$set': {'auth_token': hashed_token}})
             inv.check_inventory(username)
+            ach.check_achievements(username)
 
             auth_log(username=username, success=True, message='successfully logged in')
             return {'auth_token': token}

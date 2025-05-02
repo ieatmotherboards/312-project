@@ -7,7 +7,7 @@ from src.logging_things import purchase_log
 import src.achievements as ach
 
 def create_inventory(username):
-    inv_db.insert_one({'username': username, 'coins': 10, 'inventory': [],'LootBoxes':0})
+    inv_db.insert_one({'username': username, 'coins': 25, 'inventory': [],'LootBoxes':0})
 
 def check_inventory(username):
     inv = inv_db.find_one({'username': username})
@@ -22,8 +22,8 @@ def update_coins(username, coin_change):
     inv = inv_db.find_one({'username': username})
     coins = inv['coins'] + coin_change
     inv_db.update_one({'username': username}, {'$set': {'coins': coins}})
-    ach.check_get_rich(username)
-    ach.check_bankrupt(username)
+    ach.set_get_rich(username)
+    ach.set_bankrupt(username)
 
 
 # maps an item's type to its properties
