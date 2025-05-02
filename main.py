@@ -11,7 +11,7 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box, getLeaderBoard
+from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties
 from src.logging_things import main_log
 import src.util as util
 
@@ -138,10 +138,7 @@ def at_me():
     token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
     hashed_token = token_attempt[0]
     if hashed_token is None:
-        response = make_response(token_attempt[1], token_attempt[2])
-        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
-        main_log(req=request, res=response)
-        return response
+        return util.take_away_token_response(request=request, token_attempt=token_attempt)
     username = db.get_user_by_hashed_token(hashed_token)['username']
     data = {"username":username}
     response = make_response(jsonify(data))
@@ -163,6 +160,38 @@ def send_leaderboard_data():
     response = make_response(jsonify({"leaderboard": sorted}))
     main_log(req=request, res=response)
     return response
+
+@app.route('/inventory')
+def render_inventory():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302) 
+    else:
+        response = make_response(render_template("inventory.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/get-inventory', methods = ['POST'])
+def send_inventory_data():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302) 
+        main_log(req=request, res=response)
+        return response
+    
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        return util.take_away_token_response(request, token_attempt)
+    
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+
+    inventory = list_inventory(username)
+    out_list = []
+    for item in inventory:
+        properties = get_item_properties(item['id'])
+        out_list.append({"id": inventory.index(item), "name":properties['name'], "image":properties['imagePath']})
+        app.logger.info("item is: " + str(item))
+
+    return make_response(jsonify(out_list))
 
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client

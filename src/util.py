@@ -1,5 +1,5 @@
 from flask import *
-
+from src.logging_things import main_log
 def send_file_response(path):
     try:
         data = get_file(path)
@@ -28,3 +28,9 @@ mime_type = {
 def get_file(filename):
     with open(filename, 'rb') as file:
         return file.read()
+    
+def take_away_token_response(request: Request, token_attempt):
+    response = make_response(token_attempt[1], token_attempt[2])
+    response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
+    main_log(req=request, res=response)
+    return response

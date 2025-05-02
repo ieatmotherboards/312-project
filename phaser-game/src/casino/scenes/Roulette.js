@@ -176,9 +176,9 @@ export class Roulette extends Phaser.Scene {
                 return;
             }
 
-            // if(this.numBet.text === "11, 29, 24"){
-            //     this.add.image(this.scale.width* .75, this.scale.height* .2, "heart").setScale(.5);
-            // }
+            if(this.numBet.text === "11, 29, 24"){
+                this.add.image(this.scale.width* .75, this.scale.height* .2, "heart").setScale(.5);
+            }
 
 
             console.log(' --- BET INFO ---');
