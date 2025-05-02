@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ username }}'s Achievements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .achievement {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+        .achievement img {
+            max-width: 100px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ username }}'s Achievements</h1>
+    <div id="achievements">
+        {% for key, achievement in achievements.items() %}
+            <div class="achievement">
+                <h2>{{ achievement.name }}</h2>
+                <p><strong>Description:</strong> {{ achievement.Description }}</p>
+                <p><strong>Task:</strong> {{ achievement.Task }}</p>
+                <img src="{{ achievement.Path }}" alt="{{ achievement.name }} Achievement">
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
