@@ -19,6 +19,11 @@ def create_achievements(username):
     data = {'username' : username, 'Bankrupt' : False, 'Get Rich' : False, 'Flipper' : 0, 'Carousel' : 0}
     achievements_db.insert_one(data)
 
+def check_achievements(username):
+    achievements = achievements_db.find_one({'username': username})
+    if achievements is None:
+        create_achievements(username)
+
 def increment_flipper(username):
     user_data = achievements_db.find_one({'username' : username},{'_id' : 0})
     FlipsWon = user_data['Flipper']
@@ -32,13 +37,13 @@ def increment_carousel(username):
     achievements_db.find_one_and_update({'username' : username}, {'$set' : {'Carousel' : RouletteWon}})
 
 def set_bankrupt(username):
-    user_data = achievements_db.find_one({'username' : username}, {'_id' : 0})
+    user_data = inv_db.find_one({'username' : username})
     balance = user_data['coins']
-    if balance == 0:
+    if balance <= 0:
         achievements_db.find_one_and_update({'username' : username}, {'$set' : {'Bankrupt' : True}})
 
 def set_get_rich(username):
-    user_data = achievements_db.find_one({'username' : username}, {'_id' : 0})
+    user_data = inv_db.find_one({'username' : username}, {'_id' : 0})
     balance = user_data['coins']
     if balance >= 1000:
         achievements_db.find_one_and_update({'username' : username}, {'$set' : {'Get Rich' : True}})
