@@ -108,19 +108,19 @@ def render_settings():
     main_log(req=request, res=response)
     return response
 
-@app.route('/open-lootbox') # routes to the login page
+@app.route('/open-lootbox') # routes to the open box page
 def render_lootbox():
     response = make_response(render_template("open_lootbox.html"))
     main_log(req=request, res=response)
     return response
 
-@app.route('/open-lootbox', methods = ['POST']) # routes to the login page
+@app.route('/item-shop', methods = ['POST']) # POST to try to buy item
 def open_lootbox():
     response = purchase_loot_box(request)
     main_log(req=request, res=response)
     return response
 
-@app.route('/item-shop') # routes to the login page
+@app.route('/item-shop') # routes to the shop page
 def render_shop():
     response = make_response(render_template("item_shop.html"))
     main_log(req=request, res=response)
