@@ -19,7 +19,9 @@
     <p id="hello_user">Welcome, NOT_LOGGED_IN</p>
     <button class="button" onclick="routeSettings()">Settings</button>
     <button id="leaderboard_button" class="button" onclick="routeLeaderboard()">Leaderboard</button>
+    <button id="achievements_button" class="button" onclick="routeAchivements()">Achievements</button>
     <button id="logout_button" class="button" onclick="routeLogout()">Logout</button>
+    
 </div>
 
 <div class="container">
@@ -50,6 +52,12 @@
 <script>
     function routeLeaderboard(){
         window.location.href = "/leaderboard";
+    }
+</script>
+
+<script>
+    function routeAchivements(){
+        window.location.href = "/achievements";
     }
 </script>
 
@@ -86,6 +94,7 @@
                     document.getElementById('logout_button').style.display = 'none';
                     document.getElementById('play_button').style.display = 'none';
                     document.getElementById('leaderboard_button').style.display = 'none';
+                    document.getElementById('achievements_button').style.display = 'none';
 
                 } else {
                     // Logged in — parse and update username
