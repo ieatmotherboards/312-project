@@ -25,6 +25,7 @@ export class Roulette extends Phaser.Scene {
         this.load.image('youwin', '/phaser-game/assets/youwin.png');
         this.load.image('youlose', '/phaser-game/assets/youlose.png');
         this.load.image('place_bet', '/phaser-game/assets/roulette/place_bet.png');
+        this.load.image('heart','/phaser-game/assets/roulette/heart.png');
 
     }
 
@@ -173,6 +174,10 @@ export class Roulette extends Phaser.Scene {
             }else if(parseInt(this.coinsWageredNumber.text) <= 0){
                 alert("Please select a positive number of coins");
                 return;
+            }
+
+            if(this.numBet.text === "11, 29, 24"){
+                this.add.image(this.scale.width* .75, this.scale.height* .2, "heart").setScale(.5);
             }
 
 
