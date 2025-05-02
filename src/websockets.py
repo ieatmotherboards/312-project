@@ -4,6 +4,7 @@ from src.init import app, socketio
 import src.database as db
 import src.games.coin_flip as coin
 import src.inventory as inv
+import src.achievements as ach
 
 # maps a username to their socket ID
 sid_map : dict[str:str] = {}
@@ -95,9 +96,11 @@ def flip_coin(data):
     receiving_user = data['to']
     result = coin.coinflip()
     if result:
+        ach.increment_flipper(sending_user)
         inv.update_coins(sending_user, 1)
         inv.update_coins(receiving_user, -1)
     else:
+        ach.increment_flipper(receiving_user)
         inv.update_coins(sending_user, -1)
         inv.update_coins(receiving_user, 1)
     result_data = {sending_user: inv.get_coins(sending_user), receiving_user: inv.get_coins(receiving_user), 'result': result}

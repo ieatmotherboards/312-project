@@ -4,9 +4,10 @@ import uuid
 from src.database import db
 from random import randint
 from src.logging_things import purchase_log
+import src.achievements as ach
 
 def create_inventory(username):
-    inv_db.insert_one({'username': username, 'coins': 100, 'inventory': []})
+    inv_db.insert_one({'username': username, 'coins': 10, 'inventory': [],'LootBoxes':0})
 
 def check_inventory(username):
     inv = inv_db.find_one({'username': username})
@@ -21,14 +22,33 @@ def update_coins(username, coin_change):
     inv = inv_db.find_one({'username': username})
     coins = inv['coins'] + coin_change
     inv_db.update_one({'username': username}, {'$set': {'coins': coins}})
+    ach.check_get_rich(username)
+    ach.check_bankrupt(username)
 
 
 # maps an item's type to its properties
 item_type_map = {
-    'orb': {'name': 'The Orb', 'imagePath': 'public/items/orb.png'},
-    'axe': {'name': "Woodcutter's axe", 'imagePath': 'public/items/axe.png'},
-    'alan_drop_tables': {'name': "Alan Hunt Drop Tables (everybody knows what this means)",
-                         'imagePath': 'public/items/alan_tables.png'}
+    'AiViolation' : {'name' : 'Academic Integerity Violation', 'imagePath' : 'public/items/AiViolation.png'},
+    'Alan' : {'name' : 'Alan Hunt Drop Tables', 'imagePath' : 'public/items/Alan.png'},
+    'AO' : {'name' : 'Application Objectives', 'imagePath' : 'public/items/AOTrophy.png'},
+    'PostCard' : {'name':"Kris's Casino Post Card",'imagePath' : 'public/items/CasinoPost.png'},
+    'ChickenJockey' : {'name' : 'Chicken Jockey', 'imagePath' : 'public/items/ChickenJockey.png'},
+    'GoldAlan' : {'name' : 'Golden Alan Hunt Drop Tables', 'imagePath' : 'public/items/GoldAlan.png'},
+    'GoldKris' : {'name' : 'Golden Kris Schindler', 'imagePath' : 'public/items/GoldenKris.png'},
+    'Jesse' : {'name' : 'Jesse Hartloff', 'imagePath' : 'public/items/Jesse.png'},
+    'JetSki' : {'name' : "Kris Schindler's Jet Ski", 'imagePath' : 'public/items/JetSki.png'},
+    'Kris' : {'name' : 'Kris Schindler', 'imagePath' : 'public/items/Kris.png'},
+    'Linux' : {'name' : 'Linux OS', 'imagePath' : 'public/items/Linux.png'},
+    'MasterSword' : {'name' : 'Masterfull Sword', 'imagePath' : 'public/items/MasterSword.png'},
+    'Mushroom' : {'name' : 'Power Shroom', 'imagePath' : 'public/items/Mushroom.png'},
+    'Paul' : {'name' : 'Paul Dickson', 'imagePath' : 'public/items/Paul.png'},
+    'PiazzaPass' : {'name' : '1 Guilt Free Piazza Post Card', 'imagePath' : 'public/items/PiazzaPass.png'},
+    'PokeBall' : {'name' : 'Monster Ball', 'imagePath' : 'public/items/PokeBall.png'},
+    'PortalGun' : {'name' : 'Doorway Gun', 'imagePath' : 'public/items/PortalGun.png'},
+    'RayGun' : {'name' : 'High Speed Photon Blaster', 'imagePath' : 'public/items/RayGun.png'},
+    'SegFault' : {'name' : 'Segmentation fault', 'imagePath' : 'public/items/SegFault.png'},
+    'Windows' : {'name' : 'Windows OS', 'imagePath' : 'public/items/Windows.png'}
+    
 }
 
 # creates a new item with a type of item_type. returns it's assigned uuid.
@@ -59,6 +79,19 @@ def check_for_item(username, item_id):
 def get_item_properties(item_id):
     item_type = item_db.find_one({'id": item_id'})['type']
     return item_type_map[item_type]
+
+    
+
+
+def getLeaderBoard():
+    sortedData=inv_db.find().sort('coins', -1).to_list(10)
+    ret_list = []
+    rank = 1
+    for person in sortedData:
+
+        ret_list.append({"rank":rank, 'player':person['username'], 'coins':person['coins'],})
+        rank+=1
+    return ret_list
 
 
 # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}

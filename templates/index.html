@@ -18,6 +18,7 @@
 <div class="top-right">
     <p id="hello_user">Welcome, NOT_LOGGED_IN</p>
     <button class="button" onclick="routeSettings()">Settings</button>
+    <button id="leaderboard_button" class="button" onclick="routeLeaderboard()">Leaderboard</button>
     <button id="logout_button" class="button" onclick="routeLogout()">Logout</button>
 </div>
 
@@ -43,6 +44,12 @@
 <script>
     function routeSettings(){
         window.location.href = '/settings';
+    }
+</script>
+
+<script>
+    function routeLeaderboard(){
+        window.location.href = "/leaderboard";
     }
 </script>
 
@@ -78,6 +85,8 @@
                     document.getElementById('hello_user').style.display = 'none';
                     document.getElementById('logout_button').style.display = 'none';
                     document.getElementById('play_button').style.display = 'none';
+                    document.getElementById('leaderboard_button').style.display = 'none';
+
                 } else {
                     // Logged in — parse and update username
                     response.json().then(data => {
@@ -100,7 +109,6 @@
     
     // Optionally run immediately on page load
     checkLoginStatus();
-    </script>
-    
+    </script>    
 
 </html>

@@ -5,7 +5,7 @@ from src.logging_things import main_log
 from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
-
+import src.achievements as ach
 from src.init import app
 
 # passed into main.py to register routes
@@ -87,8 +87,8 @@ def roulette_request():
 
     Returns:
         - response with JSON in the format:
-            "payout" : int representing the coins won,
-            "winning_num" : int representing the winning number
+            "user_cashout" : int representing the coins won,
+            "outcome" : int representing the winning number
         - also edits coin amount in user DB
     """
     try_token = db.try_hash_token(request=request)
@@ -108,7 +108,9 @@ def roulette_request():
 
     wager = data['wager']
     bet_type = data['bet_type']
-    coins = user['coins']
+    coins = get_coins(username)
+    app.logger.info("to start, user has " + str(coins) + " coins.")
+    wager = 1 if wager < 0 else wager
     bet_amount = min(wager, coins) # bet as many coins as user has if they wager more than in invetory
     # app.logger.info("Wager amount: " + str(bet_amount))
     # app.logger.info("bet_type: " + bet_type)
@@ -128,8 +130,12 @@ def roulette_request():
 
     user_cashout_dict = result[0]
     outcome = result[1]
-    
-    db.users.find_one_and_update({"username":username}, {"$set":{"coins":coins + user_cashout_dict[username]}}) # TODO: math
+    app.logger.info("user " + username + " bet on " + bet_type + " and won/lost " + str(user_cashout_dict[username]) + " coins ")
+    app.logger.info("they now have "+ str(coins + user_cashout_dict[username]))
+    # db.invetory.find_one_and_update({"username":username}, {"$set":{"coins":coins + user_cashout_dict[username]}}) # TODO: math
+    if user_cashout_dict[username] >0:
+        ach.increment_carousel(username)
+    update_coins(username=username, coin_change=user_cashout_dict[username])
     data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
     res = make_response(jsonify(data))
     main_log(req=request, res=res)
