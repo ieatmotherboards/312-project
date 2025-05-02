@@ -5,7 +5,7 @@ from src.logging_things import main_log
 from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
-
+import src.achievements as ach
 from src.init import app
 
 # passed into main.py to register routes
@@ -75,9 +75,10 @@ def slots_request():
     user = db.get_user_by_hashed_token(hashed_token)
     username=user['username']
     update_coins(username, (-1 * player_bet))
-    new_coins : int = get_coins(username) - player_bet
+    new_coins : int = get_coins(username)
     if new_coins < 0:
         response = make_response("Not enough coins", 403)
+        update_coins(username, (player_bet))
         main_log(req=request, res=response)
         return response
     result = slots.play_slots(player_bet)
@@ -105,8 +106,8 @@ def roulette_request():
 
     Returns:
         - response with JSON in the format:
-            "payout" : int representing the coins won,
-            "winning_num" : int representing the winning number
+            "user_cashout" : int representing the coins won,
+            "outcome" : int representing the winning number
         - also edits coin amount in user DB
     """
     try_token = db.try_hash_token(request=request)
@@ -126,7 +127,10 @@ def roulette_request():
 
     wager = data['wager']
     bet_type = data['bet_type']
-    bet_amount = min(wager, user['coins']) # bet as many coins as user has if they wager more than in invetory
+    coins = get_coins(username)
+    app.logger.info("to start, user has " + str(coins) + " coins.")
+    wager = 1 if wager < 0 else wager
+    bet_amount = min(wager, coins) # bet as many coins as user has if they wager more than in invetory
     # app.logger.info("Wager amount: " + str(bet_amount))
     # app.logger.info("bet_type: " + bet_type)
     # app.logger.info("username: " + username)
@@ -136,14 +140,21 @@ def roulette_request():
         numbers = numbers_unparsed.split(', ')
         # app.logger.info("numbers are:", numbers)
         numbers = [int(num) for num in numbers]
-        result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":roulette.find_types(numbers), "numbers":numbers}])
+        result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":roulette.find_types(numbers), "numbers":numbers}])
         # update user coins on backend
+        
 
     else:
-        result = roulette.handlebets([{"name": username, "betAmount": 100, "betType":bet_type}])
+        result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":bet_type}])
 
     user_cashout_dict = result[0]
     outcome = result[1]
+    app.logger.info("user " + username + " bet on " + bet_type + " and won/lost " + str(user_cashout_dict[username]) + " coins ")
+    app.logger.info("they now have "+ str(coins + user_cashout_dict[username]))
+    # db.invetory.find_one_and_update({"username":username}, {"$set":{"coins":coins + user_cashout_dict[username]}}) # TODO: math
+    if user_cashout_dict[username] >0:
+        ach.increment_carousel(username)
+    update_coins(username=username, coin_change=user_cashout_dict[username])
     data = {"user_cashout": user_cashout_dict[username], "outcome": outcome}
     res = make_response(jsonify(data))
     main_log(req=request, res=res)

@@ -6,6 +6,7 @@ import bcrypt
 import secrets
 import hashlib
 import src.inventory as inv
+import src.achievements as ach
 from src.logging_things import main_log, auth_log, logout_log, register_log
 
 def parse_data():
@@ -58,6 +59,7 @@ def register_new_account(request : Request):
 
             register_log(username=username, success=True, message='successfully registered')
             inv.create_inventory(username)
+            ach.create_achievements(username)
             return make_response()
         else:
             register_log(username=username, success=False, message='password was not strong enough')
@@ -83,6 +85,7 @@ def login(request : Request):
 
             db.users.update_one({'username': username}, {'$set': {'auth_token': hashed_token}})
             inv.check_inventory(username)
+            ach.check_achievements(username)
 
             auth_log(username=username, success=True, message='successfully logged in')
             return {'auth_token': token}
@@ -119,4 +122,4 @@ def logout(request : Request):
         return response
     else:
         logout_log("invalid user", success=False, message='invalid auth token')
-        return ('Invalid Auth Token', 403)
+        return make_response('Invalid Auth Token', 403)

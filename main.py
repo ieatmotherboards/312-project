@@ -11,8 +11,9 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box
+from src.inventory import purchase_loot_box, getLeaderBoard
 from src.logging_things import main_log
+from src.achievements import generate_html_data
 import src.util as util
 
 # routes & websockets
@@ -135,15 +136,32 @@ def at_me():
             - 401 response if not logged in OR
             - JSON response in format {"username":[USERNAME]}
     """
-    token_attempt = db.try_hash_token(request)
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
     hashed_token = token_attempt[0]
     if hashed_token is None:
         response = make_response(token_attempt[1], token_attempt[2])
+        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
         main_log(req=request, res=response)
         return response
     username = db.get_user_by_hashed_token(hashed_token)['username']
     data = {"username":username}
     response = make_response(jsonify(data))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/leaderboard')
+def render_leaderboard():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302) 
+    else:
+        response = make_response(render_template("leaderboard.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/leaderboard', methods = ['POST'])
+def send_leaderboard_data():
+    sorted = getLeaderBoard()
+    response = make_response(jsonify({"leaderboard": sorted}))
     main_log(req=request, res=response)
     return response
 
@@ -217,6 +235,22 @@ def get_pfp():
         res = make_response("Profile picture not found", 400) # no pfp found
         main_log(req=request, res=res)
         return res
+
+@app.route('/achievements')
+def achievements():
+    # Fetch the achievement data for the user
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
+        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
+        main_log(req=request, res=response)
+        return response
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+    data = generate_html_data(username)
+    response = make_response(render_template('achievements.html', username=username, achievements=data))
+    main_log(req=request, res=response)
+    return response
 
 # returns a file's contents as bytes
 def get_file(filename):

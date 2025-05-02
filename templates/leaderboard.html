@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Leaderboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="/public/style.css" rel="stylesheet">
+  <style>
+
+    body {
+        background: url('/phaser-game/assets/back_mod.png') no-repeat center center fixed;
+        background-size: cover;
+    }
+ 
+    .leaderboard-container {
+      width: 90%;
+      max-width: 900px;
+      background: linear-gradient(145deg, rgba(255, 215, 0, 0.15), rgba(255, 183, 0, 0.15));
+      border: 2px solid rgba(255, 248, 220, 0.3);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .profile-container {
+      margin-bottom: 40px;
+    }
+    
+    .profile-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: #f0f0f0;
+      margin: 0 auto 20px;
+      border: 3px solid #ffd700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .profile-image img {
+      width: 80px;
+      height: 80px;
+    }
+    
+    /* Dropdown styles removed */
+    
+    .leaderboard-table {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+    }
+    
+    .leaderboard-table th {
+      padding: 15px 10px;
+      text-align: center;
+      color: #ffd700;
+      font-weight: bold;
+      font-family: "Kanit", sans-serif;
+      font-size: 1.1rem;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    .leaderboard-table td {
+      padding: 15px 10px;
+      text-align: center;
+      background-color: rgba(70, 70, 70, 0.6);
+      font-family: "Kanit", sans-serif;
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .leaderboard-table tr:hover td {
+      background-color: rgba(70, 70, 70, 0.7);
+    }
+    
+    .leaderboard-table tr td:first-child {
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
+    }
+    
+    .leaderboard-table tr td:last-child {
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+    
+    .top-right-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    
+    .footer-buttons {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .leaderboard-image {
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+    
+    .rank-cell {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .gold {
+      color: #ffd700;
+    }
+    
+    .silver {
+      color: #c0c0c0;
+    }
+    
+    .bronze {
+      color: #cd7f32;
+    }
+  </style>
+</head>
+<body>
+  <button class="button top-right-button" onclick="routeHome()">Home</button>
+
+  <div class="container">
+    <div class="leaderboard-container">
+      <!-- Leaderboard Title and Image -->
+      <img src="public/leaderboard.png" alt="Leaderboard" class="leaderboard-image">
+      
+      <!-- No dropdown needed anymore -->
+      
+      <!-- Leaderboard Table -->
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Coins</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <!-- Table rows will be populated via JavaScript -->
+        </tbody>
+      </table>
+      
+      <!-- Footer Buttons -->
+      <div class="footer-buttons">
+        <button class="button" onclick="goBack()">Return to Game</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to fetch leaderboard data when page loads
+    document.addEventListener("DOMContentLoaded", function() {
+      fetchLeaderboardData();
+    });
+    
+    // Function to fetch leaderboard data
+    function fetchLeaderboardData() {
+      // This is where you'll add your fetch call to get leaderboard data
+      // For example:
+      
+      fetch('/leaderboard', {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+          populateLeaderboard(data.leaderboard);
+        })
+        .catch(error => {
+          console.error('Error fetching leaderboard data:', error);
+        });
+
+      
+      // Example data - replace with your actual fetch call
+    //   const exampleData = [
+    //     { rank: 1, player: "GoldenChamp", score: 9800, date: "2025-04-28" },
+    //     { rank: 2, player: "SilverWarrior", score: 9550, date: "2025-04-29" },
+    //     { rank: 3, player: "BronzeMaster", score: 9200, date: "2025-04-27" },
+    //     { rank: 4, player: "Player123", score: 8900, date: "2025-04-30" },
+    //     { rank: 5, player: "GameWizard", score: 8750, date: "2025-04-26" },
+    //     { rank: 6, player: "StarPlayer", score: 8600, date: "2025-04-25" },
+    //     { rank: 7, player: "MasterGamer", score: 8450, date: "2025-04-24" }
+    //   ];
+      
+    //   populateLeaderboard(exampleData);
+    }
+    
+    // Function to populate the leaderboard table with data
+    function populateLeaderboard(data) {
+      const tableBody = document.getElementById("leaderboardBody");
+      
+      // Clear existing rows
+      tableBody.innerHTML = "";
+      
+      // Add new rows
+      data.forEach(entry => {
+        const row = document.createElement("tr");
+        
+        // Add medal class for top 3
+        let rankClass = "";
+        if (entry.rank === 1) rankClass = "gold";
+        else if (entry.rank === 2) rankClass = "silver";
+        else if (entry.rank === 3) rankClass = "bronze";
+        
+        row.innerHTML = `
+          <td class="rank-cell ${rankClass}">${entry.rank}</td>
+          <td>${entry.player}</td>
+          <td>${entry.coins.toLocaleString()}</td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+    
+    function goBack() {
+      window.location.href = '/casino';
+    }
+
+    function routeHome() {
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>
