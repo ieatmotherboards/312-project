@@ -11,7 +11,7 @@ import uuid
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties
+from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount
 from src.logging_things import main_log
 from src.achievements import generate_html_data
 import src.util as util
@@ -280,6 +280,22 @@ def achievements():
     response = make_response(render_template('achievements.html', username=username, achievements=data))
     main_log(req=request, res=response)
     return response
+
+@app.route('/player_stats')
+def playerStats():
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
+        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
+        main_log(req=request, res=response)
+        return response
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+    data = getCoinsAndLootBoxCount(username)
+    response = jsonify(data)
+    response.headers['Content-Type'] = 'application/json'
+    return response
+    
 
 # returns a file's contents as bytes
 def get_file(filename):
