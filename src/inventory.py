@@ -153,6 +153,13 @@ def list_inventory(username):
     return all_items
 
 
+def getCoinsAndLootBoxCount(username):
+    userData=inv_db.find_one({'username':username})
+    out={}
+    out['money']=userData['coins']
+    out['lootboxes'] = userData['LootBoxes']
+    return out
+
 def loot_box_open():
     random = randint(1,10)
 
@@ -160,6 +167,9 @@ def loot_box_open():
         random = randint
 
     return random
+
+
+
 
 def purchase_loot_box(request):
     cookies = request.cookies
