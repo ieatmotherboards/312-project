@@ -234,16 +234,16 @@
       loadingSpinner.style.display = 'block';
       
       // Dummy inventory data for preview purposes
-      const dummyInventory = [
-        { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
-        { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" },
-        { id: 3, name: "Phoenix Feather", image: "https://via.placeholder.com/100x100/FF4500/FFFFFF?text=Feather" },
-        { id: 4, name: "Healing Potion", image: "https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion" },
-        { id: 5, name: "Dragon Scale", image: "https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale" },
-        { id: 6, name: "Enchanted Bow", image: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=Bow" },
-        { id: 7, name: "Wizard's Hat", image: "https://via.placeholder.com/100x100/483D8B/FFFFFF?text=Hat" },
-        { id: 8, name: "Ancient Relic", image: "https://via.placeholder.com/100x100/B8860B/FFFFFF?text=Relic" }
-      ];
+    //   const dummyInventory = [
+    //     { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
+    //     { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" },
+    //     { id: 3, name: "Phoenix Feather", image: "https://via.placeholder.com/100x100/FF4500/FFFFFF?text=Feather" },
+    //     { id: 4, name: "Healing Potion", image: "https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion" },
+    //     { id: 5, name: "Dragon Scale", image: "https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale" },
+    //     { id: 6, name: "Enchanted Bow", image: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=Bow" },
+    //     { id: 7, name: "Wizard's Hat", image: "https://via.placeholder.com/100x100/483D8B/FFFFFF?text=Hat" },
+    //     { id: 8, name: "Ancient Relic", image: "https://via.placeholder.com/100x100/B8860B/FFFFFF?text=Relic" }
+    //   ];
       
       // Make GET request to fetch inventory data
       fetch('/get-inventory', {method: 'POST'})
@@ -261,7 +261,7 @@
           loadingSpinner.style.display = 'none';
           console.error('Error loading inventory:', error);
           console.log('Displaying dummy inventory data instead');
-          displayInventory(dummyInventory);
+        //   displayInventory(dummyInventory);
         });
       
       function displayInventory(data) {
