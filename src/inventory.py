@@ -180,16 +180,16 @@ def purchase_loot_box(request):
 
     user = db.get_user_by_hashed_token(hashed_token)
 
-    inventory = inv_db.find_one({'username': user['username']}, {'_id': 0})
+    inventory = inv_db.find_one({'username': user}, {'_id': 0})
 
     if inventory['coins'] < 100:
-        purchase_log(user['username'], success=False, message='not enough coins')
+        purchase_log(user, success=False, message='not enough coins')
         return (403, 'not enough coins')
 
     else:
-        inv_db.find_one_and_update({'username': user['username']}, {'$set': {'coins': user['coins'] - 100, 'LootBoxes': inventory['LootBoxes'] + 1}})
+        inv_db.find_one_and_update({'username': user}, {'$set': {'coins': inventory['coins'] - 100, 'LootBoxes': inventory['LootBoxes'] + 1}})
 
-    purchase_log(user['username'], success=True, message='purchased')
+    purchase_log(user, success=True, message='purchased')
     return (200, '')
 
 if __name__ == '__main__':
