@@ -44,7 +44,7 @@ export class PlayerGhost extends Phaser.GameObjects.GameObject {
     }
 
     startOverlap() {
-        this.scene.slotOverlaps.add(this);
+        this.scene.challengeOverlaps.add(this);
         this.scene.chPopupVisible(true);
     }
 
@@ -71,6 +71,7 @@ export class PlayerGhost extends Phaser.GameObjects.GameObject {
         let hb_idx = this.scene.objsToUpdate.indexOf(this.hitbox);
         this.scene.objsToUpdate.splice(hb_idx, 1)
         this.hitbox.destroy();
+        this.border.destroy();
         this.sprite.destroy();
         this.nameText.destroy();
         this.coinsText.destroy();
