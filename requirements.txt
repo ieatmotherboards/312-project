@@ -4,3 +4,4 @@ bcrypt
 flask-socketio
 numpy
 Werkzeug
+pillow
