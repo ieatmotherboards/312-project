@@ -35,14 +35,12 @@ app.register_blueprint(phaser)
 @app.route('/') # this routes to the main page
 def home():
     response = make_response(render_template("index.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/login') # routes to the login page
 def render_login():
     response = make_response(render_template("login.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route("/login_data", methods=["POST"]) # route for receiving data from login page. calls function in auth.py
 def parse_login():
@@ -53,30 +51,22 @@ def parse_login():
         response.set_cookie('auth_token', cookie, max_age=86400, httponly=True)
     else:
         response = make_response(login_result['error'], 403)
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
     
 @app.route('/logout_data', methods=['POST'])
 def parse_logout():
-    main_log(req=request, res=make_response("OK", 200))
-    logout_result = logout(request=request)
-    # if logout_result[0] == 200:
-
-    # else:
-    #     response = make_response(logout_result[1], logout_result[0]) # update this to take other text later
-    return logout_result
+    logout_response = logout(request)
+    return util.log_response(request, logout_response)
 
 @app.route('/register')
 def register():
     response = make_response(render_template("register.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/register_data', methods = ['POST'])
 def register_new():
     response = register_new_account(request)
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/casino') # routes to the phaser game's page
 def render_casino():
@@ -84,8 +74,7 @@ def render_casino():
         response = redirect('/', code=302)
     else:
         response = make_response(render_template("game.html", path='casino/mainCasino.js'))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/roulette')
 def render_roulette():
@@ -93,32 +82,27 @@ def render_roulette():
         response = redirect('/', code=302)
     else:
         response = make_response(render_template("game.html", path='roulette/mainRoulette.js'))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/settings')
 def render_settings():
     response = make_response(render_template("settings.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/open-lootbox') # routes to the open box page
 def render_lootbox():
     response = make_response(render_template("open_lootbox.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/item-shop', methods = ['POST']) # POST to try to buy item
 def open_lootbox():
     response = purchase_loot_box(request)
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/item-shop') # routes to the shop page
 def render_shop():
     response = make_response(render_template("item_shop.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/@me')
 def at_me():
@@ -132,10 +116,8 @@ def at_me():
     token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
     hashed_token = token_attempt[0]
     if hashed_token is None:
-        response = make_response(token_attempt[1], token_attempt[2])
-        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
-        main_log(req=request, res=response)
-        return response
+        response = util.take_away_token_response(request, token_attempt)
+        return util.log_response(request, response)
     user = db.get_user_by_hashed_token(hashed_token)
     username = user['username']
     coins = inv.get_coins(username)
@@ -143,8 +125,7 @@ def at_me():
     if 'pfp' in user.keys():
         data['pfp_path'] = user['pfp']
     response = make_response(jsonify(data))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/leaderboard')
 def render_leaderboard():
@@ -152,15 +133,13 @@ def render_leaderboard():
         response = redirect('/', code=302)
     else:
         response = make_response(render_template("leaderboard.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/leaderboard', methods = ['POST'])
 def send_leaderboard_data():
-    sorted = getLeaderBoard()
-    response = make_response(jsonify({"leaderboard": sorted}))
-    main_log(req=request, res=response)
-    return response
+    leaderboard = getLeaderBoard()
+    response = make_response(jsonify({"leaderboard": leaderboard}))
+    return util.log_response(request, response)
 
 @app.route('/@user/<path:subpath>') # sends files in public directory to client
 def at_user(subpath):
@@ -169,8 +148,7 @@ def at_user(subpath):
         response = make_response("user does not exist", 404)
     else:
         response = make_response({ "pfp_path": user["pfp"], "coins": inv.get_coins(subpath) })
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/inventory')
 def render_inventory():
@@ -178,39 +156,34 @@ def render_inventory():
         response = redirect('/', code=302)
     else:
         response = make_response(render_template("inventory.html"))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/get-inventory', methods = ['POST'])
 def send_inventory_data():
     if 'auth_token' not in request.cookies:
         response = redirect('/', code=302)
-        main_log(req=request, res=response)
-        return response
-
+        return util.log_response(request, response)
     token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
     hashed_token = token_attempt[0]
     if hashed_token is None:
-        return util.take_away_token_response(request, token_attempt)
+        response = util.take_away_token_response(request, token_attempt)
+        return util.log_response(request, response)
 
     username = db.get_user_by_hashed_token(hashed_token)['username']
-
     inventory = list_inventory(username)
     out_list = []
     for item in inventory:
         properties = get_item_properties(item['id'])
-        out_list.append({"id": inventory.index(item), "name":properties['name'], "image":properties['imagePath']})
+        out_list.append({"id": inventory.index(item), "name": properties['name'], "image": properties['imagePath']})
         app.logger.info("item is: " + str(item))
-
-    return make_response(jsonify(out_list))
+    response = make_response(jsonify(out_list))
+    return util.log_response(request, response)
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
     response = util.send_file_response("public/" + subpath)
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
-# TODO: should use a library that looks at the bytes of the file
 def is_allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -226,20 +199,17 @@ def upload_pfp():
     """
 
     if 'auth_token' not in request.cookies:
-        res = make_response("not logged in", 401)  # 401 = not authorized
-        main_log(req=request,res=res)
-        return res
+        response = make_response("not logged in", 401)  # 401 = not authorized
+        return util.log_response(request, response)
     elif 'file' not in request.files or request.files['file'] == '':
-        res = make_response('bad file', 400) # 400 = bad request
-        main_log(req=request,res=res)
-        return res
+        response = make_response('bad file', 400) # 400 = bad request
+        return util.log_response(request, response)
 
     token = db.hash_token(request.cookies['auth_token'])
     username = db.get_user_by_hashed_token(token)["username"]
 
     file = request.files['file']
     if file and is_allowed_file(file.filename):
-
         new_filename = str(uuid.uuid4()) + '.png'
         filename = secure_filename(new_filename)
 
@@ -255,32 +225,28 @@ def upload_pfp():
         image = image.resize((64, 64))
         image.save(upload_path)
         db.users.update_one({"username":username},{"$set":{"pfp": "public/pfps/"+new_filename}}) #TODO: pass in correct path
-        res = make_response("OK", 200)
-        main_log(req=request, res=res)
-        return res
+        response = make_response()
+        return util.log_response(request, response)
 
-    res = make_response("Bad Request",400)
-    main_log(req=request, res=res)
-    return res
+    response = make_response("Bad Request",400)
+    return util.log_response(request, response)
 
 @app.route('/get_pfp')
 def get_pfp():
     if 'auth_token' not in request.cookies:
-        res = make_response("not logged in", 401)  # 401 = not authorized
-        main_log(req=request,res=res)
-        return res
+        response = make_response("not logged in", 401)  # 401 = not authorized
+        return util.log_response(request, response)
 
     # TODO: get file path and pass in as param to send_public_file
     hashed_token = db.hash_token(request.cookies['auth_token'])
     user = db.get_user_by_hashed_token(hashed_token=hashed_token)
     if "pfp" in user:
         filename = user["pfp"]
-        main_log(req=request, res=make_response("OK",200))
-        return jsonify({"path": filename})
+        response = make_response(jsonify({"path": filename}))
+        return util.log_response(request, response)
     else:
-        res = make_response("Profile picture not found", 400) # no pfp found
-        main_log(req=request, res=res)
-        return res
+        response = make_response("Profile picture not found", 400) # no pfp found
+        return util.log_response(request, response)
 
 @app.route('/achievements')
 def achievements():
@@ -290,13 +256,11 @@ def achievements():
     if hashed_token is None:
         response = make_response(token_attempt[1], token_attempt[2])
         response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
-        main_log(req=request, res=response)
-        return response
+        return util.log_response(request, response)
     username = db.get_user_by_hashed_token(hashed_token)['username']
     data = generate_html_data(username)
     response = make_response(render_template('achievements.html', username=username, achievements=data))
-    main_log(req=request, res=response)
-    return response
+    return util.log_response(request, response)
 
 @app.route('/player_stats')
 def playerStats():
@@ -305,13 +269,12 @@ def playerStats():
     if hashed_token is None:
         response = make_response(token_attempt[1], token_attempt[2])
         response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
-        main_log(req=request, res=response)
-        return response
+        return util.log_response(request, response)
     username = db.get_user_by_hashed_token(hashed_token)['username']
     data = getCoinsAndLootBoxCount(username)
     response = jsonify(data)
     response.headers['Content-Type'] = 'application/json'
-    return response
+    return util.log_response(request, response)
 
 
 # returns a file's contents as bytes

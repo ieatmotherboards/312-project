@@ -116,9 +116,9 @@ def logout(request : Request):
     if user is not None:
         db.users.update_one({'auth_token': hashed_token}, {'$set': {'auth_token': 'LOGGED OUT'}})
 
+        logout_log(username=user['username'], success=True, message='successfully logged out')
         response = make_response("Logout Success", 200)
         response.set_cookie('auth_token', 'logged out', max_age=0, httponly=True)
-        logout_log(username=user['username'], success=True, message='successfully logged out')
         return response
     else:
         logout_log("invalid user", success=False, message='invalid auth token')
