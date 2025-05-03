@@ -1,5 +1,6 @@
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
 import { ExitSign } from '../../gameObjects/ExitSign.js';
+import { BetSelector } from '../../gameObjects/BetSelector.js';
 
 export class Slots extends Phaser.Scene {
     constructor() {
@@ -13,9 +14,10 @@ export class Slots extends Phaser.Scene {
         this.slotsIcons = new SlotsIcons(this, 403, 226);
 
         this.spinning = false;
-        this.currentBet = 1;
 
         this.exitSign = new ExitSign(this, 730, 32, 'Game');
+
+        this.betSelector = new BetSelector(this, 275, 540);
 
         // initialize spin button
         this.button = this.add.sprite(700, 500, 'button').setScale(2);
@@ -25,10 +27,11 @@ export class Slots extends Phaser.Scene {
             if (this.spinning) {return}
             this.spinning = true;
             this.slotsIcons.startSpin();
-            this.coinCounter.addCoins(-1 * this.currentBet);
+            let currentBet = this.betSelector.bet;
+            this.coinCounter.addCoins(-1 * currentBet);
             let request = new Request('/phaser/playSlots', {
                 method: "POST",
-                body: JSON.stringify({"bet": this.currentBet}),
+                body: JSON.stringify({"bet": currentBet}),
                 headers: {"Content-Type": "application/json"}
                 });
             fetch(request).then(response => {
@@ -51,7 +54,7 @@ export class Slots extends Phaser.Scene {
         });
 
         // getting user info
-        let request = new Request('/phaser/@me');
+        let request = new Request('/@me');
         fetch(request).then(response => {
             return response.json();
         }).then(data => {

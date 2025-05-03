@@ -6,34 +6,20 @@
 */
 
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
-import { ExitSign2 } from '../../gameObjects/ExitSign2.js'; // import { ExitSign } from '../../gameObjects/ExitSign.js';
+import { ExitSignHREF } from '../../gameObjects/ExitSignHREF.js';
+import { BetSelector } from '../../gameObjects/BetSelector.js'
 
 export class Roulette extends Phaser.Scene {
 
     constructor() {
-        super({ key: 'Roulette' });
-    }
-
-    preload() {
-        this.load.image('roulette', '/phaser-game/assets/roulette/roulette_bg_2.png'); 
-        this.load.image('wheel', '/phaser-game/assets/roulette/roulette_wheel.png'); 
-        this.load.image('up1', '/phaser-game/assets/roulette/up1.png');
-        this.load.image('up5', '/phaser-game/assets/roulette/up5.png'); 
-        this.load.image('down1', '/phaser-game/assets/roulette/down1.png'); 
-        this.load.image('down5', '/phaser-game/assets/roulette/down5.png'); 
-        this.load.image('ball', '/phaser-game/assets/roulette/ball.png');
-        this.load.image('youwin', '/phaser-game/assets/youwin.png');
-        this.load.image('youlose', '/phaser-game/assets/youlose.png');
-        this.load.image('place_bet', '/phaser-game/assets/roulette/place_bet.png');
-        this.load.image('heart','/phaser-game/assets/roulette/heart.png');
-
+        super('Roulette');
     }
 
     create() {
         const width = this.scale.width;
         const height = this.scale.height;
 
-        const bg = this.add.image(width / 2, height / 2, 'roulette');
+        const bg = this.add.image(width / 2, height / 2, 'roulette_bg');
         bg.setOrigin(0.5);
 
         const scaleX = width / bg.width;
@@ -41,14 +27,7 @@ export class Roulette extends Phaser.Scene {
         const scale = Math.max(scaleX, scaleY); // fill the screen
         bg.setScale(scale);
 
-
-        // debugging box
-        // const debug = this.add.graphics();
-        // debug.lineStyle(4, 0x00ff00);
-        // debug.strokeRect(0, 0, this.scale.width, this.scale.height);
-
-
-        //wheel logic
+        // wheel logic
         const imageStartX = width * .25;
         const imageStartY = height * .5;
         this.rouletteWheel = this.add.image(imageStartX, imageStartY, 'wheel');
@@ -104,7 +83,15 @@ export class Roulette extends Phaser.Scene {
             { number: '2', x: 0, y: 0 } // dummy fallback
         ];
         
+        // coin counter
         this.coinCounter = new CoinCounter(this, 28, 28);
+        // GETTING USER INFO
+        let request = new Request('/@me');
+        fetch(request).then(response => {
+            return response.json();
+        }).then(data => {
+            this.coinCounter.setCoins(data['coins']);
+        });
 
         this.betInfo = {
             type: null,
@@ -112,28 +99,21 @@ export class Roulette extends Phaser.Scene {
             amount: 0,
             numOfNums: 0
         };
-    
+
+        // bet selector
+        this.betSelector = new BetSelector(this, width * .5, height * .85);
+
         // 1. Build the board
         this.createRouletteBoard(); // <- Generates the number grid and common bets
 
         // this.createBackButton();
 
-        this.exitSign2 = new ExitSign2(this, this.scale.width, 0, 'Game').setOrigin(1, 0); // this.exitSign2 = new ExitSign(this, this.scale.width, 0, 'Game').setOrigin(1, 0);
+        this.exitSign = new ExitSignHREF(this, this.scale.width * .95, 0, 'casino').setOrigin(.5, 0);
         
-        const betResult = this.add.text(imageStartX, imageStartY, '',{
+        const betResult = this.add.text(imageStartX, imageStartY, '', {
             fontSize: '40px',
             fill: '#fd0000'
         }).setOrigin(.5);
-
-        // 2. Add Place Bet button
-        // const confirmBtn = this.add.text(width, height, 'Place Bet!', {
-        //     fontSize: '20px',
-        //     fill: '#ffffff',
-        //     backgroundColor: '#007bff',
-        //     padding: { x: 50, y: 25 }
-        // })
-        // .setOrigin(1,1) 
-        // .setInteractive();
 
         const confirmBtn = this.add.image(width * .75, height * .85, "place_bet").setOrigin(.5).setScale(.5).setInteractive();
         
@@ -148,18 +128,6 @@ export class Roulette extends Phaser.Scene {
             fill: '#ffffff'
         }).setOrigin(.5,.5);
 
-        this.coinsWagered = this.add.text(width*.5, height * .83, "Coins Wagered:",{
-            fontSize: '20px',
-            fill: '#ffffff'
-        }).setOrigin(.5,.5);
-
-        this.coinsWageredNumber = this.add.text(width*.5, height * .88, "0",{
-            fontSize: '20px',
-            fill: '#ffffff'
-        }).setOrigin(.5,.5);
-
-        this.createWagerButtons();
-
         // the type of the bet that you select. "Number(s)" or something else like "Red"
         this.valueBet = this.add.text(width * .5, height * .2, '',{
             fontSize: '20px',
@@ -168,10 +136,11 @@ export class Roulette extends Phaser.Scene {
 
         confirmBtn.on('pointerdown', () => {
             console.log(this.valueBet.text);
+            let bet = this.betSelector.bet
             if (this.valueBet.text === "") {
                 alert('No bet selected!');
                 return;
-            }else if(parseInt(this.coinsWageredNumber.text) <= 0){
+            }else if(bet <= 0){
                 alert("Please select a positive number of coins");
                 return;
             }
@@ -189,7 +158,7 @@ export class Roulette extends Phaser.Scene {
             let request = new Request('/phaser/playRoulette', {
                 method: "POST",
                 body: JSON.stringify({
-                    wager: parseInt(this.coinsWageredNumber.text),
+                    wager: bet,
                     bet_type: this.valueBet.text,
                     numbers: this.numBet.text
                 }),
@@ -211,6 +180,8 @@ export class Roulette extends Phaser.Scene {
                 .then(data => {
 
                     let outcome = parseInt(data['user_cashout']);
+
+                    this.coinCounter.addCoins(outcome);
 
                     let resultImage;
                     if (outcome < 0){
@@ -416,79 +387,5 @@ export class Roulette extends Phaser.Scene {
         this.createBetButton('19-36', gridStartX + 500, gridStartY + 100, 'Second 18', '#004d4d');
         
     }
-
-    createWagerButtons(){
-        const up1 = this.add.image(this.scale.width *.6 ,  this.scale.height * .85, "up1").setScale(.2).setInteractive();
-        up1.on('pointerdown', () => {
-            console.log('up1 clicked!');
-            let prevNum = this.coinsWageredNumber.text;
-            let newNum = (parseInt(prevNum) + 1).toString();
-            this.coinsWageredNumber.setText(newNum);
-        });
-
-        const up5 = this.add.image(this.scale.width *.65 ,  this.scale.height * .85, "up5").setScale(.2).setInteractive();
-        up5.on('pointerdown', () => {
-            console.log('up5 clicked!');
-            let prevNum = this.coinsWageredNumber.text;
-            let newNum = (parseInt(prevNum) + 5).toString();
-            this.coinsWageredNumber.setText(newNum);
-        });
-
-        const down1 = this.add.image(this.scale.width *.4 ,  this.scale.height * .85, "down1").setScale(.2).setInteractive();
-        down1.on('pointerdown', () => {
-            console.log('down1 clicked!');
-            let prevNum = this.coinsWageredNumber.text;
-            if((parseInt(prevNum) - 1) < 0){
-                console.log("please don't select a negative number :DD");
-                return;
-            }
-            let newNum = (parseInt(prevNum) - 1).toString();
-            this.coinsWageredNumber.setText(newNum);
-        });
-
-        const down5 = this.add.image(this.scale.width *.35 ,  this.scale.height * .85, "down5").setScale(.2).setInteractive();
-        down5.on('pointerdown', () => {
-            console.log('down5 clicked!');
-            let prevNum = this.coinsWageredNumber.text;
-            if((parseInt(prevNum) - 5) < 0){
-                console.log("please don't select a negative number :DD");
-                return;
-            }
-            
-            let newNum = (parseInt(prevNum) - 5).toString();
-            this.coinsWageredNumber.setText(newNum);
-        });
-    }
-
-    createBackButton(){
-        const backButton = this.add.text(this.scale.width, 0, 'Back', {
-            fontSize: '16px',
-            fill: '#fff',
-            backgroundColor: '#004d4d',
-            padding: { x: 10, y: 5 }
-        }).setInteractive().setOrigin(1, 0);
-
-        backButton.on('pointerdown', () => {
-            window.location.href = '/casino';
-        });
-    }
     
 }
-
-
-const config = {
-    type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
-    scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: '100%',
-        height: '100%',
-    },
-    backgroundColor: '#1a1a1a',
-    parent: 'game-container',
-    scene: [Roulette]
-};
-
-const game = new Phaser.Game(config);

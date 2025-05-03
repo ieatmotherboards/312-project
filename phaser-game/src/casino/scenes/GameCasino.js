@@ -3,6 +3,9 @@ import { PlayerGhost } from '../../gameObjects/PlayerGhost.js';
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
 import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js';
 import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js';
+import { MineEntrance } from '../../gameObjects/MineEntrance.js';
+import { RouletteTable } from '../../gameObjects/RouletteTable.js';
+import { ExitSignHREF } from '../../gameObjects/ExitSignHREF.js'
 import  '../../../../public/socket.io.js';
 
 export class Game extends Phaser.Scene {
@@ -22,6 +25,8 @@ export class Game extends Phaser.Scene {
         this.chScreenVisible(false);
         // player's coin counter
         this.coinCounter = new CoinCounter(this, 28, 28);
+
+        new ExitSignHREF(this, 720, 0, '/').setOrigin(.5, 0);
 
     // INSTANCE VARS
         // this player's username, assigned value through fetch to phaser/@me
@@ -44,7 +49,7 @@ export class Game extends Phaser.Scene {
         // dict for player ghost objects, maps their username to their object
         this.playerGhosts = {};
         // sets of hitboxes player is overlapping
-        this.slotOverlaps = new Set();
+        this.gameOverlaps = new Set();
         this.challengeOverlaps = new Set();
         
         
@@ -54,19 +59,19 @@ export class Game extends Phaser.Scene {
         // previously broadcasted position
         this.prevPosition = {x: this.player.x, y: this.player.x}; 
 
-        // populates slots array with 12 slot machines facing down
+        // populates slots array with 10 slot machines facing down
         let i = 0;
         let x = 150;
-        while (i < 12) {
+        while (i < 10) {
             let newSlots = new SlotMachineDown(this, x, 50);
             this.slots.push(newSlots);
             i += 1;
             x += 50;
         }
-        // populates slots array with 12 slot machines facing left and right
+        // populates slots array with 10 slot machines facing left and right
         i = 0;
         let y = 200;
-        while (i < 6) {
+        while (i < 5) {
             let newSlots = new SlotMachineSide(this, 374, y, false);
             this.slots.push(newSlots);
             newSlots = new SlotMachineSide(this, 425, y, true);
@@ -75,24 +80,44 @@ export class Game extends Phaser.Scene {
             y += 50;
         }
 
+        new RouletteTable(this, 185, 530);
+        new RouletteTable(this, 400, 530);
+        new RouletteTable(this, 615, 530);
+
+        // popup to play games
         this.playPopup = this.add.image(400, 540, 'popup').setScale(2);
         this.playPopup.text = this.add.text(400, 540, 'Press SPACE to play!', { fontSize: '32px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
         this.playPopupVisible(false);
-
+        // popup to challenge players
         this.challengePopup = this.add.image(400, 60, 'popup').setScale(2);
         this.challengePopup.text = this.add.text(400, 60, 'Press E to challenge [player]!', { fontSize: '24px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
         this.chPopupVisible(false);
 
+        // mines entrance
+        this.mineEnter = new MineEntrance(this, 780, 300);
+
     // GETTING USER INFO
-        let request = new Request('/phaser/@me');
+        let request = new Request('/@me');
         fetch(request).then(response => {
             return response.json();
         }).then(data => {
             this.coinCounter.setCoins(data['coins']);
             this.username = data['username'];
+            let textureKey = 'user_' + this.username;
             // broadcasting join message
             this.websocket.emit('casino_join', { 'username': this.username, 'pos': {'x': this.player.x, 'y': this.player.y} });
+            if (this.textures.exists(textureKey)) {
+                this.player.setTexture(textureKey);
+            } else {
+                this.load.image(textureKey, data['pfp_path']);
+                this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                    this.player.setTexture(textureKey);
+                    this.player.setDisplaySize(34, 34);
+                }, this);
+                this.load.start();
+            }
         });
+        
 
     // INPUT KEYS
         // movement keys
@@ -226,7 +251,7 @@ export class Game extends Phaser.Scene {
     }
 
     stoppedColliding() {
-        if (this.slotOverlaps.size == 0) {
+        if (this.gameOverlaps.size == 0) {
             this.playPopupVisible(false);
         }
         if (this.challengeOverlaps.size == 0) {
@@ -254,15 +279,24 @@ export class Game extends Phaser.Scene {
         this.challengePopup.text.setText("Press E to challenge " + text + " !");
     }
 
-    coinflipSwap() {
-        this.scene.start('CoinFlip');
-        // this.websocket.emit('casino_leave', {'username': this.username});
+    sceneSwap(sceneKey) {
+        this.scene.start(sceneKey);
         this.websocket.disconnect(false);
     }
 
+    coinflipSwap() {
+        this.sceneSwap('CoinFlip');
+    }
+
     slotsSwap() {
-        this.scene.start('Slots');
-        // this.websocket.emit('casino_leave', {'username': this.username});
-        this.websocket.disconnect(false);
+        this.sceneSwap('Slots');
+    }
+
+    minesSwap() {
+        this.sceneSwap('Mines');
+    }
+
+    rouletteSwap() {
+        window.location.href = '/roulette';
     }
 }

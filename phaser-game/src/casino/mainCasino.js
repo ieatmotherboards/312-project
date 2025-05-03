@@ -4,6 +4,7 @@ import { GameOver } from './scenes/GameOver.js';
 import { Preloader } from './scenes/PreloaderCasino.js';
 import { Slots } from './scenes/Slots.js';
 import { CoinFlip } from './scenes/CoinFlip.js';
+import { Mines } from './scenes/Mines.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -28,7 +29,8 @@ const config = {
         Game,
         GameOver,
         Slots,
-        CoinFlip
+        CoinFlip,
+        Mines
     ],
     pixelArt: true
 };

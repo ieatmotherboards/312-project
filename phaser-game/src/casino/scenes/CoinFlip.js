@@ -23,7 +23,7 @@ export class CoinFlip extends Phaser.Scene {
         this.flipped = false;
 
         // getting user info
-        let request = new Request('/phaser/@me');
+        let request = new Request('/@me');
         fetch(request).then(response => {
             return response.json();
         }).then(data => {
