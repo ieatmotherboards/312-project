@@ -113,8 +113,17 @@
     
     .search-container {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .search-input-group {
+      display: flex;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 5px;
     }
     
     #userSearch {
@@ -125,7 +134,7 @@
       color: white;
       font-family: "Kanit", sans-serif;
       font-size: 1rem;
-      width: 300px;
+      width: 100%;
     }
     
     #searchButton {
@@ -138,6 +147,59 @@
       font-family: "Kanit", sans-serif;
       font-weight: bold;
       cursor: pointer;
+    }
+    
+    .search-results {
+      display: none;
+      width: 100%;
+      max-width: 400px;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      margin-top: 5px;
+      z-index: 10;
+    }
+    
+    .search-results.visible {
+      display: block;
+    }
+    
+    .user-result {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .user-result:last-child {
+      border-bottom: none;
+    }
+    
+    .user-result:hover {
+      background-color: rgba(255, 215, 0, 0.2);
+    }
+    
+    .user-result img {
+      width: 30px;
+      height: 30px;
+      margin-right: 15px;
+    }
+    
+    .user-result .username {
+      font-family: "Kanit", sans-serif;
+      font-size: 1rem;
+      color: white;
+    }
+    
+    .no-results {
+      padding: 15px;
+      text-align: center;
+      color: #ccc;
+      font-family: "Kanit", sans-serif;
     }
     
     .navigation {
@@ -169,15 +231,27 @@
     }
     
     .empty-inventory {
-        padding: 40px;
-        text-align: center;
-        font-size: 1.2rem;
-        color: #ccc;
-        width: 100%;
-        grid-column: 1 / -1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      padding: 40px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #ccc;
+      width: 100%;
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    /* Small loading spinner for search results */
+    .search-loading {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 215, 0, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #ffd700;
+      animation: spin 1s linear infinite;
+      margin: 15px auto;
     }
   </style>
 </head>
@@ -195,8 +269,16 @@
       <button id="tradeButton" class="button">Trade Items</button>
       
       <div class="search-container" style="display: none;" id="searchContainer">
-        <input type="text" id="userSearch" placeholder="Search for a player...">
-        <button id="searchButton">Search</button>
+        <div class="search-input-group">
+          <input type="text" id="userSearch" placeholder="Search for a player...">
+          <button id="searchButton">Search</button>
+        </div>
+        
+        <div class="search-loading" id="searchLoadingSpinner"></div>
+        
+        <div class="search-results" id="searchResults">
+          <!-- Search results will be populated here -->
+        </div>
       </div>
     </div>
   </div>
@@ -211,6 +293,8 @@
       
       const tradeButton = document.getElementById('tradeButton');
       const searchContainer = document.getElementById('searchContainer');
+      const searchResults = document.getElementById('searchResults');
+      const searchLoadingSpinner = document.getElementById('searchLoadingSpinner');
       
       tradeButton.addEventListener('click', function() {
         searchContainer.style.display = searchContainer.style.display === 'none' ? 'flex' : 'none';
@@ -220,11 +304,84 @@
       searchButton.addEventListener('click', function() {
         const username = document.getElementById('userSearch').value.trim();
         if (username) {
-          // Here you would implement the search functionality
-          // For example: searchUserInventory(username);
-          alert('Searching for user: ' + username);
+          searchUsers(username);
         }
       });
+      
+      // Also search when pressing Enter in the search box
+      document.getElementById('userSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const username = this.value.trim();
+          if (username) {
+            searchUsers(username);  
+          }
+        }
+      });
+      
+      function searchUsers(searchTerm) {
+        // Clear previous results
+        searchResults.innerHTML = '';
+        searchResults.classList.remove('visible');
+        searchLoadingSpinner.style.display = 'block';
+        
+        // Make API call to search for users
+        fetch('/get-trade-users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ search: searchTerm })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(users => {
+          searchLoadingSpinner.style.display = 'none';
+          
+          if (users.length === 0) {
+            searchResults.innerHTML = '<div class="no-results">No users found</div>';
+          } else {
+            // Clear previous results
+            searchResults.innerHTML = '';
+            
+            // Create user elements
+            users.forEach(username => {
+              const userElement = document.createElement('div');
+              userElement.className = 'user-result';
+              userElement.innerHTML = `
+                <img src="/public/trade-button.png" alt="Trade">
+                <span class="username">${username}</span>
+              `;
+              
+              // Add click event to view user's inventory
+              userElement.addEventListener('click', function() {
+                viewUserInventory(username);
+              });
+              
+              searchResults.appendChild(userElement);
+            });
+          }
+          
+          // Show results
+          searchResults.classList.add('visible');
+        })
+        .catch(error => {
+          searchLoadingSpinner.style.display = 'none';
+          console.error('Error searching users:', error);
+          searchResults.innerHTML = '<div class="no-results">Error finding users. Please try again.</div>';
+          searchResults.classList.add('visible');
+        });
+      }
+      
+      // Function to view a user's inventory (to be implemented)
+      function viewUserInventory(username) {
+        alert(`Viewing ${username}'s inventory for trading. This feature is coming soon!`);
+        // Here you would fetch and display the user's inventory
+        // You could create a modal or expand the trade section to show their items
+      }
     });
     
     function loadInventory() {
@@ -234,16 +391,16 @@
       loadingSpinner.style.display = 'block';
       
       // Dummy inventory data for preview purposes
-    //   const dummyInventory = [
-    //     { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
-    //     { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" },
-    //     { id: 3, name: "Phoenix Feather", image: "https://via.placeholder.com/100x100/FF4500/FFFFFF?text=Feather" },
-    //     { id: 4, name: "Healing Potion", image: "https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion" },
-    //     { id: 5, name: "Dragon Scale", image: "https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale" },
-    //     { id: 6, name: "Enchanted Bow", image: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=Bow" },
-    //     { id: 7, name: "Wizard's Hat", image: "https://via.placeholder.com/100x100/483D8B/FFFFFF?text=Hat" },
-    //     { id: 8, name: "Ancient Relic", image: "https://via.placeholder.com/100x100/B8860B/FFFFFF?text=Relic" }
-    //   ];
+      const dummyInventory = [
+        { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
+        { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" },
+        { id: 3, name: "Phoenix Feather", image: "https://via.placeholder.com/100x100/FF4500/FFFFFF?text=Feather" },
+        { id: 4, name: "Healing Potion", image: "https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion" },
+        { id: 5, name: "Dragon Scale", image: "https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale" },
+        { id: 6, name: "Enchanted Bow", image: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=Bow" },
+        { id: 7, name: "Wizard's Hat", image: "https://via.placeholder.com/100x100/483D8B/FFFFFF?text=Hat" },
+        { id: 8, name: "Ancient Relic", image: "https://via.placeholder.com/100x100/B8860B/FFFFFF?text=Relic" }
+      ];
       
       // Make GET request to fetch inventory data
       fetch('/get-inventory', {method: 'POST'})
@@ -261,7 +418,7 @@
           loadingSpinner.style.display = 'none';
           console.error('Error loading inventory:', error);
           console.log('Displaying dummy inventory data instead');
-        //   displayInventory(dummyInventory);
+          displayInventory(dummyInventory); // Uncommenting this shows dummy data if fetch fails
         });
       
       function displayInventory(data) {

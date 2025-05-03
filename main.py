@@ -178,7 +178,7 @@ def send_inventory_data():
         main_log(req=request, res=response)
         return response
     
-    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    token_attempt = db.try_hash_token(request) 
     hashed_token = token_attempt[0]
     if hashed_token is None:
         return util.take_away_token_response(request, token_attempt)
@@ -192,6 +192,37 @@ def send_inventory_data():
         out_list.append({"id": inventory.index(item), "name":properties['name'], "image":properties['imagePath']})
         app.logger.info("item is: " + str(item))
 
+    return make_response(jsonify(out_list))
+
+@app.route('/get-trade-users', methods=['POST'])
+def get_trade_users():
+
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302) 
+        main_log(req=request, res=response)
+        return response
+    
+    token_attempt = db.try_hash_token(request) 
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        return util.take_away_token_response(request, token_attempt)
+    
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+
+    search_term = request.get_json()['search']
+    app.logger.info('received search term: ' + str(search_term))
+    # users_list = db.find_trade_list(search_term)
+
+    users_list = db.users.find({}).to_list()
+
+    out_list = []
+     # take out own username
+    for user in users_list:
+        found_username = user['username']
+        app.logger.info("found user with name" + str(found_username))
+        if found_username != username and found_username.lower() in search_term.lower():
+            out_list.append(found_username)
+    app.logger.info("returning:" +str(out_list))
     return make_response(jsonify(out_list))
 
 
