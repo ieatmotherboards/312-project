@@ -91,11 +91,8 @@ def render_casino():
 def render_roulette():
     if 'auth_token' not in request.cookies:
         response = redirect('/', code=302)
-        return response
-
-    js_path = 'casino/scenes/Roulette.js'
-
-    response = make_response(render_template("game.html", path=js_path))
+    else:
+        response = make_response(render_template("game.html", path='roulette/mainRoulette.js'))
     main_log(req=request, res=response)
     return response
 
@@ -142,8 +139,9 @@ def at_me():
     user = db.get_user_by_hashed_token(hashed_token)
     username = user['username']
     coins = inv.get_coins(username)
-    pfp = user['pfp']
-    data = {"username": username, "coins": coins, "pfp_path": pfp}
+    data = {"username": username, "coins": coins}
+    if 'pfp' in user.keys():
+        data['pfp_path'] = user['pfp']
     response = make_response(jsonify(data))
     main_log(req=request, res=response)
     return response

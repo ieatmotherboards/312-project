@@ -4,21 +4,20 @@ import { Preloader } from './scenes/PreloaderRoulette.js';
 
 const config = {
     type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
-    scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: '100%',
-        height: '100%',
-    },
-    backgroundColor: '#1a1a1a',
+    width: 1920,
+    height: 955,
     parent: 'game-container',
+    backgroundColor: '#1a1a1a',
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     scene: [
         Boot,
         Preloader,
         Roulette
-        ]
+        ],
+    pixelArt: true
 };
 
 new Phaser.Game(config);

@@ -4,13 +4,13 @@ export class RouletteTable extends Phaser.Physics.Arcade.Sprite {
 
     constructor(scene, x, y) {
         super(scene, x, y, 'roulette_table');
-        // this.setScale(3);
+        this.setScale(1.5);
         this.scene.add.existing(this);
-        this.scene.physics.add.existing(this);
+        this.scene.physics.add.existing(this, true);
         // collider with player
         this.scene.physics.add.collider(this, this.scene.player);
 
-        this.hitbox = new Hitbox(this.scene, this, x, y, 6);
+        this.hitbox = new Hitbox(this.scene, this, x, y, 8);
         this.hitbox.addOverlap(this.scene.player);
 
         this.interacted = false;

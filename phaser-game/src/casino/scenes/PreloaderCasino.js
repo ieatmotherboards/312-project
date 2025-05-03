@@ -29,6 +29,10 @@ export class Preloader extends Phaser.Scene {
         this.load.image('back', 'back_mod.png');
         this.load.image('youwin', 'youwin.png');
         this.load.image('youlose', 'youlose.png');
+        this.load.image('up1', 'up1.png');
+        this.load.image('up5', 'up5.png'); 
+        this.load.image('down1', 'down1.png'); 
+        this.load.image('down5', 'down5.png'); 
 
         // casino floor imgs
         this.load.image('slotmachine', 'slotmachine.png');

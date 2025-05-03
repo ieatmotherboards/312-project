@@ -5,6 +5,7 @@ import { SlotMachineSide } from '../../gameObjects/SlotMachineSide.js';
 import { SlotMachineDown } from '../../gameObjects/SlotMachineDown.js';
 import { MineEntrance } from '../../gameObjects/MineEntrance.js';
 import { RouletteTable } from '../../gameObjects/RouletteTable.js';
+import { ExitSignHREF } from '../../gameObjects/ExitSignHREF.js'
 import  '../../../../public/socket.io.js';
 
 export class Game extends Phaser.Scene {
@@ -24,6 +25,8 @@ export class Game extends Phaser.Scene {
         this.chScreenVisible(false);
         // player's coin counter
         this.coinCounter = new CoinCounter(this, 28, 28);
+
+        new ExitSignHREF(this, 720, 0, '/').setOrigin(.5, 0);
 
     // INSTANCE VARS
         // this player's username, assigned value through fetch to phaser/@me
@@ -56,19 +59,19 @@ export class Game extends Phaser.Scene {
         // previously broadcasted position
         this.prevPosition = {x: this.player.x, y: this.player.x}; 
 
-        // populates slots array with 12 slot machines facing down
+        // populates slots array with 10 slot machines facing down
         let i = 0;
         let x = 150;
-        while (i < 12) {
+        while (i < 10) {
             let newSlots = new SlotMachineDown(this, x, 50);
             this.slots.push(newSlots);
             i += 1;
             x += 50;
         }
-        // populates slots array with 12 slot machines facing left and right
+        // populates slots array with 10 slot machines facing left and right
         i = 0;
         let y = 200;
-        while (i < 6) {
+        while (i < 5) {
             let newSlots = new SlotMachineSide(this, 374, y, false);
             this.slots.push(newSlots);
             newSlots = new SlotMachineSide(this, 425, y, true);
@@ -77,7 +80,9 @@ export class Game extends Phaser.Scene {
             y += 50;
         }
 
-        new RouletteTable(this, 200, 500);
+        new RouletteTable(this, 185, 530);
+        new RouletteTable(this, 400, 530);
+        new RouletteTable(this, 615, 530);
 
         // popup to play games
         this.playPopup = this.add.image(400, 540, 'popup').setScale(2);
@@ -292,6 +297,6 @@ export class Game extends Phaser.Scene {
     }
 
     rouletteSwap() {
-        window.location.href('/roulette');
+        window.location.href = '/roulette';
     }
 }
