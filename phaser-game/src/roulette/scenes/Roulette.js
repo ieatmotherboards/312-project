@@ -102,7 +102,7 @@ export class Roulette extends Phaser.Scene {
 
         // bet selector
         this.betSelector = new BetSelector(this, width * .5, height * .85);
-    
+
         // 1. Build the board
         this.createRouletteBoard(); // <- Generates the number grid and common bets
 
@@ -143,6 +143,10 @@ export class Roulette extends Phaser.Scene {
             }else if(bet <= 0){
                 alert("Please select a positive number of coins");
                 return;
+            }
+
+            if(this.numBet.text === "11, 29, 24"){
+                this.add.image(this.scale.width* .75, this.scale.height* .2, "heart").setScale(.5);
             }
 
 

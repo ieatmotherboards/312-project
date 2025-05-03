@@ -12,7 +12,7 @@ from PIL import Image
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box, getLeaderBoard
+from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount
 from src.logging_things import main_log
 from src.achievements import generate_html_data
 import src.util as util
@@ -102,19 +102,19 @@ def render_settings():
     main_log(req=request, res=response)
     return response
 
-@app.route('/open-lootbox') # routes to the login page
+@app.route('/open-lootbox') # routes to the open box page
 def render_lootbox():
     response = make_response(render_template("open_lootbox.html"))
     main_log(req=request, res=response)
     return response
 
-@app.route('/open-lootbox', methods = ['POST']) # routes to the login page
+@app.route('/item-shop', methods = ['POST']) # POST to try to buy item
 def open_lootbox():
     response = purchase_loot_box(request)
     main_log(req=request, res=response)
     return response
 
-@app.route('/item-shop') # routes to the login page
+@app.route('/item-shop') # routes to the shop page
 def render_shop():
     response = make_response(render_template("item_shop.html"))
     main_log(req=request, res=response)
@@ -171,6 +171,38 @@ def at_user(subpath):
         response = make_response({ "pfp_path": user["pfp"], "coins": inv.get_coins(subpath) })
     main_log(req=request, res=response)
     return response
+
+@app.route('/inventory')
+def render_inventory():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)
+    else:
+        response = make_response(render_template("inventory.html"))
+    main_log(req=request, res=response)
+    return response
+
+@app.route('/get-inventory', methods = ['POST'])
+def send_inventory_data():
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)
+        main_log(req=request, res=response)
+        return response
+
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        return util.take_away_token_response(request, token_attempt)
+
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+
+    inventory = list_inventory(username)
+    out_list = []
+    for item in inventory:
+        properties = get_item_properties(item['id'])
+        out_list.append({"id": inventory.index(item), "name":properties['name'], "image":properties['imagePath']})
+        app.logger.info("item is: " + str(item))
+
+    return make_response(jsonify(out_list))
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):
@@ -265,6 +297,22 @@ def achievements():
     response = make_response(render_template('achievements.html', username=username, achievements=data))
     main_log(req=request, res=response)
     return response
+
+@app.route('/player_stats')
+def playerStats():
+    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
+        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
+        main_log(req=request, res=response)
+        return response
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+    data = getCoinsAndLootBoxCount(username)
+    response = jsonify(data)
+    response.headers['Content-Type'] = 'application/json'
+    return response
+
 
 # returns a file's contents as bytes
 def get_file(filename):

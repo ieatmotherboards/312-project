@@ -153,6 +153,13 @@ def list_inventory(username):
     return all_items
 
 
+def getCoinsAndLootBoxCount(username):
+    userData=inv_db.find_one({'username':username})
+    out={}
+    out['money']=userData['coins']
+    out['lootboxes'] = userData['LootBoxes']
+    return out
+
 def loot_box_open():
     random = randint(1,10)
 
@@ -160,6 +167,9 @@ def loot_box_open():
         random = randint
 
     return random
+
+
+
 
 def purchase_loot_box(request):
     cookies = request.cookies
@@ -170,16 +180,16 @@ def purchase_loot_box(request):
 
     user = db.get_user_by_hashed_token(hashed_token)
 
-    if user['coins'] < 100:
-        purchase_log(user['username'], success=False, message='not logged in')
-        return (403, 'not logged in')
+    inventory = inv_db.find_one({'username': user}, {'_id': 0})
+
+    if inventory['coins'] < 100:
+        purchase_log(user, success=False, message='not enough coins')
+        return (403, 'not enough coins')
 
     else:
-        #Needs to be updated to add to lootboxes
-        #Inventory.find_one_and_update({'auth_token': hashed_token}, {'$set': {'coins': user['coins'] - 100, ''}})
-        print('')
+        inv_db.find_one_and_update({'username': user}, {'$set': {'coins': inventory['coins'] - 100, 'LootBoxes': inventory['LootBoxes'] + 1}})
 
-    purchase_log(user['username'], success=True, message='purchased')
+    purchase_log(user, success=True, message='purchased')
     return (200, '')
 
 if __name__ == '__main__':
