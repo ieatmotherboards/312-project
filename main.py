@@ -163,7 +163,7 @@ def send_inventory_data():
     if 'auth_token' not in request.cookies:
         response = redirect('/', code=302)
         return util.log_response(request, response)
-    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    token_attempt = db.try_hash_token(request)
     hashed_token = token_attempt[0]
     if hashed_token is None:
         response = util.take_away_token_response(request, token_attempt)
@@ -178,6 +178,7 @@ def send_inventory_data():
         app.logger.info("item is: " + str(item))
     response = make_response(jsonify(out_list))
     return util.log_response(request, response)
+
 @app.route('/get-trade-users', methods=['POST'])
 def get_trade_users():
 
