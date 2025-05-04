@@ -9,3 +9,4 @@ pycache//
 /logs
 /public/pfps/*
 logfile.log
+raw_http.log
