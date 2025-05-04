@@ -1,6 +1,7 @@
 from flask import *
 from flask_socketio import SocketIO
 import logging
+import os
 
 app = Flask(__name__, template_folder='../templates')
 socketio = SocketIO(app)
@@ -10,10 +11,10 @@ raw_logger = logging.getLogger('raw_http')
 raw_logger.setLevel(logging.INFO)
 
 # Prevent it from propagating to root logger (i.e.  logfile.log)
-raw_logger.propagate = False
+# raw_logger.propagate = False
 
 # File handler for raw_http.log
-raw_handler = logging.FileHandler('raw_http.log')
+raw_handler = logging.FileHandler('/mnt/raw_http.log')
 raw_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
 
 # Add handler to logger
