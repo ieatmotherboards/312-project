@@ -12,7 +12,7 @@ from PIL import Image
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount
+from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount, trade
 from src.logging_things import main_log
 from src.achievements import generate_html_data
 import src.util as util
@@ -160,24 +160,29 @@ def render_inventory():
 
 @app.route('/get-inventory', methods = ['POST'])
 def send_inventory_data():
-    if 'auth_token' not in request.cookies:
-        response = redirect('/', code=302)
-        return util.log_response(request, response)
-    token_attempt = db.try_hash_token(request)
-    hashed_token = token_attempt[0]
-    if hashed_token is None:
-        response = util.take_away_token_response(request, token_attempt)
-        return util.log_response(request, response)
+    
+    potential_json = request.get_json() # double check that this doesn't error
+    if potential_json is None:
+        if 'auth_token' not in request.cookies:
+            response = redirect('/', code=302)
+            return util.log_response(request, response)
+        token_attempt = db.try_hash_token(request)
+        hashed_token = token_attempt[0]
+        if hashed_token is None:
+            response = util.take_away_token_response(request, token_attempt)
+            return util.log_response(request, response)
+        username = db.get_user_by_hashed_token(hashed_token)['username']
+    else:
+        username = potential_json['username']
 
-    username = db.get_user_by_hashed_token(hashed_token)['username']
+        
     inventory = list_inventory(username)
     out_list = []
     for item in inventory:
         properties = get_item_properties(item['id'])
-        out_list.append({"id": inventory.index(item), "name": properties['name'], "image": properties['imagePath']})
-        app.logger.info("item is: " + str(item))
-    response = make_response(jsonify(out_list))
-    return util.log_response(request, response)
+        out_list.append({"id": item['id'], "name": properties['name'], "image": properties['imagePath']})
+        # app.logger.info("item is: " + str(item))
+    return util.log_response(request, make_response(jsonify(out_list)))
 
 @app.route('/get-trade-users', methods=['POST'])
 def get_trade_users():
@@ -204,12 +209,97 @@ def get_trade_users():
      # take out own username
     for user in users_list:
         found_username = user['username']
-        app.logger.info("found user with name" + str(found_username))
+        # app.logger.info("found user with name" + str(found_username))
         if found_username != username and found_username.lower() in search_term.lower():
             out_list.append(found_username)
-    app.logger.info("returning:" +str(out_list))
-    return make_response(jsonify(out_list))
+    # app.logger.info("returning:" +str(out_list))
+    return util.log_response(request, make_response(jsonify(out_list)))
 
+@app.route('/request-trade', methods = ['POST'])
+def request_trade():
+    '''
+    JSON:
+    target_username: targetUsername,
+    your_item_id: yourItem.id,
+    their_item_id: theirItem.id
+    '''
+
+    # get username from auth token for the 80th time
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)
+        return util.log_response(request, response)
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = util.take_away_token_response(request, token_attempt)
+        return util.log_response(request, response)
+    
+    username = db.get_user_by_hashed_token(hashed_token=hashed_token)
+
+    request_json = request.get_json()
+    requesting_username = username
+    responding_username = request_json['target_username']
+
+    your_item_id = request_json['your_item_id']
+    your_image_path = get_item_properties(your_item_id)['imagePath']
+
+    their_item_id = request_json['their_item_id']
+    their_image_path = get_item_properties(their_item_id)['imagePath']
+
+    tradeId = str(uuid.uuid4) # TODO: see if necessary 
+    db.trades.insert_one({"tradeId":tradeId, 
+                          "requesting_username": requesting_username, 
+                          "responding_username": responding_username, 
+                          "requesting_id": your_item_id, 
+                          "responding_id": their_item_id,
+                          "requesting_item_imagepath": your_image_path,
+                          "responding_item_imagepath": their_image_path
+                          })
+    response = make_response("OK", 200)
+    return util.log_response(request, response)
+
+@app.route('/respond-to-trade', methods = ['POST'])
+def respond_trade():
+    the_json = request.get_json()
+    accept_status = True if the_json['response'] == 'accept' else False
+    if accept_status:
+        found_trade = db.trades.find_one({"tradeId": the_json['trade_id']})
+        # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}
+
+        requesting_stuff = {"coins": 0, "items": [found_trade["requesting_id"]]}
+        responding_stuff = {"coins": 0, "items": [found_trade["responding_id"]]}
+        trade(user1=found_trade["requesting_username"], 
+              user1_stuff=requesting_stuff, 
+              user2=found_trade["responding_username"],
+              user2_stuff=responding_stuff)
+        return util.log_response(request, make_response("OK", 200))
+    else:
+        return util.log_response(request, make_response("OK", 200))
+
+@app.route('/get-pending-trades')
+def get_pending_trades():
+    # get user by auth token
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)
+        return util.log_response(request, response)
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = util.take_away_token_response(request, token_attempt)
+        return util.log_response(request, response)
+    
+    username = db.get_user_by_hashed_token(hashed_token=hashed_token)
+    
+    # query db for trades involving that user's items
+    trades = db.trades.find({"responding_username":username}).to_list()
+
+    out_list = []
+    out_list.append({'tradeId':trade['tradeId'], 
+                     'requesting_username':trade['requesting_username'], 
+                     'responding_username': trade['responding_username'],
+                     'requesting_item_imagepath':trade['requesting_item_imagepath'],
+                     'responding_item_imagepath': trade['responding_item_imagepath']} for trade in trades)
+    return util.log_response(request, jsonify(out_list))
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):

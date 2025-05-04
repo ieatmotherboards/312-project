@@ -77,7 +77,7 @@ def check_for_item(username, item_id):
 
 # gets the properties of the item with id item_id
 def get_item_properties(item_id):
-    item_type = item_db.find_one({'id": item_id'})['type']
+    item_type = item_db.find_one({'id': item_id})['type']
     return item_type_map[item_type]
 
     
