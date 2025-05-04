@@ -176,9 +176,9 @@ def purchase_loot_box(request):
 
 
     token = cookies['auth_token']
-    hashed_token = db.hash_token(token)
+    hashed_token = hashlib.sha256(token.encode()).hexdigest()
 
-    user = db.get_user_by_hashed_token(hashed_token)
+    user = users.find_one({'auth_token': hashed_token}, {'_id': 0})['username']
 
     inventory = inv_db.find_one({'username': user}, {'_id': 0})
 
@@ -189,10 +189,10 @@ def purchase_loot_box(request):
     else:
         update_coins(user, -100)
 
-        inv_db.find_one_and_update({'username': user}, {'$set': {'LootBoxes': inventory['LootBoxes'] + 1}})
+        inv_db.find_one_and_update({'username': user}, {'$set': {'LootBoxes': (inventory['LootBoxes'] + 1)}})
 
     purchase_log(user, success=True, message='purchased')
-    return (200, '')
+    return (200, 'LootBox Bought')
 
 if __name__ == '__main__':
     user1_inventory = ['0', '1', '2']
