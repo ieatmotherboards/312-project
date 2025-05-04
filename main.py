@@ -12,7 +12,7 @@ from src.init import app, socketio  # importing app and socketio from src.init i
 from src.auth import register_new_account, login, logout
 import src.database as db
 from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount
-from src.logging_things import main_log
+from src.logging_things import *
 from src.achievements import generate_html_data
 import src.util as util
 
@@ -115,9 +115,10 @@ def render_lootbox():
     main_log(req=request, res=response)
     return response
 
-@app.route('/item-shop', methods = ['POST']) # POST to try to buy item
+@app.route('/buy-lootbox', methods = ['POST']) # POST to try to buy item
 def open_lootbox():
-    response = purchase_loot_box(request)
+    res = purchase_loot_box(request)
+    response = make_response(res[0], res[1])
     main_log(req=request, res=response)
     return response
 

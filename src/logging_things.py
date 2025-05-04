@@ -1,6 +1,6 @@
 import datetime
-from flask import request, jsonify, Request, Response, make_response
-from src.init import app
+from flask import request, jsonify, Request, Response, make_response, g
+from src.init import app, raw_logger
 from src.database import get_user_by_hashed_token, hash_token, does_hashed_token_exist
 
 
@@ -16,6 +16,76 @@ def internal_error(error):
     response = make_response("Internal Server Error", 500)
     # You can call your custom logger here
     main_log(request, response)
+    return response
+
+
+TEXT_TYPES = ['application/json', 'text/', 'application/xml', 'application/javascript']
+
+@app.before_request
+def capture_request_body():
+    # Save request body early; stream will be consumed by Flask handlers
+    g.request_body = request.get_data()
+
+@app.after_request
+def log_raw_http(response):
+    try:
+        # Extract request info
+        method = request.method
+        path = request.path
+        headers = dict(request.headers)
+        body = g.get('request_body', b'')
+        content_type = headers.get('Content-Type', '')
+
+        # Sanitize headers
+        if 'Authorization' in headers:
+            headers['Authorization'] = '[REDACTED]'
+        if 'Cookie' in headers:
+            cookies = headers['Cookie'].split(';')
+            headers['Cookie'] = '; '.join(
+                c if not c.strip().startswith('auth_token=') else 'auth_token=[REDACTED]'
+                for c in cookies
+            )
+
+        # Determine whether to log body
+        log_request_body = (
+            all(path_part not in path.lower() for path_part in ['/login', '/register']) and
+            any(content_type.startswith(text_type) for text_type in TEXT_TYPES)
+        )
+
+        # Prepare request section
+        log_entry = f"\n--- REQUEST ---\n{method} {path}\nHeaders: {headers}\n"
+        if log_request_body:
+            log_entry += f"Body (truncated):\n{body[:2048].decode('utf-8', errors='replace')}\n"
+        else:
+            log_entry += "Body: [Not Logged]\n"
+
+        # Sanitize response headers
+        response_headers = dict(response.headers)
+        if 'Set-Cookie' in response_headers:
+            set_cookies = response_headers['Set-Cookie'].split(',')
+            redacted = ','.join(
+                c if 'auth_token=' not in c else '[REDACTED COOKIE]'
+                for c in set_cookies
+            )
+            response_headers['Set-Cookie'] = redacted
+
+        # Determine response body logging
+        resp_content_type = response.headers.get('Content-Type', '')
+        log_response_body = any(resp_content_type.startswith(text_type) for text_type in TEXT_TYPES)
+
+        # Prepare response section
+        log_entry += f"--- RESPONSE ---\nStatus: {response.status}\nHeaders: {response_headers}\n"
+        if log_response_body:
+            log_entry += f"Body (truncated):\n{response.get_data()[:2048].decode('utf-8', errors='replace')}\n"
+        else:
+            log_entry += "Body: [Not Logged]\n"
+
+        # Write to log
+        raw_logger.info(log_entry)
+
+    except Exception as e:
+        raw_logger.error(f"Error while logging raw HTTP: {e}")
+
     return response
 
 
