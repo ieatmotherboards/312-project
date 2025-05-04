@@ -24,7 +24,8 @@ achievements_db = db['achievements']
 def register_user(username : str, password : str):
     db.users.insert_one({
         'username': username,
-        'password': password
+        'password': password,
+        'pfp': '/phaser-game/assets/placeholder_pfp.png'
     })
 
 def get_user_by_hashed_token(hashed_token : str):
