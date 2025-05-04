@@ -103,7 +103,7 @@ def get_all_achivement_pics(username):
         out['Carousel'] = achievement_map['Carousel']['IncompletePath']
     return out
 
-def generate_html_data(username):
+def get_cheevo_html_data(username):
     #In: username
     #Out: Dict key = codenames that maps to a dict of achievement name, achievement description, achievement task, and path to photo
     out={}

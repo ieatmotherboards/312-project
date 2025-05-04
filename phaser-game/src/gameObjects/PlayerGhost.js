@@ -46,6 +46,7 @@ export class PlayerGhost extends Phaser.GameObjects.GameObject {
     startOverlap() {
         this.scene.challengeOverlaps.add(this);
         this.scene.chPopupVisible(true);
+        this.scene.chPopupText(this.username);
     }
 
     duringOverlap() {

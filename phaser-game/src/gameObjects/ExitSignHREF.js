@@ -6,6 +6,7 @@ export class ExitSignHREF extends Phaser.GameObjects.Sprite {
         scene.add.existing(this);
         this.setInteractive();
         this.on('pointerdown', pointer => {
+            this.scene.changePage();
             window.location.href = hrefKey;
         });
     }

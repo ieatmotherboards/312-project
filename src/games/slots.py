@@ -52,14 +52,17 @@ def play_slots(bet : int):
     top_row = [slots[0][0], slots[0][1], slots[0][2]]
     mid_row = [slots[1][0], slots[1][1], slots[1][2]]
     bot_row = [slots[2][0], slots[2][1], slots[2][2]]
-    money_lines = [top_left_diagonal, bot_left_diagonal, top_row, mid_row, bot_row]
+    money_lines = {"top left": top_left_diagonal, "bot left": bot_left_diagonal, "top": top_row, "mid": mid_row, "bot": bot_row}
+    winning_lines = []
     # if each slot in the pattern is the same, add their payout
-    for row in money_lines:
-        if len(set(row)) == 1:
-            symbol = row[0]
+    for line_key in money_lines:
+        line = money_lines[line_key]
+        if line[0] == line[1] == line[2]:
+            symbol = line[0]
             multiplier = payouts[symbol]
             payout += multiplier * bet
-    out = {'board': slots, 'payout': payout}
+            winning_lines.append(line_key)
+    out = {'board': slots, 'payout': payout, 'winning lines': winning_lines}
     return out
 
 def set_symbols(slots, key="basic"):

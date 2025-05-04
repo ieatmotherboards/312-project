@@ -14,7 +14,7 @@ from src.auth import register_new_account, login, logout
 import src.database as db
 from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount
 from src.logging_things import *
-from src.achievements import generate_html_data
+from src.achievements import get_cheevo_html_data
 import src.util as util
 import src.inventory as inv
 
@@ -255,20 +255,19 @@ def get_pfp():
 @app.route('/achievements')
 def achievements():
     # Fetch the achievement data for the user
-    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    token_attempt = db.try_hash_token(request)
     hashed_token = token_attempt[0]
     if hashed_token is None:
-        response = make_response(token_attempt[1], token_attempt[2])
-        response.set_cookie('auth_token', 'InvalidAuth', max_age=0, httponly=True)
+        response = util.take_away_token_response(request, token_attempt)
         return util.log_response(request, response)
     username = db.get_user_by_hashed_token(hashed_token)['username']
-    data = generate_html_data(username)
+    data = get_cheevo_html_data(username)
     response = make_response(render_template('achievements.html', username=username, achievements=data))
     return util.log_response(request, response)
 
 @app.route('/player_stats')
 def playerStats():
-    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    token_attempt = db.try_hash_token(request)
     hashed_token = token_attempt[0]
     if hashed_token is None:
         response = make_response(token_attempt[1], token_attempt[2])
