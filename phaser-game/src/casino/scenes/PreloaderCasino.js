@@ -30,9 +30,10 @@ export class Preloader extends Phaser.Scene {
         this.load.image('youwin', 'youwin.png');
         this.load.image('youlose', 'youlose.png');
         this.load.image('up1', 'up1.png');
-        this.load.image('up5', 'up5.png'); 
-        this.load.image('down1', 'down1.png'); 
-        this.load.image('down5', 'down5.png'); 
+        this.load.image('up5', 'up5.png');
+        this.load.image('down1', 'down1.png');
+        this.load.image('down5', 'down5.png');
+        this.load.image('cc_bg', 'coin_counter_bg.png');
 
         // casino floor imgs
         this.load.image('slotmachine', 'slotmachine.png');
@@ -57,6 +58,8 @@ export class Preloader extends Phaser.Scene {
         this.load.setPath('phaser-game/assets/slots');
         this.load.image('slots_bg', 'slots_bg.png');
         this.load.image('button', 'spin_button.png');
+        this.load.image('line_h', 'slots_line_h.png');
+        this.load.image('line_d', 'slots_line_d.png');
         this.load.spritesheet('slot_icons', 'slots_icons.png', {frameWidth: 32, frameHeight: 32});
 
         // coin flip imgs

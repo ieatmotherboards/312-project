@@ -7,6 +7,7 @@ export class ExitSign extends Phaser.GameObjects.Sprite {
         this.setInteractive();
         this.on('pointerdown', pointer => {
             this.scene.scene.start(sceneKey);
+            this.scene.changeScene();
         });
     }
 }

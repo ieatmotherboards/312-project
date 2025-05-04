@@ -63,7 +63,7 @@ def slots_request():
         update_coins(username, payout)
     slots_array = slots_matrix_to_arrays(result['board'])
 
-    response = make_response(json.dumps({'slots': slots_array, 'newCoins': get_coins(username)}))
+    response = make_response(json.dumps({'slots': slots_array, 'newCoins': get_coins(username), 'winningLines': result['winning lines']}))
     return util.log_response(request, response)
 
 
@@ -74,7 +74,7 @@ def slots_matrix_to_arrays(matrix):
             ret[y][x] = int(matrix[y][x])
     return ret
 
-@phaser.route('/phaser/playRoulette',methods=['POST']) # TODO: finish this
+@phaser.route('/phaser/playRoulette', methods=['POST']) # TODO: finish this
 def roulette_request():
     """
     Args: None. uses JSON from POST request

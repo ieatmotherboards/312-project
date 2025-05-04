@@ -18,11 +18,7 @@ export class Game extends Phaser.Scene {
     // INITIAL GRAPHICS
         // casino floor repeating texture
         this.add.tileSprite(400, 300, 800, 600, 'back');
-        // screen for when another player challenges you to a coin toss
-        this.chScreen = this.add.image(400, 300, 'challenge_screen').setDepth(1);
-        this.chTopText = this.add.text(400, 280, '[Player] has challenged you!', { fontSize: '20px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5).setDepth(2);
-        this.chBottomText = this.add.text(400, 320, 'E: Accept  SPACE: Deny', { fontSize: '18px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5).setDepth(2);
-        this.chScreenVisible(false);
+
         // player's coin counter
         this.coinCounter = new CoinCounter(this, 28, 28);
 
@@ -92,6 +88,11 @@ export class Game extends Phaser.Scene {
         this.challengePopup = this.add.image(400, 60, 'popup').setScale(2);
         this.challengePopup.text = this.add.text(400, 60, 'Press E to challenge [player]!', { fontSize: '24px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
         this.chPopupVisible(false);
+        // screen for when another player challenges you to a coin toss
+        this.chScreen = this.add.image(400, 300, 'challenge_screen').setDisplaySize(1100, 600).setDepth(3);
+        this.chTopText = this.add.text(400, 280, '[Player] has challenged you!', { fontSize: '20px', align: 'center', color: '#FFF'}).setOrigin(0.5, 0.5).setDepth(4);
+        this.chBottomText = this.add.text(400, 320, 'E: Accept  SPACE: Deny', { fontSize: '18px', align: 'center', color: '#FFF'}).setOrigin(0.5, 0.5).setDepth(4);
+        this.chScreenVisible(false);
 
         // mines entrance
         this.mineEnter = new MineEntrance(this, 780, 300);
@@ -159,7 +160,10 @@ export class Game extends Phaser.Scene {
         // player leaves casino
         this.websocket.on('casino_leave', function(data) {
             let username = data['username'];
-            this.scene.playerGhosts[username].leave();
+            let ghostObj = this.scene.playerGhosts[username];
+            this.scene.challengeOverlaps.delete(ghostObj);
+            this.scene.stoppedColliding();
+            ghostObj.leave();
             delete this.scene.playerGhosts[username];
         })
         // recieving player's coin count
@@ -174,6 +178,7 @@ export class Game extends Phaser.Scene {
             this.scene.disableMovement = true;
             this.scene.challenger = data['from'];
             this.scene.chScreenVisible(true);
+            this.scene.chScreenText(data['from'] + " has challenged you!");
         })
         // a user you challenge accepts
         this.websocket.on('ch_accept', function(data) {
@@ -279,6 +284,11 @@ export class Game extends Phaser.Scene {
         this.challengePopup.text.setText("Press E to challenge " + text + " !");
     }
 
+    chScreenText(top, bottom = "E: Accept  SPACE: Deny") {
+        this.chTopText.setText(top);
+        this.chBottomText.setText(bottom);
+    }
+
     sceneSwap(sceneKey) {
         this.scene.start(sceneKey);
         this.websocket.disconnect(false);
@@ -298,5 +308,9 @@ export class Game extends Phaser.Scene {
 
     rouletteSwap() {
         window.location.href = '/roulette';
+    }
+
+    changePage() {
+        this.websocket.disconnect(false);
     }
 }
