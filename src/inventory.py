@@ -5,6 +5,7 @@ from src.database import db
 from random import randint
 from src.logging_things import purchase_log
 import src.achievements as ach
+from src.init import app
 
 def create_inventory(username):
     inv_db.insert_one({'username': username, 'coins': 25, 'inventory': [],'LootBoxes':0})
@@ -118,6 +119,14 @@ def getLeaderBoard():
 
 # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}
 def trade(user1, user1_stuff, user2, user2_stuff):
+    app.logger.info("user1 is:" + user1)
+    app.logger.info("user2 is:" + user2)
+
+    app.logger.info("user1 stuff is:" + str(user1_stuff))
+    app.logger.info("user2 stuff is:" + str(user2_stuff))
+
+    
+
     user1_data = inv_db.find_one({'username': user1})
     user2_data = inv_db.find_one({'username': user2})
     user1_inv = user1_data['inventory']

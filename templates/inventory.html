@@ -877,7 +877,7 @@
           });
         
         // Load their inventory
-        fetch('/get-inventory', {
+        fetch('/get-their-inventory', { // change me
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -971,12 +971,17 @@
         loadingSpinner.style.display = 'block';
         
         // Prepare trade request data
+        console.log("target username:" + targetUsername);
+        console.log("your item id:" + yourItem.id );
+        console.log("their item id:" + theirItem.id);
+
+
         const tradeData = {
           target_username: targetUsername,
           your_item_id: yourItem.id,
           their_item_id: theirItem.id
         };
-        
+        console.log("established tradeData");
         // Send trade request
         fetch('/request-trade', {
           method: 'POST',
