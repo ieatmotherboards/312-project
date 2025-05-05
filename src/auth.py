@@ -8,6 +8,7 @@ import hashlib
 import src.inventory as inv
 import src.achievements as ach
 from src.logging_things import main_log, auth_log, logout_log, register_log
+import html
 
 def parse_data():
     '''
@@ -50,6 +51,7 @@ def register_new_account(request : Request):
     data = request.get_json()
 
     username = data['username']
+    username = html.escape(username)
     password = data['password']
 
     if not db.does_username_exist(username):
