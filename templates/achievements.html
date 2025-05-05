@@ -24,9 +24,19 @@
             display: block;
             margin: 0 auto;
         }
+        .top-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
+    <div class="top-right">
+        <button class="button" onclick="goHome()">Home</button>
+    </div>
     <h1>{{ username }}'s Achievements</h1>
     <div id="achievements">
         {% for key, achievement in achievements.items() %}
@@ -39,4 +49,9 @@
         {% endfor %}
     </div>
 </body>
+<script>
+    function goHome() {
+        window.location.href = "/";
+    }
+</script>
 </html>

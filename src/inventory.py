@@ -199,6 +199,8 @@ def loot_box_open(request):
     hashed_token = hashlib.sha256(token.encode()).hexdigest()
 
     username = users.find_one({'auth_token': hashed_token}, {'_id': 0})['username']
+    lootBoxCount=inv_db.find_one({'username':username})['LootBoxes']-1
+    inv_db.find_one_and_update({'username':username},{'$set':{'LootBoxes':lootBoxCount}})
 
     if random==10:
         item_key = gold_items[randint(1,2)]

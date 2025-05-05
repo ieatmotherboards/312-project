@@ -103,7 +103,7 @@ def roulette_request():
     coins = get_coins(username)
     wager = 1 if wager < 0 else wager
     bet_amount = min(wager, coins) # bet as many coins as user has if they wager more than in inventory
-
+    update_coins(username,-1*bet_amount)
     if bet_type == "Number(s)": # TODO: frontend says Number or Number(s), handle either
         numbers_unparsed = wager_data['numbers']
         numbers = numbers_unparsed.split(', ')
