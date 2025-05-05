@@ -13,14 +13,25 @@ export class CoinFlip extends Phaser.Scene {
         this.face = true; // True = heads, False = tails
 
         this.myCoinCounter = new CoinCounter(this, 28, 28);
-        this.myUserText = this.add.text(20, 65, '', { fontSize: '16px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0, 0.5);
-        this.enemyUserText = this.add.text(780, 65, '', { fontSize: '16px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(1, 0.5);
-        this.enemyCoinCounter = new CoinCounter(this, 650, 28);
-        this.exitSign = new ExitSign(this, 400, 32, 'Game');
+        let userTextConfig = { 
+            fontSize: '16px', 
+            align: 'center', 
+            color: '#FFF', 
+            backgroundColor: '#222034',
+            padding: { x: 5, y: 3 }
+        }
+        this.myUserText = this.add.text(20, 65, '', userTextConfig).setOrigin(0, 0.5);
+        this.enemyUserText = this.add.text(780, 65, '', userTextConfig).setOrigin(1, 0.5);
+        this.enemyCoinCounter = new CoinCounter(this, 630, 28);
+        this.exitSign = new ExitSign(this, 400, 32, 'Game').setDepth(3);
 
-        this.keyText = this.add.text(400, 450, 'Press SPACE to flip the coin!', { fontSize: '32px', align: 'center', color: '#000', fontStyle: "bold"}).setOrigin(0.5, 0.5);
+        this.keyText = this.add.text(400, 450, 'Press SPACE to flip the coin!', { fontSize: '32px', align: 'center', color: '#FFF', fontStyle: "bold"}).setOrigin(0.5, 0.5);
 
         this.flipped = false;
+
+        this.disconnectPopup = this.add.image(400, 300, 'challenge_screen').setDisplaySize(1100, 600).setDepth(2);
+        this.disconnectPopup.text = this.add.text(400, 300, 'Your opponent has disconnected!', { fontSize: '18px', align: 'center', color: '#FFF'}).setOrigin(0.5, 0.5).setDepth(3);
+        this.disconnectMsgVisible(false);
 
         // getting user info
         let request = new Request('/@me');
@@ -62,8 +73,9 @@ export class CoinFlip extends Phaser.Scene {
         this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.interacted = false;
+        this.disableFlip = false;
 
-        // websocket initialization
+    // WEBSOCKETS
         this.websocket = io();
         this.websocket.scene = this;
 
@@ -98,14 +110,30 @@ export class CoinFlip extends Phaser.Scene {
             }
             this.scene.coin.anims.play(result);
         });
+
+        this.websocket.on('opponent_disconnect', function(data) {
+            if (data['opponent'] == this.scene.opponent) {
+                this.scene.disableFlip = true;
+                this.scene.disconnectMsgVisible(true);
+            }
+        });
     }
 
     update() {
-        if (this.keySpace.isDown && !this.interacted) {
+        if (this.keySpace.isDown && !this.interacted && !this.disableFlip) {
             this.interacted = true;
             this.websocket.emit('flip_coin', { 'to': this.opponent, 'from': this.username });
         } else if (!this.keySpace.isDown && this.interacted) {
             this.interacted = false;
         }
+    }
+
+    disconnectMsgVisible(vis) {
+        this.disconnectPopup.setVisible(vis);
+        this.disconnectPopup.text.setVisible(vis);
+    }
+
+    changeScene() {
+        this.websocket.disconnect(false);
     }
 }

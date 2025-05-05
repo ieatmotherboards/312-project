@@ -17,7 +17,7 @@ export class Slots extends Phaser.Scene {
 
         this.exitSign = new ExitSign(this, 730, 32, 'Game');
 
-        this.betSelector = new BetSelector(this, 275, 540);
+        this.betSelector = new BetSelector(this, 285, 540);
 
         // initialize spin button
         this.button = this.add.sprite(700, 500, 'button').setScale(2);
@@ -25,6 +25,8 @@ export class Slots extends Phaser.Scene {
         this.button.setInteractive();
         this.button.on('pointerdown', pointer => {
             if (this.spinning) {return}
+            this.hideLines();
+            this.youWin.setVisible(false);
             this.spinning = true;
             this.slotsIcons.startSpin();
             let currentBet = this.betSelector.bet;
@@ -48,6 +50,10 @@ export class Slots extends Phaser.Scene {
                         let slots = data['slots'];
                         scene.slotsIcons.setSlots(slots);
                         scene.spinning = false;
+                        scene.showLines(data['winningLines']);
+                        if (data['winningLines'].length > 0) {
+                            scene.youWin.setVisible(true);
+                        }
                     }, 1000, this);
                 }
             });
@@ -60,6 +66,31 @@ export class Slots extends Phaser.Scene {
         }).then(data => {
             this.coinCounter.setCoins(data['coins']);
         });
+
+        // initializing line visuals
+        this.lines = {};
+        this.lines['top left'] = this.add.image(403, 226, 'line_d').setScale(2.5, 2.5).toggleFlipX();
+        this.lines['bot left'] = this.add.image(403, 226, 'line_d').setScale(2.5, 2.5);
+        this.lines['top'] = this.add.image(403, 99, 'line_h').setScale(3, 2.5);
+        this.lines['mid'] = this.add.image(403, 226, 'line_h').setScale(3, 2.5);
+        this.lines['bot'] = this.add.image(403, 353, 'line_h').setScale(3, 2.5);
+        this.hideLines();
+
+        // you win
+        this.youWin = this.add.image(85, 100, 'youwin').setScale(0.5, 0.5);
+        this.youWin.setVisible(false);
+    }
+
+    showLines(lines) {
+        for (let line of lines) {
+            this.lines[line].setVisible(true);
+        }
+    }
+
+    hideLines() {
+        for (let line in this.lines) {
+            this.lines[line].setVisible(false);
+        }
     }
 }
 
@@ -123,6 +154,8 @@ class SlotsIcons {
             }
         }
     }
+
+    changeScene() {}
 }
 
 function randomInt(max) {

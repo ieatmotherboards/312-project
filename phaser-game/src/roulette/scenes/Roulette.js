@@ -1,10 +1,3 @@
-/*
-    FOR DOMINIC: Changes to be made to migrate this to phaser (first two have comments of what to change to)
-    - Line 7
-    - 116 (can keep the var named exitSign2)
-    - 439 - 454, not sure how your Phaser implementation handles this
-*/
-
 import { CoinCounter } from '../../gameObjects/CoinCounter.js';
 import { ExitSignHREF } from '../../gameObjects/ExitSignHREF.js';
 import { BetSelector } from '../../gameObjects/BetSelector.js'
@@ -387,5 +380,7 @@ export class Roulette extends Phaser.Scene {
         this.createBetButton('19-36', gridStartX + 500, gridStartY + 100, 'Second 18', '#004d4d');
         
     }
+
+    changePage() {}
     
 }

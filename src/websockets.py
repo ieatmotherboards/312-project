@@ -9,6 +9,7 @@ import src.achievements as ach
 # maps a username to their socket ID
 sid_map : dict[str:str] = {}
 
+user_dc_queue : dict[str, list[str]] = {}
 
 @socketio.on('connect')
 def connect_websocket(socket):
@@ -21,7 +22,8 @@ def connect_websocket(socket):
             username = db.get_user_by_hashed_token(hashed_token)['username']
             sid_map[username] = socket_id
             emit('connect_echo', {'id': socket_id}, broadcast=False)
-            print("connected with " + socket_id)
+            if not username in user_dc_queue.keys():
+                user_dc_queue[username] = []
             return
     print("connected without login")
 
@@ -34,11 +36,16 @@ def disconnect_websocket(socket):
         if db.does_hashed_token_exist(hashed_token):
             socket_id = request.sid
             username = db.get_user_by_hashed_token(hashed_token)['username']
-            if username in casino_users:
+            next_in_queue = user_dc_queue[username].pop(0)
+            app.logger.info("user was connected to " + next_in_queue)
+            if next_in_queue == 'casino' and username in casino_users.keys():
                 casino_users.pop(username)
                 emit('casino_leave', {'username': username}, broadcast=True)
+            elif next_in_queue == 'coin' and username in coinflip_instances.keys():
+                emit('opponent_disconnect', {'opponent': username}, to=sid_map[coinflip_instances[username]])
+                coinflip_instances.pop(username)
             return
-    print("connected without login")
+    print("disconnected without login")
 
 casino_users = {}
 
@@ -52,6 +59,7 @@ def casino_join(data):
     update_user_pos(data)
     emit('movement', data, broadcast=True)
     socket_id = sid_map[data['username']]
+    user_dc_queue[data['username']].append('casino')
     for player in casino_users:
         emit('movement', {'username': player, 'pos': casino_users[player]}, to=socket_id)
 
@@ -85,6 +93,8 @@ def challenge_response(data):
         emit('ch_accept', challenge_data, to=sid_map[challenger_username])
         coinflip_instances[challenger_username] = acceptor_username
         coinflip_instances[acceptor_username] = challenger_username
+        user_dc_queue[challenger_username].append('coin')
+        user_dc_queue[acceptor_username].append('coin')
     else:
         emit('ch_decline', challenge_data, to=sid_map[challenger_username])
 

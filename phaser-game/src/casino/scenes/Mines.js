@@ -54,21 +54,26 @@ export class Mines extends Phaser.Scene {
                 this.setTexture('coal_breaking');
                 this.breaking = true;
             } else {
-                let coin = this.scene.physics.add.sprite(this.x, this.y, 'coin');
-                this.scene.bodyMap.set(coin.body, coin);
-                this.scene.coalCount -= 1;
-                this.scene.coalBroken += 1;
+                let x = Phaser.Math.RND.integerInRange(-1, 3);
+                x = Math.max(1, x)
+                while (x > 0) {
+                    let coin = this.scene.physics.add.sprite(this.x, this.y, 'coin');
+                    this.scene.bodyMap.set(coin.body, coin);
+                    coin.setScale(2.5, 2.5);
+                    coin.setGravityY(500);
+                    coin.setCollideWorldBounds(true, 1, 0.5, true);
+                    coin.setVelocity(Math.random() * 200 - 100, Math.random() * -200 - 100);
+                    coin.setInteractive();
+                    coin.on('pointerdown', function() {
+                        this.scene.collectCoin(this.body);
+                    });
+                    coin.collected = false;
+                    x--;
+                }
                 this.scene.timePassed = this.scene.timePassed / 3;
                 this.scene.timeToNext = this.scene.timeToNext / 2;
-                coin.setScale(2.5, 2.5);
-                coin.setGravityY(500);
-                coin.setCollideWorldBounds(true, 1, 0.5, true);
-                coin.setVelocity(Math.random() * 200 - 100, Math.random() * -200 - 100);
-                coin.setInteractive();
-                coin.on('pointerdown', function() {
-                    this.scene.collectCoin(this.body);
-                });
-                coin.collected = false;
+                this.scene.coalCount -= 1;
+                this.scene.coalBroken += 1;
                 this.destroy();
             }
         });
@@ -88,4 +93,6 @@ export class Mines extends Phaser.Scene {
             coin.destroy();
         }
    }
+
+    changeScene() {}
 }
