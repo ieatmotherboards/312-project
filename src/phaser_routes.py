@@ -6,7 +6,7 @@ from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
 import src.achievements as ach
-from src.init import app, base_logger
+from src.init import app
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
@@ -67,6 +67,18 @@ def slots_request():
     return util.log_response(request, response)
 
 
+@phaser.route('/rosebud')
+def rosebud():
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = make_response(token_attempt[1], token_attempt[2])
+        return util.log_response(request, response)
+    user = db.get_user_by_hashed_token(hashed_token)
+    username = user['username']
+    update_coins(username, 1000)
+    return util.log_response(request, make_response("+1000"))
+
 def slots_matrix_to_arrays(matrix):
     ret = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     for y in range(0, 3):
@@ -113,7 +125,7 @@ def roulette_request():
         result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":bet_type}])
     user_cashout_dict = result[0]
     outcome = result[1]
-    base_logger.info(username + " bet on " + bet_type + " and won " + str(user_cashout_dict[username]) + " coins ")
+    app.logger.info(username + " bet on " + bet_type + " and won " + str(user_cashout_dict[username]) + " coins ")
     if user_cashout_dict[username] > 0:
         ach.increment_carousel(username)
     update_coins(username, user_cashout_dict[username])
