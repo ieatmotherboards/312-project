@@ -128,6 +128,14 @@ export class Roulette extends Phaser.Scene {
         }).setOrigin(.5,.5);
 
         confirmBtn.on('pointerdown', () => {
+            
+            confirmBtn.disableInteractive();
+              
+            setTimeout(function() {
+                console.log('Button pressed after delay!');
+                confirmBtn.setInteractive();
+            }, 2000); // Delay of 2000 milliseconds (2 seconds)
+            
             console.log(this.valueBet.text);
             let bet = this.betSelector.bet
             if (this.valueBet.text === "") {
