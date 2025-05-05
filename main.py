@@ -23,7 +23,7 @@ from src.websockets import connect_websocket  # for some reason this needs to be
 from src.phaser_routes import phaser
 
 
-logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
+# logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
 logging.getLogger('werkzeug').disabled = True # use this to supress automatic werkzeug logs (which are free game but super cluttered)
 
 UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
@@ -179,7 +179,7 @@ def send_inventory_data():
     for item in inventory:
         properties = get_item_properties(item['id'])
         out_list.append({"id": inventory.index(item), "name": properties['name'], "image": properties['imagePath']})
-        app.logger.info("item is: " + str(item))
+        base_logger.info("item is: " + str(item))
     response = make_response(jsonify(out_list))
     return util.log_response(request, response)
 
@@ -218,7 +218,7 @@ def upload_pfp():
         filename = secure_filename(new_filename)
 
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        app.logger.info("Saving to: " + upload_path)
+        base_logger.info("Saving to: " + upload_path)
         image = Image.open(file)
         size = image.size
         if size[0] < size[1]:

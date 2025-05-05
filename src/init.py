@@ -6,16 +6,26 @@ import os
 app = Flask(__name__, template_folder='../templates')
 socketio = SocketIO(app)
 
-# Set up raw HTTP logger
-raw_logger = logging.getLogger('raw_http')
-raw_logger.setLevel(logging.INFO)
+def get_logger(name : str, filename : str):
+    # Set up raw HTTP logger
+    logger = logging.getLogger(name)
 
-# Prevent it from propagating to root logger (i.e.  logfile.log)
-# raw_logger.propagate = False
 
-# File handler for raw_http.log
-raw_handler = logging.FileHandler('/mnt/raw_http.log')
-raw_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+    logger.setLevel(logging.INFO)
 
-# Add handler to logger
-raw_logger.addHandler(raw_handler)
+    # Prevent it from propagating to root logger (i.e.  logfile.log)
+    # raw_logger.propagate = False
+
+    # File handler for raw_http.log
+    handler = logging.FileHandler(filename)
+    handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+
+    # Add handler to logger
+    logger.addHandler(handler)
+    return logger
+
+# Set up base HTTP logger
+base_logger = get_logger('base_logger', '/mnt/logfile.log')
+
+# Set up base HTTP logger
+raw_logger = get_logger('raw_http', '/mnt/raw_http.log')

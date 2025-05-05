@@ -37,7 +37,7 @@ def disconnect_websocket(socket):
             socket_id = request.sid
             username = db.get_user_by_hashed_token(hashed_token)['username']
             next_in_queue = user_dc_queue[username].pop(0)
-            app.logger.info("user was connected to " + next_in_queue)
+            base_logger.info("user was connected to " + next_in_queue)
             if next_in_queue == 'casino' and username in casino_users.keys():
                 casino_users.pop(username)
                 emit('casino_leave', {'username': username}, broadcast=True)
