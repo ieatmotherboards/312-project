@@ -6,7 +6,7 @@ from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
 import src.achievements as ach
-from src.init import app
+from src.init import app, base_logger
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
@@ -113,7 +113,7 @@ def roulette_request():
         result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":bet_type}])
     user_cashout_dict = result[0]
     outcome = result[1]
-    app.logger.info(username + " bet on " + bet_type + " and won " + str(user_cashout_dict[username]) + " coins ")
+    base_logger.info(username + " bet on " + bet_type + " and won " + str(user_cashout_dict[username]) + " coins ")
     if user_cashout_dict[username] > 0:
         ach.increment_carousel(username)
     update_coins(username, user_cashout_dict[username])

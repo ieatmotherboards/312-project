@@ -23,7 +23,7 @@ from src.websockets import connect_websocket  # for some reason this needs to be
 from src.phaser_routes import phaser
 
 
-logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
+# logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
 logging.getLogger('werkzeug').disabled = True # use this to supress automatic werkzeug logs (which are free game but super cluttered)
 
 UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
@@ -165,9 +165,9 @@ def render_inventory():
 
 @app.route('/get-inventory', methods = ['POST'])
 def send_inventory_data():
-    
+
     if 'application/json' not in request.headers:
-        
+
         if 'auth_token' not in request.cookies:
             response = redirect('/', code=302)
             return util.log_response(request, response)
@@ -181,7 +181,7 @@ def send_inventory_data():
         json = request.get_json()
         username = json['username']
 
-        
+
     inventory = list_inventory(username)
     # print("-----> inventory is: ", str(inventory))
     # app.logger.info("-----> inventory is: " + str(inventory))
@@ -201,15 +201,15 @@ def send_inventory_data():
 def get_trade_users():
 
     if 'auth_token' not in request.cookies:
-        response = redirect('/', code=302) 
+        response = redirect('/', code=302)
         main_log(req=request, res=response)
         return response
-    
-    token_attempt = db.try_hash_token(request) 
+
+    token_attempt = db.try_hash_token(request)
     hashed_token = token_attempt[0]
     if hashed_token is None:
         return util.take_away_token_response(request, token_attempt)
-    
+
     username = db.get_user_by_hashed_token(hashed_token)['username']
 
     search_term = request.get_json()['search']
@@ -246,7 +246,7 @@ def request_trade():
     if hashed_token is None:
         response = util.take_away_token_response(request, token_attempt)
         return util.log_response(request, response)
-    
+
     username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
 
     request_json = request.get_json()
@@ -259,11 +259,11 @@ def request_trade():
     their_item_id = request_json['their_item_id']
     their_image_path = get_item_properties(their_item_id)['imagePath']
 
-    tradeId = str(uuid.uuid4()) # TODO: see if necessary 
-    db.trades.insert_one({"tradeId":tradeId, 
-                          "requesting_username": requesting_username, 
-                          "responding_username": responding_username, 
-                          "requesting_id": your_item_id, 
+    tradeId = str(uuid.uuid4()) # TODO: see if necessary
+    db.trades.insert_one({"tradeId":tradeId,
+                          "requesting_username": requesting_username,
+                          "responding_username": responding_username,
+                          "requesting_id": your_item_id,
                           "responding_id": their_item_id,
                           "requesting_item_imagepath": your_image_path,
                           "responding_item_imagepath": their_image_path
@@ -283,8 +283,8 @@ def respond_trade():
 
         requesting_stuff = {"coins": 0, "items": [found_trade["requesting_id"]]}
         responding_stuff = {"coins": 0, "items": [found_trade["responding_id"]]}
-        trade(user1=found_trade["requesting_username"], 
-              user1_stuff=requesting_stuff, 
+        trade(user1=found_trade["requesting_username"],
+              user1_stuff=requesting_stuff,
               user2=found_trade["responding_username"],
               user2_stuff=responding_stuff)
         # remove trade from db
@@ -302,21 +302,21 @@ def get_their_inventory():
     if 'auth_token' not in request.cookies:
             response = redirect('/', code=302)
             return util.log_response(request, response)
-    
+
     # if 'application/json' not in request.headers:
-        
-        
+
+
     #     token_attempt = db.try_hash_token(request)
     #     hashed_token = token_attempt[0]
     #     if hashed_token is None:
     #         response = util.take_away_token_response(request, token_attempt)
     #         return util.log_response(request, response)
     #     username = db.get_user_by_hashed_token(hashed_token)['username']
-    
+
     json = request.get_json()
     username = json['username']
 
-        
+
     inventory = list_inventory(username)
     # print("-----> inventory is: ", str(inventory))
     # app.logger.info("-----> inventory is: " + str(inventory))
@@ -344,16 +344,16 @@ def get_pending_trades():
     if hashed_token is None:
         response = util.take_away_token_response(request, token_attempt)
         return util.log_response(request, response)
-    
+
     username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
-    
+
     # query db for trades involving that user's items
     trades = db.trades.find({"responding_username":username}).to_list()
 
     out_list = []
     for trade in trades:
-        out_list.append({'id': trade['tradeId'], 
-                     'requesting_username':trade['requesting_username'], 
+        out_list.append({'id': trade['tradeId'],
+                     'requesting_username':trade['requesting_username'],
                      'responding_username': trade['responding_username'],
                      'requesting_item_imagepath':trade['requesting_item_imagepath'],
                      'responding_item_imagepath': trade['responding_item_imagepath']})
@@ -394,7 +394,7 @@ def upload_pfp():
         filename = secure_filename(new_filename)
 
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        app.logger.info("Saving to: " + upload_path)
+        base_logger.info("Saving to: " + upload_path)
         image = Image.open(file)
         size = image.size
         if size[0] < size[1]:
