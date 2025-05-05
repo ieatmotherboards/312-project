@@ -93,104 +93,105 @@ def handlebets(betList): #{name:name,betType: type of bet (odd/even/red/black/nu
                 out[Better]=36*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == "Split":
             if outcome in bet['numbers']:
                 out['House']=(out['House']-(18*Ammount))
                 out[Better]=18*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == 'Street':
             if outcome in bet['numbers']:
                 out['House']=(out['House']-(12*Ammount))
                 out[Better]=12*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == 'Corner bet':
             if outcome in bet['numbers']:
                 out['House']=(out['House']-(9*Ammount))
                 out[Better]=9*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == '5Number':
             if outcome in bet['numbers']:
                 out['House']=(out['House']-(7*Ammount))
                 out[Better]=7*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == 'Line':
             if outcome in bet['numbers']:
                 out['House']=(out['House']-(6*Ammount))
                 out[Better]=6*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == '1st Twelve':
             if BetType in winningBets:
                 out['House']=(out['House']-(3*Ammount))
                 out[Better]=3*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == '2nd Twelve':
             if BetType in winningBets:
                 out['House']=(out['House']-(3*Ammount))
                 out[Better]=3*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount) 
+                out[Better]=(0)
         elif BetType == '3rd Twelve':
             if BetType in winningBets:
                 out['House']=(out['House']-(3*Ammount))
                 out[Better]=3*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == "First 18":
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == "Second 18":
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == "Black":
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == "Red":
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == 'Odd':
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
         elif BetType == 'Even':
             if BetType in winningBets:
                 out['House']=(out['House']-(2*Ammount))
                 out[Better]=2*Ammount
             else:
                 out['House']=(out['House']+Ammount)
-                out[Better]=(-1*Ammount)
+                out[Better]=(0)
+        out[Better] -= Ammount
     return [out,outcome]
 
