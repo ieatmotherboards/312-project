@@ -203,7 +203,7 @@ def loot_box_open(request):
     inv_db.find_one_and_update({'username':username},{'$set':{'LootBoxes':lootBoxCount}})
 
     if random==10:
-        item_key = gold_items[randint(1,2)]
+        item_key = gold_items[randint(0,1)]
     else:
         item_key = non_gold_items[randint(0,len(non_gold_items) - 1)]
     item = item_type_map[item_key]

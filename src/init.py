@@ -14,7 +14,7 @@ def get_logger(name : str, filename : str):
     logger.setLevel(logging.INFO)
 
     # Prevent it from propagating to root logger (i.e.  logfile.log)
-    # raw_logger.propagate = False
+    logger.propagate = False
 
     # File handler for raw_http.log
     handler = logging.FileHandler(filename)
@@ -24,8 +24,8 @@ def get_logger(name : str, filename : str):
     logger.addHandler(handler)
     return logger
 
-# Set up base HTTP logger
-base_logger = get_logger('base_logger', '/mnt/logfile.log')
+# # Set up base HTTP logger
+# base_logger = get_logger('base_logger', '/mnt/logfile.log')
 
 # Set up base HTTP logger
 raw_logger = get_logger('raw_http', '/mnt/raw_http.log')

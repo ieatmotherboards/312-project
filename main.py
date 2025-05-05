@@ -23,7 +23,7 @@ from src.websockets import connect_websocket  # for some reason this needs to be
 from src.phaser_routes import phaser
 
 
-# logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
+logging.basicConfig(filename='/mnt/logfile.log', level=logging.INFO, filemode="w")
 logging.getLogger('werkzeug').disabled = True # use this to supress automatic werkzeug logs (which are free game but super cluttered)
 
 UPLOAD_FOLDER =  os.path.join(os.getcwd(), 'public', 'pfps')
@@ -394,7 +394,7 @@ def upload_pfp():
         filename = secure_filename(new_filename)
 
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        base_logger.info("Saving to: " + upload_path)
+        app.logger.info("Saving to: " + upload_path)
         image = Image.open(file)
         size = image.size
         if size[0] < size[1]:
