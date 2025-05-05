@@ -1,6 +1,6 @@
 from flask import *
 from flask_socketio import *
-from src.init import app, socketio
+from src.init import app, socketio, base_logger
 import src.database as db
 import src.games.coin_flip as coin
 import src.inventory as inv
