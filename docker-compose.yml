@@ -1,8 +1,8 @@
 services:
   mongo:
     image: mongo:4.2.5
-    #volumes:
-      #- mongo_data:/data/db
+    volumes:
+      - mongo_data:/data/db
   app:
     build: .
     environment:

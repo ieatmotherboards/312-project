@@ -12,7 +12,7 @@ from PIL import Image
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount
+from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount, trade, loot_box_open
 from src.logging_things import *
 from src.achievements import get_cheevo_html_data
 import src.util as util
@@ -95,13 +95,14 @@ def render_lootbox():
     return util.log_response(request, response)
 
 @app.route('/buy-lootbox', methods = ['POST']) # POST to try to buy item
-def open_lootbox():
+def buy_lootbox():
     response = purchase_loot_box(request)
     return util.log_response(request, response)
-    res = purchase_loot_box(request)
-    response = make_response(res[0], res[1])
-    main_log(req=request, res=response)
-    return response
+
+@app.route('/open_lootbox', methods = ['POST'])
+def parse_open_lootbox():
+    response = loot_box_open(request)
+    return util.log_response(request, response)
 
 @app.route('/item-shop') # routes to the shop page
 def render_shop():
@@ -164,24 +165,199 @@ def render_inventory():
 
 @app.route('/get-inventory', methods = ['POST'])
 def send_inventory_data():
+
+    if 'application/json' not in request.headers:
+
+        if 'auth_token' not in request.cookies:
+            response = redirect('/', code=302)
+            return util.log_response(request, response)
+        token_attempt = db.try_hash_token(request)
+        hashed_token = token_attempt[0]
+        if hashed_token is None:
+            response = util.take_away_token_response(request, token_attempt)
+            return util.log_response(request, response)
+        username = db.get_user_by_hashed_token(hashed_token)['username']
+    else:
+        json = request.get_json()
+        username = json['username']
+
+
+    inventory = list_inventory(username)
+    # print("-----> inventory is: ", str(inventory))
+    # app.logger.info("-----> inventory is: " + str(inventory))
+    out_list = []
+    for item in inventory:
+        # app.logger.info("-----> item is: " + str(item))
+        # print('-----> item is:' + str(item))
+        properties = get_item_properties(item)
+        out_list.append({"id": item, "name": properties['name'], "image": properties['imagePath']})
+        # app.logger.info("item is: " + str(item))
+    response = make_response(jsonify(out_list))
+    response.headers['Content-Type'] = 'application/json'
+
+    return util.log_response(request, response)
+
+@app.route('/get-trade-users', methods=['POST'])
+def get_trade_users():
+
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)
+        main_log(req=request, res=response)
+        return response
+
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        return util.take_away_token_response(request, token_attempt)
+
+    username = db.get_user_by_hashed_token(hashed_token)['username']
+
+    search_term = request.get_json()['search']
+    app.logger.info('received search term: ' + str(search_term))
+    # users_list = db.find_trade_list(search_term)
+
+    users_list = db.users.find({}).to_list()
+
+    out_list = []
+     # take out own username
+    for user in users_list:
+        found_username = user['username']
+        # app.logger.info("found user with name" + str(found_username))
+        if found_username != username and found_username.lower() in search_term.lower():
+            out_list.append(found_username)
+    # app.logger.info("returning:" +str(out_list))
+    return util.log_response(request, make_response(jsonify(out_list)))
+
+@app.route('/request-trade', methods = ['POST'])
+def request_trade():
+    '''
+    JSON:
+    target_username: targetUsername,
+    your_item_id: yourItem.id,
+    their_item_id: theirItem.id
+    '''
+
+    # get username from auth token for the 80th time
     if 'auth_token' not in request.cookies:
         response = redirect('/', code=302)
         return util.log_response(request, response)
-    token_attempt = db.try_hash_token(request) # TODO: if auth token isn't recognized, send back a token to clear it
+    token_attempt = db.try_hash_token(request)
     hashed_token = token_attempt[0]
     if hashed_token is None:
         response = util.take_away_token_response(request, token_attempt)
         return util.log_response(request, response)
 
-    username = db.get_user_by_hashed_token(hashed_token)['username']
+    username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
+
+    request_json = request.get_json()
+    requesting_username = username
+    responding_username = request_json['target_username']
+
+    your_item_id = request_json['your_item_id']
+    your_image_path = get_item_properties(your_item_id)['imagePath']
+
+    their_item_id = request_json['their_item_id']
+    their_image_path = get_item_properties(their_item_id)['imagePath']
+
+    tradeId = str(uuid.uuid4()) # TODO: see if necessary
+    db.trades.insert_one({"tradeId":tradeId,
+                          "requesting_username": requesting_username,
+                          "responding_username": responding_username,
+                          "requesting_id": your_item_id,
+                          "responding_id": their_item_id,
+                          "requesting_item_imagepath": your_image_path,
+                          "responding_item_imagepath": their_image_path
+                          })
+    response = make_response(jsonify({"status":"success"}))
+    return util.log_response(request, response)
+
+@app.route('/respond-to-trade', methods = ['POST'])
+def respond_trade():
+    the_json = request.get_json()
+    accept_status = True if the_json['response'] == 'accept' else False
+    if accept_status:
+        app.logger.info("tradeId is:" + str(the_json['trade_id']))
+        print("tradeId is:" + str(the_json['trade_id']))
+        found_trade = db.trades.find_one({"tradeId": the_json['trade_id']})
+        # user1_stuff & user2_stuff = {'coins': coins to lose, 'items': list of items to lose}
+
+        requesting_stuff = {"coins": 0, "items": [found_trade["requesting_id"]]}
+        responding_stuff = {"coins": 0, "items": [found_trade["responding_id"]]}
+        trade(user1=found_trade["requesting_username"],
+              user1_stuff=requesting_stuff,
+              user2=found_trade["responding_username"],
+              user2_stuff=responding_stuff)
+        # remove trade from db
+        db.trades.delete_one({'tradeId':the_json['trade_id']})
+        return util.log_response(request, make_response(jsonify({"status":"success"})))
+    else:
+        # TODO: also remove here
+        db.trades.delete_one({'tradeId':the_json['trade_id']})
+
+        return util.log_response(request, make_response(jsonify({"status":"success"})))
+
+@app.route('/get-their-inventory', methods = ['POST'])
+def get_their_inventory():
+
+    if 'auth_token' not in request.cookies:
+            response = redirect('/', code=302)
+            return util.log_response(request, response)
+
+    # if 'application/json' not in request.headers:
+
+
+    #     token_attempt = db.try_hash_token(request)
+    #     hashed_token = token_attempt[0]
+    #     if hashed_token is None:
+    #         response = util.take_away_token_response(request, token_attempt)
+    #         return util.log_response(request, response)
+    #     username = db.get_user_by_hashed_token(hashed_token)['username']
+
+    json = request.get_json()
+    username = json['username']
+
+
     inventory = list_inventory(username)
+    # print("-----> inventory is: ", str(inventory))
+    # app.logger.info("-----> inventory is: " + str(inventory))
     out_list = []
     for item in inventory:
-        properties = get_item_properties(item['id'])
-        out_list.append({"id": inventory.index(item), "name": properties['name'], "image": properties['imagePath']})
-        base_logger.info("item is: " + str(item))
+        # app.logger.info("-----> item is: " + str(item))
+        # print('-----> item is:' + str(item))
+        properties = get_item_properties(item)
+        out_list.append({"id": item, "name": properties['name'], "image": properties['imagePath']})
+        # app.logger.info("item is: " + str(item))
     response = make_response(jsonify(out_list))
+    response.headers['Content-Type'] = 'application/json'
+
     return util.log_response(request, response)
+
+
+@app.route('/get-pending-trades', methods = ['POST'])
+def get_pending_trades():
+    # get user by auth token
+    if 'auth_token' not in request.cookies:
+        response = redirect('/', code=302)
+        return util.log_response(request, response)
+    token_attempt = db.try_hash_token(request)
+    hashed_token = token_attempt[0]
+    if hashed_token is None:
+        response = util.take_away_token_response(request, token_attempt)
+        return util.log_response(request, response)
+
+    username = db.get_user_by_hashed_token(hashed_token=hashed_token)['username']
+
+    # query db for trades involving that user's items
+    trades = db.trades.find({"responding_username":username}).to_list()
+
+    out_list = []
+    for trade in trades:
+        out_list.append({'id': trade['tradeId'],
+                     'requesting_username':trade['requesting_username'],
+                     'responding_username': trade['responding_username'],
+                     'requesting_item_imagepath':trade['requesting_item_imagepath'],
+                     'responding_item_imagepath': trade['responding_item_imagepath']})
+    return util.log_response(request, jsonify(out_list))
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
 def send_public_file(subpath):

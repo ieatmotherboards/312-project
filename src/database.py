@@ -18,6 +18,7 @@ users = db["users"]
 inv_db = db["inventory"]
 item_db = db["items"]
 achievements_db = db['achievements']
+trades = db['trades']
 
 # users.delete_many({})
 

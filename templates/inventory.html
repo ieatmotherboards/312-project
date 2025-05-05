@@ -113,8 +113,17 @@
     
     .search-container {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .search-input-group {
+      display: flex;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 5px;
     }
     
     #userSearch {
@@ -125,7 +134,7 @@
       color: white;
       font-family: "Kanit", sans-serif;
       font-size: 1rem;
-      width: 300px;
+      width: 100%;
     }
     
     #searchButton {
@@ -138,6 +147,59 @@
       font-family: "Kanit", sans-serif;
       font-weight: bold;
       cursor: pointer;
+    }
+    
+    .search-results {
+      display: none;
+      width: 100%;
+      max-width: 400px;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      margin-top: 5px;
+      z-index: 10;
+    }
+    
+    .search-results.visible {
+      display: block;
+    }
+    
+    .user-result {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .user-result:last-child {
+      border-bottom: none;
+    }
+    
+    .user-result:hover {
+      background-color: rgba(255, 215, 0, 0.2);
+    }
+    
+    .user-result img {
+      width: 30px;
+      height: 30px;
+      margin-right: 15px;
+    }
+    
+    .user-result .username {
+      font-family: "Kanit", sans-serif;
+      font-size: 1rem;
+      color: white;
+    }
+    
+    .no-results {
+      padding: 15px;
+      text-align: center;
+      color: #ccc;
+      font-family: "Kanit", sans-serif;
     }
     
     .navigation {
@@ -169,15 +231,329 @@
     }
     
     .empty-inventory {
-        padding: 40px;
-        text-align: center;
-        font-size: 1.2rem;
-        color: #ccc;
-        width: 100%;
-        grid-column: 1 / -1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      padding: 40px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #ccc;
+      width: 100%;
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    /* Small loading spinner for search results */
+    .search-loading {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 215, 0, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #ffd700;
+      animation: spin 1s linear infinite;
+      margin: 15px auto;
+    }
+    
+    /* Trade modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      overflow-y: auto;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal {
+      background-color: rgba(20, 20, 20, 0.95);
+      border: 3px solid #ffd700;
+      border-radius: 15px;
+      max-width: 900px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 25px;
+      position: relative;
+      margin: 40px auto;
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: #ffd700;
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .modal-close:hover {
+      transform: scale(1.2);
+      color: #ff4500;
+    }
+    
+    .modal-title {
+      margin-top: 0;
+      font-size: 1.8rem;
+      color: #ffd700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+    
+    .trade-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    
+    .inventories-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    @media (min-width: 768px) {
+      .inventories-container {
+        flex-direction: row;
+      }
+    }
+    
+    .inventory-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .inventory-title {
+      font-size: 1.3rem;
+      color: #ffd700;
+      margin: 0 0 10px 0;
+    }
+    
+    .trade-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 15px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 2px solid #ffd700;
+      border-radius: 10px;
+    }
+    
+    .trade-item {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .trade-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 3px 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    .trade-item.selected {
+      border-color: #ff4500;
+      box-shadow: 0 0 12px rgba(255, 69, 0, 0.7);
+    }
+    
+    .trade-item img {
+      max-width: 100%;
+      max-height: 70px;
+      margin-bottom: 8px;
+    }
+    
+    .trade-item-name {
+      font-size: 0.8rem;
+      text-align: center;
+      text-shadow: 1px 1px 2px #000;
+    }
+    
+    .trade-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .trade-button {
+      padding: 12px 30px;
+      font-size: 1rem;
+    }
+    
+    /* Notifications styles */
+    .notification-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(145deg, #ffd700, #ffb700);
+      border: 2px solid #fff8dc;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-family: "Kanit", sans-serif;
+      font-weight: bold;
+      color: #000;
+      cursor: pointer;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .notification-badge {
+      background-color: #ff4500;
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    .notification-panel {
+      display: none;
+      position: fixed;
+      top: 70px;
+      left: 20px;
+      background-color: rgba(20, 20, 20, 0.95);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 15px;
+      width: 350px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .notification-panel.show {
+      display: block;
+    }
+    
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    .notification-title {
+      font-size: 1.2rem;
+      color: #ffd700;
+      margin: 0;
+    }
+    
+    .notification-close {
+      background: none;
+      border: none;
+      color: #ffd700;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    
+    .notification-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .notification-item {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid #ffd700;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .notification-item-header {
+      font-family: "Kanit", sans-serif;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    
+    .notification-trade-items {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+    }
+    
+    .notification-trade-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 8px;
+      background-color: rgba(0, 0, 0, 0.3);
+      width: 45%;
+    }
+    
+    .notification-trade-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 5px;
+    }
+    
+    .notification-trade-item-name {
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    
+    .trade-direction {
+      color: #ffd700;
+      font-size: 24px;
+    }
+    
+    .notification-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    
+    .notification-button-small {
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+    }
+    
+    .accept-button {
+      background: linear-gradient(145deg, #32CD32, #228B22);
+      border: 1px solid #32CD32;
+      color: white;
+    }
+    
+    .deny-button {
+      background: linear-gradient(145deg, #DC143C, #B22222);
+      border: 1px solid #DC143C;
+      color: white;
+    }
+    
+    .no-notifications {
+      padding: 15px;
+      text-align: center;
+      color: #ccc;
+      font-family: "Kanit", sans-serif;
     }
   </style>
 </head>
@@ -195,8 +571,16 @@
       <button id="tradeButton" class="button">Trade Items</button>
       
       <div class="search-container" style="display: none;" id="searchContainer">
-        <input type="text" id="userSearch" placeholder="Search for a player...">
-        <button id="searchButton">Search</button>
+        <div class="search-input-group">
+          <input type="text" id="userSearch" placeholder="Search for a player...">
+          <button id="searchButton">Search</button>
+        </div>
+        
+        <div class="search-loading" id="searchLoadingSpinner"></div>
+        
+        <div class="search-results" id="searchResults">
+          <!-- Search results will be populated here -->
+        </div>
       </div>
     </div>
   </div>
@@ -204,74 +588,233 @@
   <div class="navigation">
     <button class="button home-button" onclick="window.location.href='/'">Back to Home</button>
   </div>
+  
+  <!-- Notification button -->
+  <div class="notification-button" id="notificationButton">
+    Trade Requests <span class="notification-badge" id="notificationBadge">0</span>
+  </div>
+  
+  <!-- Notification panel -->
+  <div class="notification-panel" id="notificationPanel">
+    <div class="notification-header">
+      <h3 class="notification-title">Trade Requests</h3>
+      <button class="notification-close" id="notificationClose">×</button>
+    </div>
+    <div class="notification-list" id="notificationList">
+      <!-- Notification items will be loaded here -->
+      <div class="no-notifications">No pending trade requests.</div>
+    </div>
+  </div>
+  
+  <!-- Trade modal -->
+  <div class="modal-overlay" id="tradeModal">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">×</button>
+      <h2 class="modal-title" id="modalTitle">Trade with Player</h2>
+      
+      <div class="trade-container">
+        <div class="inventories-container">
+          <div class="inventory-section">
+            <h3 class="inventory-title">Your Inventory</h3>
+            <div class="trade-grid" id="yourTradeGrid">
+              <!-- Your items will be loaded here -->
+            </div>
+          </div>
+          
+          <div class="inventory-section">
+            <h3 class="inventory-title" id="theirInventoryTitle">Their Inventory</h3>
+            <div class="trade-grid" id="theirTradeGrid">
+              <!-- Their items will be loaded here -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="trade-actions">
+          <button class="button trade-button" id="requestTradeButton" disabled>Request Trade</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
+    console.log("Script loaded");
     document.addEventListener('DOMContentLoaded', function() {
-      loadInventory();
+      console.log("DOMContentLoaded event fired");
+      // Track selected items
+      let selectedOwnItem = null;
+      let selectedTheirItem = null;
+      let currentTradePartner = null;
       
+      // Initialize the app
+      loadInventory();
+      loadPendingTrades();
+      
+      // Trade button functionality
       const tradeButton = document.getElementById('tradeButton');
       const searchContainer = document.getElementById('searchContainer');
+      const searchResults = document.getElementById('searchResults');
+      const searchLoadingSpinner = document.getElementById('searchLoadingSpinner');
       
       tradeButton.addEventListener('click', function() {
         searchContainer.style.display = searchContainer.style.display === 'none' ? 'flex' : 'none';
       });
       
+      // Search button functionality
       const searchButton = document.getElementById('searchButton');
       searchButton.addEventListener('click', function() {
         const username = document.getElementById('userSearch').value.trim();
         if (username) {
-          // Here you would implement the search functionality
-          // For example: searchUserInventory(username);
-          alert('Searching for user: ' + username);
+          searchUsers(username);
         }
       });
-    });
-    
-    function loadInventory() {
-      const loadingSpinner = document.getElementById('loadingSpinner');
-      const inventoryGrid = document.getElementById('inventoryGrid');
       
-      loadingSpinner.style.display = 'block';
+      // Enter key in search box
+      document.getElementById('userSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const username = this.value.trim();
+          if (username) {
+            searchUsers(username);  
+          }
+        }
+      });
       
-      // Dummy inventory data for preview purposes
-    //   const dummyInventory = [
-    //     { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
-    //     { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" },
-    //     { id: 3, name: "Phoenix Feather", image: "https://via.placeholder.com/100x100/FF4500/FFFFFF?text=Feather" },
-    //     { id: 4, name: "Healing Potion", image: "https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion" },
-    //     { id: 5, name: "Dragon Scale", image: "https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale" },
-    //     { id: 6, name: "Enchanted Bow", image: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=Bow" },
-    //     { id: 7, name: "Wizard's Hat", image: "https://via.placeholder.com/100x100/483D8B/FFFFFF?text=Hat" },
-    //     { id: 8, name: "Ancient Relic", image: "https://via.placeholder.com/100x100/B8860B/FFFFFF?text=Relic" }
-    //   ];
+      // Modal close
+      document.getElementById('modalClose').addEventListener('click', function() {
+        closeTradeModal();
+      });
       
-      // Make GET request to fetch inventory data
-      fetch('/get-inventory', {method: 'POST'})
+      // Request trade button
+      document.getElementById('requestTradeButton').addEventListener('click', function() {
+        if (selectedOwnItem && selectedTheirItem && currentTradePartner) {
+          requestTrade(currentTradePartner, selectedOwnItem, selectedTheirItem);
+        } else {
+          alert('Please select one item from each inventory to trade.');
+        }
+      });
+      
+      // Notification panel toggle
+      document.getElementById('notificationButton').addEventListener('click', function() {
+        document.getElementById('notificationPanel').classList.toggle('show');
+      });
+      
+      document.getElementById('notificationClose').addEventListener('click', function() {
+        document.getElementById('notificationPanel').classList.remove('show');
+      });
+      
+      // Search for users function
+      function searchUsers(searchTerm) {
+        // Clear previous results
+        searchResults.innerHTML = '';
+        searchResults.classList.remove('visible');
+        searchLoadingSpinner.style.display = 'block';
+        
+        // Make API call to search for users
+        fetch('/get-trade-users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ search: searchTerm })
+        })
         .then(response => {
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
           return response.json();
         })
-        .then(data => {
-          loadingSpinner.style.display = 'none';
-          displayInventory(data);
+        .then(users => {
+          searchLoadingSpinner.style.display = 'none';
+          
+          if (users.length === 0) {
+            searchResults.innerHTML = '<div class="no-results">No users found</div>';
+          } else {
+            // Clear previous results
+            searchResults.innerHTML = '';
+            
+            // Create user elements
+            users.forEach(username => {
+              const userElement = document.createElement('div');
+              userElement.className = 'user-result';
+              userElement.innerHTML = `
+                <img src="/public/trade-button.png" alt="Trade">
+                <span class="username">${username}</span>
+              `;
+              
+              // Add click event to view user's inventory
+              userElement.addEventListener('click', function() {
+                viewUserInventory(username);
+              });
+              
+              searchResults.appendChild(userElement);
+            });
+          }
+          
+          // Show results
+          searchResults.classList.add('visible');
         })
         .catch(error => {
-          loadingSpinner.style.display = 'none';
-          console.error('Error loading inventory:', error);
-          console.log('Displaying dummy inventory data instead');
-        //   displayInventory(dummyInventory);
+          searchLoadingSpinner.style.display = 'none';
+          console.error('Error searching users:', error);
+          searchResults.innerHTML = '<div class="no-results">Error finding users. Please try again.</div>';
+          searchResults.classList.add('visible');
         });
+      }
       
-      function displayInventory(data) {
+      // Load your inventory
+      function loadInventory() {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const inventoryGrid = document.getElementById('inventoryGrid');
+        
+        loadingSpinner.style.display = 'block';
+        
+        
+
+
+
+        // Make GET request to fetch inventory data
+        fetch('/get-inventory', {method: 'POST'})
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            loadingSpinner.style.display = 'none';
+            displayInventory(data, inventoryGrid);
+            
+            
+          })
+          .catch(error => {
+            loadingSpinner.style.display = 'none';
+            console.error('Error loading inventory:', error);
+            
+            // Dummy inventory data for preview/testing
+            const dummyInventory = [
+              { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
+              { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" },
+              { id: 3, name: "Phoenix Feather", image: "https://via.placeholder.com/100x100/FF4500/FFFFFF?text=Feather" },
+              { id: 4, name: "Healing Potion", image: "https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion" },
+              { id: 5, name: "Dragon Scale", image: "https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale" },
+              { id: 6, name: "Enchanted Bow", image: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=Bow" },
+              { id: 7, name: "Wizard's Hat", image: "https://via.placeholder.com/100x100/483D8B/FFFFFF?text=Hat" },
+              { id: 8, name: "Ancient Relic", image: "https://via.placeholder.com/100x100/B8860B/FFFFFF?text=Relic" }
+            ];
+            
+            displayInventory(dummyInventory, inventoryGrid);
+          });
+      }
+      
+      // Display inventory in a grid
+      function displayInventory(data, gridElement) {
+        console.log("displayInventory entered");
         if (data.length === 0) {
-          inventoryGrid.innerHTML = '<div class="empty-inventory">Your inventory is empty. Start collecting items!</div>';
+          gridElement.innerHTML = '<div class="empty-inventory">Inventory is empty.</div>';
           return;
         }
         
         // Clear the grid
-        inventoryGrid.innerHTML = '';
+        gridElement.innerHTML = '';
         
         // Add each inventory item to the grid
         data.forEach(item => {
@@ -288,14 +831,367 @@
           
           // Add click event for selecting items
           itemElement.addEventListener('click', function() {
-            this.classList.toggle('selected');
-            // Optional: Add your selection logic here
+            const selectedItems = gridElement.querySelectorAll('.selected');
+            selectedItems.forEach(item => item.classList.remove('selected'));
+            this.classList.add('selected');
           });
           
-          inventoryGrid.appendChild(itemElement);
+          gridElement.appendChild(itemElement);
         });
       }
-    }
-  </script>
+      
+      // View a user's inventory for trading
+      function viewUserInventory(username) {
+        currentTradePartner = username;
+        const tradeModal = document.getElementById('tradeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const theirInventoryTitle = document.getElementById('theirInventoryTitle');
+        const theirTradeGrid = document.getElementById('theirTradeGrid');
+        const yourTradeGrid = document.getElementById('yourTradeGrid');
+        
+        // Reset selections
+        selectedOwnItem = null;
+        selectedTheirItem = null;
+        document.getElementById('requestTradeButton').disabled = true;
+        
+        // Update titles
+        modalTitle.textContent = `Trade with ${username}`;
+        theirInventoryTitle.textContent = `${username}'s Inventory`;
+        
+        // Show loading in their grid
+        theirTradeGrid.innerHTML = '<div class="loading" style="display:block; margin: 50px auto;"></div>';
+        
+        // Load your inventory into the trade modal
+        fetch('/get-inventory', {method: 'POST'})
+          .then(response => response.ok ? response.json() : [])
+          .then(data => {
+            displayTradeInventory(data, yourTradeGrid, 'own');
+          })
+          .catch(error => {
+            console.error('Error loading your inventory for trade:', error);
+            const dummyInventory = [
+              { id: 1, name: "Golden Sword", image: "https://via.placeholder.com/100x100/FFD700/000000?text=Sword" },
+              { id: 2, name: "Magic Shield", image: "https://via.placeholder.com/100x100/1E90FF/FFFFFF?text=Shield" }
+            ];
+            displayTradeInventory(dummyInventory, yourTradeGrid, 'own');
+          });
+        
+        // Load their inventory
+        fetch('/get-their-inventory', { // change me
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username: username })
+        })
+          .then(response => response.ok ? response.json() : [])
+          .then(data => {
+            displayTradeInventory(data, theirTradeGrid, 'their');
+          })
+          .catch(error => {
+            console.error('Error loading their inventory:', error);
+            const dummyTheirInventory = [
+              { id: 11, name: "Diamond Ring", image: "https://via.placeholder.com/100x100/00FFFF/000000?text=Ring" },
+              { id: 12, name: "Crystal Staff", image: "https://via.placeholder.com/100x100/FF00FF/FFFFFF?text=Staff" },
+              { id: 13, name: "Ancient Amulet", image: "https://via.placeholder.com/100x100/FFFF00/000000?text=Amulet" }
+            ];
+            displayTradeInventory(dummyTheirInventory, theirTradeGrid, 'their');
+          });
+        
+        // Show the modal
+        tradeModal.style.display = 'flex';
+      }
+      
+      // Display inventory for trading
+      function displayTradeInventory(data, gridElement, type) {
+        if (data.length === 0) {
+          gridElement.innerHTML = '<div class="empty-inventory">Inventory is empty.</div>';
+          return;
+        }
+        
+        // Clear the grid
+        gridElement.innerHTML = '';
+        
+        // Add each inventory item to the grid
+        data.forEach(item => {
+          const itemElement = document.createElement('div');
+          itemElement.className = 'trade-item';
+          itemElement.setAttribute('data-item-id', item.id);
+          itemElement.setAttribute('data-item-name', item.name);
+          itemElement.setAttribute('data-item-image', item.image || '/placeholder-image.png');
+          
+          const itemContent = `
+            <img src="${item.image || '/placeholder-image.png'}" alt="${item.name}">
+            <div class="trade-item-name">${item.name}</div>
+          `;
+          
+          itemElement.innerHTML = itemContent;
+          
+          // Add click event for selecting items
+          itemElement.addEventListener('click', function() {
+            // Remove selection from other items in this grid
+            const selectedItems = gridElement.querySelectorAll('.selected');
+            selectedItems.forEach(item => item.classList.remove('selected'));
+            
+            // Add selection to this item
+            this.classList.add('selected');
+            
+            // Store the selected item info
+            const itemData = {
+              id: this.getAttribute('data-item-id'),
+              name: this.getAttribute('data-item-name'),
+              image: this.getAttribute('data-item-image')
+            };
+            
+            if (type === 'own') {
+              selectedOwnItem = itemData;
+            } else {
+              selectedTheirItem = itemData;
+            }
+            
+            // Enable/disable trade button
+            document.getElementById('requestTradeButton').disabled = !(selectedOwnItem && selectedTheirItem);
+          });
+          
+          gridElement.appendChild(itemElement);
+        });
+      }
+      
+      // Close the trade modal
+      function closeTradeModal() {
+        document.getElementById('tradeModal').style.display = 'none';
+        selectedOwnItem = null;
+        selectedTheirItem = null;
+        currentTradePartner = null;
+      }
+      
+      // Request a trade
+      function requestTrade(targetUsername, yourItem, theirItem) {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        loadingSpinner.style.display = 'block';
+        
+        // Prepare trade request data
+        console.log("target username:" + targetUsername);
+        console.log("your item id:" + yourItem.id );
+        console.log("their item id:" + theirItem.id);
+
+
+        const tradeData = {
+          target_username: targetUsername,
+          your_item_id: yourItem.id,
+          their_item_id: theirItem.id
+        };
+        console.log("established tradeData");
+        // Send trade request
+        fetch('/request-trade', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(tradeData)
+        })
+        .then(response => {
+          loadingSpinner.style.display = 'none';
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          closeTradeModal();
+          alert(`Trade request sent to ${targetUsername}!`);
+        })
+        .catch(error => {
+          loadingSpinner.style.display = 'none';
+          console.error('Error requesting trade:', error);
+          alert('Could not send trade request. Please try again later.');
+        });
+      }
+      
+      // Load pending trades
+      function loadPendingTrades() {
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        
+        fetch('/get-pending-trades', {
+          method: 'POST'
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(trades => {
+          if (trades.length === 0) {
+            notificationBadge.textContent = '0';
+            notificationList.innerHTML = '<div class="no-notifications">No pending trade requests.</div>';
+            return;
+          }
+          
+          // Update badge count
+          notificationBadge.textContent = trades.length;
+          
+          // Clear previous notifications
+          notificationList.innerHTML = '';
+          
+          // Add each trade request to the notification panel
+          trades.forEach(trade => {
+            const tradeElement = document.createElement('div');
+            tradeElement.className = 'notification-item';
+            tradeElement.innerHTML = `
+              <div class="notification-item-header">Trade request from <strong>${trade.requesting_username}</strong></div>
+              <div class="notification-trade-items">
+                <div class="notification-trade-item">
+                  <img src="${trade.requesting_item_imagepath}" alt="Their item">
+                  <div class="notification-trade-item-name">Their item</div>
+                </div>
+                <div class="trade-direction">⟷</div>
+                <div class="notification-trade-item">
+                  <img src="${trade.responding_item_imagepath}" alt="Your item">
+                  <div class="notification-trade-item-name">Your item</div>
+                </div>
+              </div>
+              <div class="notification-actions">
+                <button class="button notification-button-small accept-button" data-trade-id="${trade.id}">Accept</button>
+                <button class="button notification-button-small deny-button" data-trade-id="${trade.id}">Decline</button>
+              </div>
+            `;
+            
+            notificationList.appendChild(tradeElement);
+          });
+          
+          // Add event listeners to accept/deny buttons
+          document.querySelectorAll('.accept-button').forEach(button => {
+            button.addEventListener('click', function() {
+              const tradeId = this.getAttribute('data-trade-id');
+              respondToTrade(tradeId, 'accept');
+            });
+          });
+          
+          document.querySelectorAll('.deny-button').forEach(button => {
+            button.addEventListener('click', function() {
+              const tradeId = this.getAttribute('data-trade-id');
+              respondToTrade(tradeId, 'deny');
+            });
+          });
+        })
+        .catch(error => {
+          console.error('Error loading pending trades:', error);
+          
+          // For demonstration purposes - show dummy trade requests
+          const dummyTrades = [
+            {
+              id: 'trade1',
+              requesting_username: 'PlayerOne',
+              requesting_item_imagepath: 'https://via.placeholder.com/100x100/FF00FF/FFFFFF?text=Staff',
+              responding_item_imagepath: 'https://via.placeholder.com/100x100/FFD700/000000?text=Sword'
+            },
+            {
+              id: 'trade2',
+              requesting_username: 'DungeonMaster',
+              requesting_item_imagepath: 'https://via.placeholder.com/100x100/32CD32/FFFFFF?text=Potion',
+              responding_item_imagepath: 'https://via.placeholder.com/100x100/800080/FFFFFF?text=Scale'
+            }
+          ];
+          
+          notificationBadge.textContent = dummyTrades.length;
+          notificationList.innerHTML = '';
+          
+          dummyTrades.forEach(trade => {
+            const tradeElement = document.createElement('div');
+            tradeElement.className = 'notification-item';
+            tradeElement.innerHTML = `
+              <div class="notification-item-header">Trade request from <strong>${trade.requesting_username}</strong></div>
+              <div class="notification-trade-items">
+                <div class="notification-trade-item">
+                  <img src="${trade.requesting_item_imagepath}" alt="Their item">
+                  <div class="notification-trade-item-name">Their item</div>
+                </div>
+                <div class="trade-direction">⟷</div>
+                <div class="notification-trade-item">
+                  <img src="${trade.responding_item_imagepath}" alt="Your item">
+                  <div class="notification-trade-item-name">Your item</div>
+                </div>
+              </div>
+              <div class="notification-actions">
+                <button class="button notification-button-small accept-button" data-trade-id="${trade.id}">Accept</button>
+                <button class="button notification-button-small deny-button" data-trade-id="${trade.id}">Decline</button>
+              </div>
+            `;
+            
+            notificationList.appendChild(tradeElement);
+          });
+          
+          // Add event listeners to accept/deny buttons
+          document.querySelectorAll('.accept-button').forEach(button => {
+            button.addEventListener('click', function() {
+              const tradeId = this.getAttribute('data-trade-id');
+              respondToTrade(tradeId, 'accept');
+            });
+          });
+          
+          document.querySelectorAll('.deny-button').forEach(button => {
+            button.addEventListener('click', function() {
+              const tradeId = this.getAttribute('data-trade-id');
+              respondToTrade(tradeId, 'deny');
+            });
+          });
+        });
+      }
+      
+      // Respond to a trade request (accept or deny)
+      function respondToTrade(tradeId, response) {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        loadingSpinner.style.display = 'block';
+        
+        fetch('/respond-to-trade', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            trade_id: tradeId, 
+            response: response 
+          })
+        })
+        .then(response => {
+          loadingSpinner.style.display = 'none';
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Refresh the trade notifications
+          loadPendingTrades();
+          
+          // Close notification panel
+          document.getElementById('notificationPanel').classList.remove('show');
+          
+          // Show success message
+          const message = response === 'accept' ? 'Trade completed successfully!' : 'Trade request declined.';
+          alert(message);
+          
+          // Reload inventory to show changes if trade was accepted
+          if (response === 'accept') {
+            loadInventory();
+          }
+        })
+        .catch(error => {
+          loadingSpinner.style.display = 'none';
+          console.error('Error responding to trade:', error);
+          alert('Could not process your response. Please try again later.');
+        });
+      }
+      
+      // For development/testing - allow ESC key to close modals
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeTradeModal();
+          document.getElementById('notificationPanel').classList.remove('show');
+        }
+      });
+    });</script>
 </body>
 </html>

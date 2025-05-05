@@ -9,4 +9,5 @@ pycache//
 /logs
 /public/pfps/*
 logfile.log
+templates/old_inventory.html
 raw_http.log
