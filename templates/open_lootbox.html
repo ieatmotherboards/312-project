@@ -41,7 +41,12 @@
         <p>Lootboxes: <span id="lootboxes">...</span></p>
     </div>
 
-    <div class="animation-box" id="animation-box">🎁 Ready to open...</div>
+    <div class="animation-box" id="animation-box">
+        <div id="animation-text">Ready to open...</div>
+        <img id="reward-image" src="" alt="Reward Image" style="display:none; margin-top:10px; max-height:80px;">
+    </div>
+    
+    
 
     <button class="button" id="open-button" onclick="openLootbox()">Open Lootbox</button>
 
@@ -69,33 +74,39 @@
         }
     }
 
+
     async function openLootbox() {
         const animBox = document.getElementById("animation-box");
+        const animText = document.getElementById("animation-text");
+        const rewardImage = document.getElementById("reward-image");
         const resultBox = document.getElementById("result");
         const openBtn = document.getElementById("open-button");
 
         openBtn.disabled = true;
         resultBox.textContent = "";
-        animBox.textContent = "✨ Opening...";
+        animText.textContent = "Opening...";
+        rewardImage.style.display = "none";
+        rewardImage.src = "";
 
-        // Simulated spin animation
-        const items = ["💎 Rare Gem", "🎩 Fancy Hat", "🃏 Joker Card", "💰 Cash Bundle", "🎲 Lucky Dice"];
+        const items = ["Alan Hunt", "Golden Kris Schindler", "An AI Violation", "Windows", "PokeBall", "Kris's Jetski", "A Segfault"];
         let i = 0;
         const spin = setInterval(() => {
-            animBox.textContent = `🔄 ${items[i % items.length]}`;
+            animText.textContent = `🔄 ${items[i % items.length]}`;
             i++;
         }, 100);
 
-        // Make request and stop animation after 2 seconds
         const res = await fetch('/open_lootbox', { method: 'POST' });
+
         setTimeout(async () => {
             clearInterval(spin);
             if (res.ok) {
-                const data = await res.json(); // e.g. { reward: "Golden Fedora" }
-                animBox.textContent = "🎁 Opened!";
+                const data = await res.json(); // e.g. { reward: "Golden Fedora", image_path: "/images/golden_fedora.png" }
+                animText.textContent = "Opened!";
                 resultBox.textContent = `You won: ${data.reward}!`;
+                rewardImage.src = data.image_path;
+                rewardImage.style.display = "block";
             } else {
-                animBox.textContent = "❌ Failed to open.";
+                animText.textContent = "❌ Failed to open.";
                 resultBox.textContent = "Something went wrong.";
             }
 

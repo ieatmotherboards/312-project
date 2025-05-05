@@ -1,4 +1,4 @@
-from dns.message import make_response
+from flask import make_response, jsonify
 from src.database import *
 import uuid
 from src.database import db
@@ -51,9 +51,31 @@ item_type_map = {
     
 }
 
+non_gold_items = ['AiViolation', 
+                  'Alan', 
+                  'AO', 
+                  'PostCard', 
+                  'ChickenJockey',
+                  'Jesse',
+                  'JetSki',
+                  'Kris',
+                  'Linux',
+                  'MasterSword',
+                  'Mushroom',
+                  'Paul',
+                  'PiazzaPass',
+                  'PokeBall',
+                  'PortalGun',
+                  'RayGun',
+                  'SegFault',
+                  'Windows'
+]
+
+gold_items = ['GoldAlan', 'GoldKris']
+
 # creates a new item with a type of item_type. returns it's assigned uuid.
 def create_item(item_type):
-    item_id = uuid.uuid4()
+    item_id = str(uuid.uuid4())
     item_db.insert_one({'id': item_id, 'type': item_type})
     return item_id
 
@@ -78,7 +100,7 @@ def check_for_item(username, item_id):
 # gets the properties of the item with id item_id
 def get_item_properties(item_id):
     item_type = item_db.find_one({'id': item_id})['type']
-    return item_type_map[item_type]
+    return item_type
 
     
 
@@ -160,14 +182,25 @@ def getCoinsAndLootBoxCount(username):
     out['lootboxes'] = userData['LootBoxes']
     return out
 
-def loot_box_open():
+def loot_box_open(request):
     random = randint(1,10)
 
-    if random == 10:
-        random = randint
+    # TODO: update this, this is mad unsafe
+    token = request.cookies['auth_token']
+    hashed_token = hashlib.sha256(token.encode()).hexdigest()
 
-    return random
+    username = users.find_one({'auth_token': hashed_token}, {'_id': 0})['username']
 
+    if random==10:
+        item_key = gold_items[randint(1,2)]
+    else:
+        item_key = non_gold_items[randint(0,len(non_gold_items) - 1)]
+    item = item_type_map[item_key]
+
+    # now, insert item into inventory
+    add_item(username, item_type=item)
+
+    return make_response(jsonify({"reward":item["name"], "image_path":item["imagePath"]}))
 
 
 
@@ -184,7 +217,7 @@ def purchase_loot_box(request):
 
     if inventory['coins'] < 100:
         purchase_log(user, success=False, message='not enough coins')
-        return (403, 'not enough coins')
+        return make_response('not enough coins', 403)
 
     else:
         update_coins(user, -100)
@@ -192,7 +225,7 @@ def purchase_loot_box(request):
         inv_db.find_one_and_update({'username': user}, {'$set': {'LootBoxes': (inventory['LootBoxes'] + 1)}})
 
     purchase_log(user, success=True, message='purchased')
-    return (200, 'LootBox Bought')
+    return make_response("OK", 200)
 
 if __name__ == '__main__':
     user1_inventory = ['0', '1', '2']

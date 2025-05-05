@@ -12,7 +12,7 @@ from PIL import Image
 from src.init import app, socketio  # importing app and socketio from src.init instead of declaring here
 from src.auth import register_new_account, login, logout
 import src.database as db
-from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount, trade
+from src.inventory import purchase_loot_box, getLeaderBoard, list_inventory, get_item_properties, getCoinsAndLootBoxCount, trade, loot_box_open
 from src.logging_things import *
 from src.achievements import generate_html_data
 import src.util as util
@@ -95,13 +95,14 @@ def render_lootbox():
     return util.log_response(request, response)
 
 @app.route('/buy-lootbox', methods = ['POST']) # POST to try to buy item
-def open_lootbox():
+def buy_lootbox():
     response = purchase_loot_box(request)
     return util.log_response(request, response)
-    res = purchase_loot_box(request)
-    response = make_response(res[0], res[1])
-    main_log(req=request, res=response)
-    return response
+
+@app.route('/open_lootbox', methods = ['POST'])
+def parse_open_lootbox():
+    response = loot_box_open(request)
+    return util.log_response(request, response)
 
 @app.route('/item-shop') # routes to the shop page
 def render_shop():
@@ -165,8 +166,8 @@ def render_inventory():
 @app.route('/get-inventory', methods = ['POST'])
 def send_inventory_data():
     
-    potential_json = request.get_json() # double check that this doesn't error
-    if potential_json is None:
+    if 'application/json' not in request.headers:
+        
         if 'auth_token' not in request.cookies:
             response = redirect('/', code=302)
             return util.log_response(request, response)
@@ -177,16 +178,24 @@ def send_inventory_data():
             return util.log_response(request, response)
         username = db.get_user_by_hashed_token(hashed_token)['username']
     else:
-        username = potential_json['username']
+        json = request.get_json()
+        username = json['username']
 
         
     inventory = list_inventory(username)
+    print("-----> inventory is: ", str(inventory))
+    app.logger.info("-----> inventory is: " + str(inventory))
     out_list = []
     for item in inventory:
-        properties = get_item_properties(item['id'])
-        out_list.append({"id": item['id'], "name": properties['name'], "image": properties['imagePath']})
+        app.logger.info("-----> item is: " + str(item))
+        print('-----> item is:' + str(item))
+        properties = get_item_properties(item)
+        out_list.append({"id": item, "name": properties['name'], "image": properties['imagePath']})
         # app.logger.info("item is: " + str(item))
-    return util.log_response(request, make_response(jsonify(out_list)))
+    response = make_response(jsonify(out_list))
+    response.headers['Content-Type'] = 'application/json'
+
+    return util.log_response(request, response)
 
 @app.route('/get-trade-users', methods=['POST'])
 def get_trade_users():
@@ -280,7 +289,7 @@ def respond_trade():
     else:
         return util.log_response(request, make_response("OK", 200))
 
-@app.route('/get-pending-trades')
+@app.route('/get-pending-trades', methods = ['POST'])
 def get_pending_trades():
     # get user by auth token
     if 'auth_token' not in request.cookies:
@@ -298,11 +307,12 @@ def get_pending_trades():
     trades = db.trades.find({"responding_username":username}).to_list()
 
     out_list = []
-    out_list.append({'tradeId':trade['tradeId'], 
+    for trade in trades:
+        out_list.append({'tradeId':trade['tradeId'], 
                      'requesting_username':trade['requesting_username'], 
                      'responding_username': trade['responding_username'],
                      'requesting_item_imagepath':trade['requesting_item_imagepath'],
-                     'responding_item_imagepath': trade['responding_item_imagepath']} for trade in trades)
+                     'responding_item_imagepath': trade['responding_item_imagepath']})
     return util.log_response(request, jsonify(out_list))
 
 @app.route('/public/<path:subpath>') # sends files in public directory to client
