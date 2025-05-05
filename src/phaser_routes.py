@@ -6,7 +6,7 @@ from src.inventory import get_coins, update_coins
 import src.games.slots as slots
 import src.games.roulette as roulette
 import src.achievements as ach
-from src.init import app
+from src.init import app, base_logger
 
 # passed into main.py to register routes
 phaser = Blueprint('phaser_routes', __name__)
