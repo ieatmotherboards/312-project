@@ -113,7 +113,7 @@ def roulette_request():
         result = roulette.handlebets([{"name": username, "betAmount": bet_amount, "betType":bet_type}])
     user_cashout_dict = result[0]
     outcome = result[1]
-    app.logger.info(username + " bet on " + bet_type + " and won " + str(user_cashout_dict[username]) + " coins ")
+    base_logger.info(username + " bet on " + bet_type + " and won " + str(user_cashout_dict[username]) + " coins ")
     if user_cashout_dict[username] > 0:
         ach.increment_carousel(username)
     update_coins(username, user_cashout_dict[username])
